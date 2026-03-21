@@ -13,7 +13,15 @@ SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-change-this")
 
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
+PORT = os.getenv('PORT', '8000')
+
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    '.railway.app',        
+    os.getenv('RAILWAY_STATIC_URL', ''), 
+]
+
 
 
 # APPLICATIONS
@@ -124,6 +132,11 @@ MEDIA_ROOT = BASE_DIR / 'media'
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
+
+
+# STATIC FILES FOR RAILWAY
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 
 # MEDIA FILES (if you add images later)
