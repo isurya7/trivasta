@@ -1,0 +1,800 @@
+{% extends "base.html" %}
+{% block title %}About Us — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    .about-page { font-family: 'Outfit', sans-serif; }
+
+    /* ── HERO ── */
+    .about-hero {
+        background: linear-gradient(135deg, #0f3460 0%, #0a2240 100%);
+        padding: 7rem 2rem 5rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .about-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url('https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1400&q=60');
+        background-size: cover;
+        background-position: center;
+        opacity: 0.07;
+    }
+
+    .about-hero::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+        background-size: 60px 60px;
+    }
+
+    .about-hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .about-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(201,168,76,0.15);
+        border: 1px solid rgba(201,168,76,0.3);
+        padding: 0.4rem 1rem;
+        border-radius: 2px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #e8c97a;
+        margin-bottom: 1.75rem;
+        animation: fadeUp 0.7s 0.2s both;
+    }
+
+    .about-hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(3rem, 6vw, 5.5rem);
+        font-weight: 300;
+        color: white;
+        line-height: 1.05;
+        margin-bottom: 1.25rem;
+        animation: fadeUp 0.7s 0.4s both;
+    }
+
+    .about-hero h1 em { font-style: italic; color: #e8c97a; }
+
+    .about-hero p {
+        font-size: 1.0625rem;
+        color: rgba(255,255,255,0.55);
+        line-height: 1.75;
+        animation: fadeUp 0.7s 0.6s both;
+    }
+
+    /* ── MISSION ── */
+    .mission-section {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 6rem 2rem;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5rem;
+        align-items: center;
+    }
+
+    .mission-text .eyebrow {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .mission-text .eyebrow::before {
+        content: '';
+        width: 24px; height: 1px;
+        background: var(--gold);
+    }
+
+    .mission-text h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2rem, 3.5vw, 3rem);
+        font-weight: 300;
+        color: var(--ink);
+        line-height: 1.15;
+        margin-bottom: 1.5rem;
+    }
+
+    .mission-text h2 em { font-style: italic; color: var(--sea); }
+
+    .mission-text p {
+        font-size: 0.9375rem;
+        color: var(--muted);
+        line-height: 1.8;
+        margin-bottom: 1rem;
+    }
+
+    .mission-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-top: 2.5rem;
+    }
+
+    .mission-stat {
+        background: var(--cream);
+        border-radius: 10px;
+        padding: 1.25rem;
+        border-left: 3px solid var(--gold);
+    }
+
+    .mission-stat-num {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.25rem;
+        font-weight: 600;
+        color: var(--sea);
+        line-height: 1;
+    }
+
+    .mission-stat-label {
+        font-size: 0.775rem;
+        color: var(--muted);
+        margin-top: 0.25rem;
+    }
+
+    .mission-visual {
+        position: relative;
+    }
+
+    .mission-img-main {
+        width: 100%;
+        height: 420px;
+        object-fit: cover;
+        border-radius: 16px;
+        display: block;
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+    }
+
+    .mission-img-badge {
+        position: absolute;
+        bottom: -1.5rem;
+        left: -1.5rem;
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        box-shadow: var(--shadow-deep);
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+    }
+
+    .mission-img-badge-icon { font-size: 2rem; }
+
+    .mission-img-badge-text strong {
+        display: block;
+        font-size: 1rem;
+        color: var(--ink);
+        font-weight: 600;
+    }
+
+    .mission-img-badge-text span {
+        font-size: 0.775rem;
+        color: var(--muted);
+    }
+
+    /* ── VALUES ── */
+    .values-section {
+        background: var(--ink);
+        padding: 6rem 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .values-section::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse 60% 80% at 80% 50%, rgba(201,168,76,0.05), transparent);
+    }
+
+    .values-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .values-header { margin-bottom: 3.5rem; }
+
+    .values-eyebrow {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #e8c97a;
+        margin-bottom: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .values-eyebrow::before { content: ''; width: 24px; height: 1px; background: #e8c97a; }
+
+    .values-header h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 300;
+        color: white;
+    }
+
+    .values-header h2 em { font-style: italic; color: #e8c97a; }
+
+    .values-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+    }
+
+    .value-card {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 14px;
+        padding: 2rem;
+        transition: all 0.3s;
+    }
+
+    .value-card:hover {
+        background: rgba(255,255,255,0.07);
+        border-color: rgba(201,168,76,0.3);
+        transform: translateY(-4px);
+    }
+
+    .value-icon { font-size: 2rem; margin-bottom: 1rem; }
+
+    .value-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.375rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 0.625rem;
+    }
+
+    .value-desc {
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.5);
+        line-height: 1.7;
+    }
+
+    /* ── FOUNDERS ── */
+    .founders-section {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 6rem 2rem;
+    }
+
+    .founders-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .section-eyebrow {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 0.875rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .section-eyebrow::before, .section-eyebrow::after {
+        content: '';
+        width: 28px; height: 1px;
+        background: var(--gold);
+    }
+
+    .founders-header h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 300;
+        color: var(--ink);
+    }
+
+    .founders-header h2 em { font-style: italic; color: var(--sea); }
+
+    .founders-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 3rem;
+    }
+
+    .founder-card {
+        background: var(--white);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .founder-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-deep);
+    }
+
+    .founder-img-wrap {
+        position: relative;
+        height: 320px;
+        background: linear-gradient(135deg, #0f3460, #0a2240);
+        overflow: hidden;
+    }
+
+    .founder-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        object-position: top;
+        display: block;
+        transition: transform 0.5s;
+    }
+
+    .founder-card:hover .founder-img { transform: scale(1.04); }
+
+    .founder-img-overlay {
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(to top, rgba(13,17,23,0.6) 0%, transparent 50%);
+    }
+
+    .founder-role-badge {
+        position: absolute;
+        top: 1.25rem;
+        left: 1.25rem;
+        background: rgba(201,168,76,0.9);
+        color: #0d1117;
+        font-size: 0.68rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.3rem 0.75rem;
+        border-radius: 2px;
+    }
+
+    .founder-body {
+        padding: 2rem;
+    }
+
+    .founder-name {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.875rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 0.2rem;
+    }
+
+    .founder-title {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 1rem;
+    }
+
+    .founder-bio {
+        font-size: 0.9rem;
+        color: var(--muted);
+        line-height: 1.75;
+        margin-bottom: 1.5rem;
+    }
+
+    .founder-socials {
+        display: flex;
+        gap: 0.625rem;
+    }
+
+    .founder-social-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem 1rem;
+        border-radius: var(--radius);
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: 1.5px solid var(--cream-dark);
+        color: var(--muted);
+        transition: all 0.25s;
+        background: var(--cream);
+    }
+
+    .founder-social-btn:hover {
+        border-color: var(--sea);
+        color: var(--sea);
+        background: rgba(15,52,96,0.05);
+    }
+
+    /* ── STORY TIMELINE ── */
+    .story-section {
+        background: var(--cream);
+        padding: 6rem 2rem;
+    }
+
+    .story-inner {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .story-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .story-header h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem;
+        font-weight: 300;
+        color: var(--ink);
+    }
+
+    .story-header h2 em { font-style: italic; color: var(--sea); }
+
+    .timeline {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 23px;
+        top: 12px;
+        bottom: 12px;
+        width: 2px;
+        background: linear-gradient(to bottom, var(--gold), rgba(201,168,76,0.1));
+    }
+
+    .timeline-item {
+        display: flex;
+        gap: 2rem;
+        padding-bottom: 3rem;
+        position: relative;
+    }
+
+    .timeline-item:last-child { padding-bottom: 0; }
+
+    .timeline-dot {
+        width: 48px; height: 48px;
+        background: white;
+        border: 2px solid var(--gold);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+        box-shadow: var(--shadow);
+        transition: all 0.3s;
+    }
+
+    .timeline-item:hover .timeline-dot {
+        background: var(--gold);
+        transform: scale(1.1);
+    }
+
+    .timeline-year {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        color: var(--gold);
+        text-transform: uppercase;
+        margin-bottom: 0.3rem;
+        margin-top: 0.75rem;
+    }
+
+    .timeline-title {
+        font-weight: 600;
+        font-size: 1rem;
+        color: var(--ink);
+        margin-bottom: 0.4rem;
+    }
+
+    .timeline-desc {
+        font-size: 0.875rem;
+        color: var(--muted);
+        line-height: 1.7;
+    }
+
+    /* ── CTA ── */
+    .about-cta {
+        background: linear-gradient(135deg, #0f3460, #0a2240);
+        padding: 5rem 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .about-cta::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+        background-size: 50px 50px;
+    }
+
+    .about-cta-content { position: relative; z-index: 1; }
+
+    .about-cta h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2rem, 4vw, 3.5rem);
+        font-weight: 300;
+        color: white;
+        margin-bottom: 0.875rem;
+    }
+
+    .about-cta h2 em { font-style: italic; color: #e8c97a; }
+
+    .about-cta p {
+        color: rgba(255,255,255,0.5);
+        font-size: 0.9375rem;
+        max-width: 460px;
+        margin: 0 auto 2.5rem;
+        line-height: 1.7;
+    }
+
+    .about-cta-btns {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(24px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+        .mission-section { grid-template-columns: 1fr; gap: 3rem; }
+        .founders-grid  { grid-template-columns: 1fr; }
+        .values-grid    { grid-template-columns: 1fr; }
+        .mission-img-badge { display: none; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="about-page">
+
+    <!-- HERO -->
+    <section class="about-hero">
+        <div class="about-hero-content">
+            <div class="about-eyebrow">✦ Our Story</div>
+            <h1>Travel, <em>reimagined</em><br>by those who love it</h1>
+            <p>Trivasta was born from a simple frustration — planning a great trip was too complicated, too expensive and too disconnected. We built the platform we always wished existed.</p>
+        </div>
+    </section>
+
+    <!-- MISSION -->
+    <section style="background: var(--cream);">
+        <div class="mission-section">
+            <div class="mission-text">
+                <div class="eyebrow">Our Mission</div>
+                <h2>Making great travel<br><em>accessible to everyone</em></h2>
+                <p>Trivasta is an AI-powered travel marketplace that connects curious travelers with India's best travel agencies. We believe the best trips happen when intelligent planning meets local expertise.</p>
+                <p>Our platform uses cutting-edge AI to generate personalized itineraries in seconds, then creates a competitive marketplace where verified agencies bid for your business — ensuring you always get the best price and service.</p>
+                <div class="mission-stats">
+                    <div class="mission-stat">
+                        <div class="mission-stat-num">12K+</div>
+                        <div class="mission-stat-label">Trips planned</div>
+                    </div>
+                    <div class="mission-stat">
+                        <div class="mission-stat-num">380+</div>
+                        <div class="mission-stat-label">Partner agencies</div>
+                    </div>
+                    <div class="mission-stat">
+                        <div class="mission-stat-num">180+</div>
+                        <div class="mission-stat-label">Destinations covered</div>
+                    </div>
+                    <div class="mission-stat">
+                        <div class="mission-stat-num">4.9★</div>
+                        <div class="mission-stat-label">Average rating</div>
+                    </div>
+                </div>
+            </div>
+            <div class="mission-visual">
+                <img class="mission-img-main"
+                     src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80"
+                     alt="Beautiful travel destination">
+                <div class="mission-img-badge">
+                    <div class="mission-img-badge-icon">🤖</div>
+                    <div class="mission-img-badge-text">
+                        <strong>AI-Powered Planning</strong>
+                        <span>Itinerary in under 10 seconds</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VALUES -->
+    <section class="values-section">
+        <div class="values-inner">
+            <div class="values-header">
+                <div class="values-eyebrow">What We Stand For</div>
+                <h2>Our <em>core values</em></h2>
+            </div>
+            <div class="values-grid">
+                <div class="value-card">
+                    <div class="value-icon">🎯</div>
+                    <div class="value-title">Radical Transparency</div>
+                    <div class="value-desc">No hidden fees, no shady commissions. Every price, every fee and every policy is shown upfront. You always know exactly what you're paying for.</div>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">🤝</div>
+                    <div class="value-title">Win-Win Marketplace</div>
+                    <div class="value-desc">We succeed only when travelers have amazing experiences and agencies grow their business. Our incentives are permanently aligned with yours.</div>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">⚡</div>
+                    <div class="value-title">Speed & Simplicity</div>
+                    <div class="value-desc">Planning a trip should take minutes, not weeks. We obsessively reduce friction at every step — from AI planning to instant booking.</div>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">🔒</div>
+                    <div class="value-title">Trust & Safety</div>
+                    <div class="value-desc">Every agency on Trivasta is manually verified. Every payment is secured by Razorpay. You can book with complete confidence.</div>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">🌍</div>
+                    <div class="value-title">Local Expertise</div>
+                    <div class="value-desc">AI gives you the plan, but local agencies give you the magic. We believe in the irreplaceable value of human expertise and on-the-ground knowledge.</div>
+                </div>
+                <div class="value-card">
+                    <div class="value-icon">💚</div>
+                    <div class="value-title">Responsible Travel</div>
+                    <div class="value-desc">We encourage sustainable, responsible tourism that benefits local communities and preserves the destinations we all love for future generations.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOUNDERS -->
+    <section style="background: var(--cream);">
+        <div class="founders-section">
+            <div class="founders-header">
+                <div class="section-eyebrow">The People Behind Trivasta</div>
+                <h2>Meet our <em>founders</em></h2>
+            </div>
+
+            <div class="founders-grid">
+
+                <!-- Surya -->
+                <div class="founder-card">
+                    <div class="founder-img-wrap">
+                        <img class="founder-img"
+                             src="#"
+                             alt="Surya Pramanik"
+                             onerror="this.style.display='none'">
+                        <div class="founder-img-overlay"></div>
+                        <div class="founder-role-badge">Founder & CEO</div>
+                    </div>
+                    <div class="founder-body">
+                        <div class="founder-name">Surya Pramanik</div>
+                        <div class="founder-title">Founder & Chief Executive Officer</div>
+                        <p class="founder-bio">
+                            Surya is the visionary behind Trivasta. With a deep passion for technology and an equal love for travel, he built Trivasta to solve a problem he experienced firsthand — the chaos of planning a great trip. He leads product strategy, AI development and the overall vision of making travel planning effortless for millions of Indians.
+                        </p>
+                        <div class="founder-socials">
+                            <a href="#" class="founder-social-btn">🔗 LinkedIn</a>
+                            <a href="#" class="founder-social-btn">🐦 Twitter</a>
+                            <a href="mailto:surya@trivasta.com" class="founder-social-btn">✉️ Email</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ujan -->
+                <div class="founder-card">
+                    <div class="founder-img-wrap">
+                        <img class="founder-img"
+                             src="#"
+                             alt="Ujan Paul"
+                             onerror="this.style.display='none'">
+                        <div class="founder-img-overlay"></div>
+                        <div class="founder-role-badge">Co-Founder</div>
+                    </div>
+                    <div class="founder-body">
+                        <div class="founder-name">Ujan Paul</div>
+                        <div class="founder-title">Co-Founder & Chief Operations Officer</div>
+                        <p class="founder-bio">
+                            Ujan brings the operational backbone to Trivasta. His expertise in business strategy, agency partnerships and marketplace operations has been instrumental in building Trivasta's network of verified travel agencies across India. He ensures that every stakeholder — traveler and agency alike — has an exceptional experience on the platform.
+                        </p>
+                        <div class="founder-socials">
+                            <a href="#" class="founder-social-btn">🔗 LinkedIn</a>
+                            <a href="#" class="founder-social-btn">🐦 Twitter</a>
+                            <a href="mailto:ujan@trivasta.com" class="founder-social-btn">✉️ Email</a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- STORY TIMELINE -->
+    <section class="story-section">
+        <div class="story-inner">
+            <div class="story-header">
+                <div class="section-eyebrow">Our Journey</div>
+                <h2>How Trivasta <em>came to be</em></h2>
+            </div>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot">💡</div>
+                    <div>
+                        <div class="timeline-year">The Idea</div>
+                        <div class="timeline-title">Frustrated travelers become builders</div>
+                        <div class="timeline-desc">Surya and Ujan, two college friends with a shared love of travel, spent weeks trying to plan a Rajasthan trip — only to be overwhelmed by WhatsApp groups, spreadsheets and unreliable agents. They decided to build a better way.</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot">🛠️</div>
+                    <div>
+                        <div class="timeline-year">Building</div>
+                        <div class="timeline-title">AI meets the travel industry</div>
+                        <div class="timeline-desc">The team integrated Gemini and Llama AI models to generate detailed, personalized itineraries. Early users were amazed — a complete 7-day itinerary with budget breakdown in under 10 seconds.</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot">🚀</div>
+                    <div>
+                        <div class="timeline-year">Launch</div>
+                        <div class="timeline-title">Trivasta goes live</div>
+                        <div class="timeline-desc">Trivasta launched with 12 partner agencies across India. Within the first month, over 500 trips were planned and 80 bookings were made. The marketplace model was validated.</div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot">📈</div>
+                    <div>
+                        <div class="timeline-year">Growing</div>
+                        <div class="timeline-title">Scaling across India</div>
+                        <div class="timeline-desc">Today Trivasta has 380+ verified partner agencies, 12,000+ trips planned and a growing community of travelers who choose Trivasta for every adventure. The journey has only just begun.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="about-cta">
+        <div class="about-cta-content">
+            <div class="about-eyebrow" style="display:inline-flex; margin-bottom:1.5rem;">✦ Start Your Journey</div>
+            <h2>Ready to explore <em>the world?</em></h2>
+            <p>Join thousands of travelers who plan smarter, book better and travel happier with Trivasta.</p>
+            <div class="about-cta-btns">
+                <a href="{% url 'planner' %}" class="btn btn-gold">✦ Plan My Trip Free</a>
+                <a href="{% url 'agency_register' %}" class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.3);">Join as Agency</a>
+            </div>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

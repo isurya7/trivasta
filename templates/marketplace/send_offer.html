@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block title %}Send Offer{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600&display=swap');
+
+    .offer-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        padding: 4rem 2rem;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .offer-wrap {
+        max-width: 640px;
+        margin: 0 auto;
+    }
+
+    .trip-summary {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 12px;
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+        color: white;
+    }
+
+    .trip-summary h3 {
+        font-family: 'Fraunces', serif;
+        font-size: 1.75rem;
+        font-weight: 300;
+        margin-bottom: 1rem;
+    }
+
+    .trip-chips { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+    .trip-chip {
+        font-size: 0.8rem;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.15);
+        padding: 0.3rem 0.75rem;
+        border-radius: 100px;
+        color: rgba(255,255,255,0.85);
+    }
+
+    .offer-card {
+        background: var(--white);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        padding: 2rem;
+    }
+
+    .offer-card h2 {
+        font-family: 'Fraunces', serif;
+        font-size: 1.5rem;
+        color: var(--ink);
+        margin-bottom: 1.5rem;
+    }
+
+    .field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.25rem; }
+
+    .field label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ink-light);
+    }
+
+    .field-input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 1.5px solid var(--cream-dark);
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9375rem;
+        color: var(--ink);
+        background: var(--cream);
+        outline: none;
+        transition: all 0.2s;
+        resize: vertical;
+    }
+
+    .field-input:focus {
+        border-color: var(--sea);
+        background: var(--white);
+        box-shadow: 0 0 0 3px rgba(15,52,96,0.08);
+    }
+
+    .form-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="offer-page">
+    <div class="offer-wrap">
+
+        <div class="trip-summary">
+            <h3>✈️ {{ trip.destination }}</h3>
+            <div class="trip-chips">
+                <span class="trip-chip">📅 {{ trip.days }} days</span>
+                <span class="trip-chip">💰 Budget: ₹{{ trip.budget }}</span>
+                <span class="trip-chip">🎒 {{ trip.travel_type|capfirst }}</span>
+            </div>
+        </div>
+
+        <div class="offer-card">
+            <h2>Send Your Offer</h2>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="field">
+                    <label>Your Price (₹)</label>
+                    {{ form.price }}
+                </div>
+                <div class="field">
+                    <label>Message to Traveler</label>
+                    {{ form.message }}
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Send Offer →</button>
+                    <a href="{% url 'agency_dashboard' %}" class="btn btn-outline">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

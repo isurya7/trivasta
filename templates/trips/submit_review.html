@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Write Your Review — {{ booking.agency.name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&family=DM+Sans:wght@400;500&display=swap');
+
+  :root {
+    --cream:   #F9F5EE;
+    --ink:     #1A1714;
+    --amber:   #D4762A;
+    --amber-lt:#F5E6D3;
+    --sage:    #5C7A6B;
+    --border:  #E0D8CE;
+    --radius:  12px;
+  }
+
+  body { background: var(--cream); color: var(--ink); font-family: 'DM Sans', sans-serif; }
+
+  .rv-wrap { max-width: 720px; margin: 48px auto; padding: 0 20px 80px; }
+
+  .trip-card {
+    display: flex; gap: 16px; align-items: center;
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 24px; margin-bottom: 36px;
+  }
+  .trip-card .agency-logo {
+    width: 56px; height: 56px; border-radius: 10px;
+    background: var(--amber-lt); display: flex; align-items: center;
+    justify-content: center; font-family: 'Fraunces', serif;
+    font-size: 22px; color: var(--amber); flex-shrink: 0;
+  }
+  .trip-card .trip-meta h3 { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; margin: 0 0 4px; }
+  .trip-card .trip-meta p  { font-size: 13px; color: #888; margin: 0; }
+  .trip-card .completed-badge {
+    margin-left: auto; background: #E8F5EE; color: var(--sage);
+    border: 1px solid #C3DDD0; border-radius: 20px;
+    padding: 4px 14px; font-size: 12px; font-weight: 500; white-space: nowrap;
+  }
+
+  h1.rv-title { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 300; margin: 0 0 6px; }
+  .rv-subtitle { color: #888; font-size: 14px; margin-bottom: 36px; }
+
+  .star-group { margin-bottom: 28px; }
+  .star-group label.group-label {
+    display: block; font-size: 13px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: .08em; color: #888; margin-bottom: 10px;
+  }
+  .stars { display: inline-flex; flex-direction: row-reverse; gap: 6px; }
+  .stars input { display: none; }
+  .stars label {
+    font-size: 36px; cursor: pointer; color: #D9D0C4;
+    transition: color .15s, transform .1s; line-height: 1;
+  }
+  .stars label:hover,
+  .stars label:hover ~ label,
+  .stars input:checked ~ label { color: var(--amber); }
+  .stars label:hover { transform: scale(1.15); }
+  .stars-sm label { font-size: 26px; }
+
+  .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 32px; }
+  @media(max-width:520px){ .category-grid { grid-template-columns: 1fr; } }
+
+  .field { margin-bottom: 24px; }
+  .field label {
+    display: block; font-size: 13px; font-weight: 500;
+    text-transform: uppercase; letter-spacing: .08em; color: #888; margin-bottom: 8px;
+  }
+  .field input[type=text],
+  .field textarea {
+    width: 100%; box-sizing: border-box;
+    border: 1.5px solid var(--border); border-radius: var(--radius);
+    padding: 14px 16px; font-size: 15px; font-family: 'DM Sans', sans-serif;
+    color: var(--ink); background: #fff; outline: none; resize: vertical;
+    transition: border-color .2s;
+  }
+  .field input:focus, .field textarea:focus {
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(212,118,42,.12);
+  }
+  .field .hint { font-size: 12px; color: #aaa; margin-top: 6px; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+  .btn-submit {
+    background: var(--amber); color: #fff; border: none;
+    border-radius: var(--radius); padding: 16px 40px; font-size: 16px;
+    font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: background .2s, transform .1s;
+    display: inline-flex; align-items: center; gap: 10px;
+  }
+  .btn-submit:hover { background: #c0661f; transform: translateY(-1px); }
+
+  .alert-error {
+    background: #FEF2F2; border: 1px solid #FECACA; border-radius: var(--radius);
+    padding: 14px 18px; color: #991B1B; font-size: 14px; margin-bottom: 28px;
+  }
+  .char-count { font-size: 12px; color: #bbb; float: right; margin-top: 6px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rv-wrap">
+
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="alert-error">{{ msg }}</div>
+    {% endfor %}
+  {% endif %}
+
+  <div class="trip-card">
+    <div class="agency-logo">
+      {% if booking.agency.logo %}
+        <img src="{{ booking.agency.logo.url }}" width="56" height="56" style="border-radius:10px;object-fit:cover;">
+      {% else %}
+        {{ booking.agency.name|first|upper }}
+      {% endif %}
+    </div>
+    <div class="trip-meta">
+      <h3>{{ booking.agency.name }}</h3>
+      <p>{{ booking.package_name }} &nbsp;·&nbsp; {{ booking.travel_date|date:"F j, Y" }}</p>
+    </div>
+    <span class="completed-badge">✓ Trip Completed</span>
+  </div>
+
+  <h1 class="rv-title">Share your experience</h1>
+  <p class="rv-subtitle">Your review helps other travellers make confident decisions.</p>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <div class="star-group">
+      <label class="group-label">Overall Rating <span style="color:#e55">*</span></label>
+      <div class="stars" id="overall-stars">
+        {% for i in "54321" %}
+        <input type="radio" name="overall_rating" id="star_{{ i }}" value="{{ i }}"
+          {% if post_data.overall_rating == i %}checked{% endif %}>
+        <label for="star_{{ i }}" title="{{ i }} stars">★</label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <p style="font-size:13px;color:#888;margin-bottom:20px;font-weight:500;text-transform:uppercase;letter-spacing:.08em;">
+      Rate by category <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span>
+    </p>
+    <div class="category-grid">
+      {% for label, field in "Guides,rating_guides|Accommodation,rating_accommodation|Value for Money,rating_value|Transport,rating_transport"|split:"|" %}
+      <div class="cat-item star-group">
+        <label class="group-label">{{ label }}</label>
+        <div class="stars stars-sm">
+          {% for i in "54321" %}
+          <input type="radio" name="{{ field }}" id="{{ field }}_{{ i }}" value="{{ i }}">
+          <label for="{{ field }}_{{ i }}" title="{{ i }} stars">★</label>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <hr class="divider">
+
+    <div class="field">
+      <label for="id_title">Review Title <span style="color:#e55">*</span></label>
+      <input type="text" name="title" id="id_title" maxlength="120"
+             placeholder="Summarise your trip in one line"
+             value="{{ post_data.title|default:'' }}">
+    </div>
+
+    <div class="field">
+      <label for="id_body">Your Review <span style="color:#e55">*</span></label>
+      <textarea name="body" id="id_body" rows="6" maxlength="2000"
+                placeholder="Tell other travellers about your experience…">{{ post_data.body|default:'' }}</textarea>
+      <div class="hint">Minimum 20 characters.</div>
+      <div class="char-count"><span id="char-count">0</span> / 2000</div>
+    </div>
+
+    <button type="submit" class="btn-submit">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      Publish Review
+    </button>
+  </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const body = document.getElementById('id_body');
+  const counter = document.getElementById('char-count');
+  function updateCount() { counter.textContent = body.value.length; }
+  body.addEventListener('input', updateCount);
+  updateCount();
+</script>
+{% endblock %}

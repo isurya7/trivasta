@@ -1,0 +1,970 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    .dashboard-page {
+        background: var(--cream);
+        min-height: calc(100vh - 68px);
+        padding: 3rem 0 6rem;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .dashboard-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    /* ── WELCOME BANNER ── */
+    .welcome-banner {
+        background: linear-gradient(135deg, var(--sea) 0%, #0a2240 100%);
+        border-radius: 16px;
+        padding: 2.5rem 3rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .welcome-banner::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+            radial-gradient(circle at 80% 50%, rgba(201,168,76,0.15) 0%, transparent 55%),
+            linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+        background-size: auto, 40px 40px, 40px 40px;
+    }
+
+    .welcome-text { position: relative; z-index: 1; }
+
+    .welcome-greeting {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #e8c97a;
+        margin-bottom: 0.5rem;
+    }
+
+    .welcome-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.25rem;
+        font-weight: 300;
+        color: white;
+        line-height: 1.15;
+    }
+
+    .welcome-title em { font-style: italic; color: #e8c97a; }
+    .welcome-sub { font-size: 0.9rem; color: rgba(255,255,255,0.5); margin-top: 0.4rem; }
+
+    .welcome-cta {
+        position: relative;
+        z-index: 1;
+        flex-shrink: 0;
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+    }
+
+    .welcome-cta-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.875rem 1.75rem;
+        background: var(--gold);
+        color: var(--ink);
+        border-radius: var(--radius);
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        white-space: nowrap;
+    }
+
+    .welcome-cta-btn:hover {
+        background: #e8c97a;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(201,168,76,0.4);
+    }
+
+    .welcome-cta-btn-outline {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.875rem 1.75rem;
+        background: transparent;
+        color: white;
+        border: 1.5px solid rgba(255,255,255,0.35);
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        white-space: nowrap;
+    }
+
+    .welcome-cta-btn-outline:hover {
+        background: rgba(255,255,255,0.1);
+        border-color: rgba(255,255,255,0.6);
+    }
+
+    /* ── STATS ── */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: var(--shadow);
+        border-bottom: 3px solid var(--cream-dark);
+        transition: border-color 0.3s, transform 0.3s;
+        animation: fadeUp 0.5s ease both;
+    }
+
+    .stat-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+    .stat-card-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+
+    .stat-card-num {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.25rem;
+        font-weight: 600;
+        color: var(--sea);
+        line-height: 1;
+    }
+
+    .stat-card-label { font-size: 0.8125rem; color: var(--muted); margin-top: 0.25rem; }
+
+    /* ── TABS ── */
+    .dash-tabs {
+        display: flex;
+        gap: 0.25rem;
+        background: white;
+        border-radius: 8px;
+        padding: 0.35rem;
+        box-shadow: var(--shadow);
+        margin-bottom: 1.75rem;
+        overflow-x: auto;
+    }
+
+    .dash-tab {
+        padding: 0.6rem 1.25rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--muted);
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-family: 'Outfit', sans-serif;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+    .dash-tab.active { background: var(--sea); color: white; }
+    .dash-tab:hover:not(.active) { color: var(--sea); background: rgba(15,52,96,0.06); }
+
+    .tab-content { display: none; animation: fadeUp 0.35s ease both; }
+    .tab-content.active { display: block; }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+    }
+
+    .section-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--ink);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-title::before {
+        content: '';
+        width: 4px; height: 24px;
+        background: var(--gold);
+        border-radius: 2px;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+
+    .section-count {
+        font-size: 0.8125rem;
+        color: var(--muted);
+        background: var(--cream-dark);
+        padding: 0.2rem 0.65rem;
+        border-radius: 100px;
+    }
+
+    /* ── TRIPS GRID ── */
+    .trips-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .trip-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+        animation: fadeUp 0.5s ease both;
+    }
+
+    .trip-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-deep); }
+
+    .trip-card-visual {
+        height: 100px;
+        background: linear-gradient(135deg, var(--sea), #1a4f82);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.25rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .trip-card-visual::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at 90% 50%, rgba(201,168,76,0.2), transparent 60%);
+    }
+
+    .trip-card-dest {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.375rem;
+        font-weight: 600;
+        color: white;
+        position: relative;
+        z-index: 1;
+    }
+
+    .trip-card-icon { font-size: 2.5rem; position: relative; z-index: 1; }
+    .trip-card-body { padding: 1.25rem 1.5rem; }
+
+    .trip-card-meta {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 0.75rem;
+    }
+
+    .meta-chip {
+        font-size: 0.75rem;
+        font-weight: 500;
+        color: var(--sea);
+        background: rgba(15,52,96,0.07);
+        padding: 0.25rem 0.65rem;
+        border-radius: 100px;
+    }
+
+    .trip-card-date { font-size: 0.775rem; color: var(--muted); }
+
+    .trip-card-actions {
+        display: flex;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem 1.25rem;
+        border-top: 1px solid var(--cream-dark);
+        flex-wrap: wrap;
+    }
+
+    .trip-action-btn {
+        flex: 1;
+        padding: 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-align: center;
+        border-radius: var(--radius);
+        text-decoration: none;
+        transition: all 0.2s;
+        white-space: nowrap;
+        min-width: 80px;
+    }
+
+    .tap-primary { background: var(--sea); color: white; }
+    .tap-primary:hover { background: #0a2240; }
+    .tap-secondary { background: var(--cream); color: var(--sea); border: 1px solid var(--cream-dark); }
+    .tap-secondary:hover { border-color: var(--sea); }
+
+    /* ── BOOKINGS TABLE ── */
+    .table-wrap {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .data-table { width: 100%; border-collapse: collapse; }
+
+    .data-table th {
+        text-align: left;
+        padding: 1rem 1.5rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        background: var(--cream);
+        border-bottom: 1px solid var(--cream-dark);
+    }
+
+    .data-table td {
+        padding: 1.125rem 1.5rem;
+        border-bottom: 1px solid var(--cream-dark);
+        font-size: 0.9rem;
+        color: var(--ink);
+        vertical-align: middle;
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(15,52,96,0.02); }
+
+    .booking-dest { font-weight: 600; color: var(--sea); }
+
+    .booking-amount {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--sea);
+    }
+
+    .booking-breakdown {
+        font-size: 0.72rem;
+        color: var(--muted);
+        margin-top: 0.15rem;
+    }
+
+    /* ── BADGES ── */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 0.25rem 0.65rem;
+        border-radius: 2px;
+    }
+
+    .badge-confirmed { background: rgba(39,174,96,0.1);  color: #27ae60; border: 1px solid rgba(39,174,96,0.25); }
+    .badge-chat      { background: rgba(15,52,96,0.08);  color: var(--sea); border: 1px solid rgba(15,52,96,0.2); text-decoration: none; }
+    .badge-track     { background: rgba(201,168,76,0.1); color: #a07c20; border: 1px solid rgba(201,168,76,0.3); text-decoration: none; }
+    .badge-chat:hover  { background: rgba(15,52,96,0.15); }
+    .badge-track:hover { background: rgba(201,168,76,0.2); }
+
+    /* ── CHAT LIST ── */
+    .chat-list { display: flex; flex-direction: column; gap: 0.875rem; }
+
+    .chat-list-item {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.25s;
+        border: 1.5px solid transparent;
+    }
+
+    .chat-list-item:hover {
+        border-color: rgba(15,52,96,0.2);
+        transform: translateX(4px);
+    }
+
+    .chat-list-avatar {
+        width: 48px; height: 48px;
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .chat-list-info { flex: 1; min-width: 0; }
+
+    .chat-list-name {
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--ink);
+        margin-bottom: 0.2rem;
+    }
+
+    .chat-list-preview {
+        font-size: 0.8125rem;
+        color: var(--muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .chat-list-meta { flex-shrink: 0; text-align: right; }
+    .chat-list-time { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.3rem; }
+
+    .chat-paid-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #27ae60;
+        background: rgba(39,174,96,0.08);
+        border: 1px solid rgba(39,174,96,0.2);
+        border-radius: 100px;
+        padding: 0.2rem 0.6rem;
+    }
+
+    .chat-pkg-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: var(--gold);
+        background: rgba(201,168,76,0.1);
+        border: 1px solid rgba(201,168,76,0.25);
+        border-radius: 100px;
+        padding: 0.2rem 0.6rem;
+    }
+
+    .unread-dot {
+        width: 8px; height: 8px;
+        background: var(--sea);
+        border-radius: 50%;
+        margin-left: auto;
+    }
+
+    /* ── EMERGENCY ── */
+    .emergency-banner {
+        background: linear-gradient(135deg, #c0392b, #922b21);
+        border-radius: 12px;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        animation: fadeUp 0.5s ease both;
+    }
+
+    .emergency-left { display: flex; align-items: center; gap: 1rem; }
+    .emergency-icon { font-size: 1.75rem; }
+    .emergency-text strong { display: block; font-size: 0.875rem; font-weight: 700; color: white; margin-bottom: 0.2rem; }
+    .emergency-text span { font-size: 0.8rem; color: rgba(255,255,255,0.65); }
+
+    .emergency-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.625rem 1.25rem;
+        background: white;
+        color: #c0392b;
+        border-radius: var(--radius);
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: all 0.2s;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .emergency-btn:hover { background: #ffeaea; }
+
+    /* ── PACKAGES TAB ── */
+    .pkg-promo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 1.25rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .pkg-promo-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+
+    .pkg-promo-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-deep); }
+
+    .pkg-promo-img {
+        height: 130px;
+        background: linear-gradient(135deg, var(--sea), #1a4f82);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .pkg-promo-img img {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        object-fit: cover;
+    }
+
+    .pkg-promo-img-emoji { position: relative; z-index: 1; }
+
+    .pkg-promo-agency-badge {
+        position: absolute;
+        bottom: 0.6rem; left: 0.6rem;
+        background: rgba(0,0,0,0.55);
+        backdrop-filter: blur(4px);
+        border-radius: 100px;
+        padding: 0.15rem 0.5rem;
+        font-size: 0.65rem;
+        font-weight: 600;
+        color: white;
+        z-index: 2;
+    }
+
+    .pkg-promo-body { padding: 1rem 1.125rem; }
+    .pkg-promo-category { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.25rem; }
+
+    .pkg-promo-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 0.2rem;
+        line-height: 1.3;
+    }
+
+    .pkg-promo-dest { font-size: 0.775rem; color: var(--muted); margin-bottom: 0.625rem; }
+
+    .pkg-promo-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 0.625rem;
+        border-top: 1px solid var(--cream-dark);
+    }
+
+    .pkg-promo-price {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--sea);
+        line-height: 1;
+    }
+
+    .pkg-promo-price-sub { font-size: 0.62rem; color: var(--muted); margin-top: 0.1rem; }
+
+    .pkg-promo-actions { display: flex; gap: 0.35rem; }
+
+    .pkg-promo-btn {
+        padding: 0.4rem 0.75rem;
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .pkg-promo-btn-book { background: var(--sea); color: white; }
+    .pkg-promo-btn-book:hover { background: #0a2240; }
+    .pkg-promo-btn-chat { background: rgba(39,174,96,0.1); color: #27ae60; border: 1px solid rgba(39,174,96,0.25); }
+    .pkg-promo-btn-chat:hover { background: rgba(39,174,96,0.2); }
+
+    .packages-cta-bar {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        padding: 1.75rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+    }
+
+    .packages-cta-text strong {
+        display: block;
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 0.25rem;
+    }
+
+    .packages-cta-text span { font-size: 0.8375rem; color: var(--muted); }
+
+    /* ── EMPTY STATE ── */
+    .empty-dash {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+    }
+
+    .empty-dash-icon  { font-size: 3rem; margin-bottom: 1rem; }
+    .empty-dash-title { font-family: 'Cormorant Garamond', serif; font-size: 1.625rem; font-weight: 300; color: var(--ink); margin-bottom: 0.4rem; }
+    .empty-dash-desc  { font-size: 0.875rem; color: var(--muted); margin-bottom: 1.5rem; }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+        .welcome-banner { flex-direction: column; text-align: center; padding: 2rem 1.5rem; }
+        .welcome-cta { justify-content: center; }
+        .stats-row { grid-template-columns: repeat(2, 1fr); }
+        .table-wrap { overflow-x: auto; }
+        .packages-cta-bar { flex-direction: column; text-align: center; }
+    }
+
+    @media (max-width: 600px) {
+        .trips-grid { grid-template-columns: 1fr; }
+        .emergency-banner { flex-direction: column; text-align: center; }
+        .dashboard-container { padding: 0 1rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <div class="dashboard-container">
+
+        <!-- WELCOME BANNER -->
+        <div class="welcome-banner">
+            <div class="welcome-text">
+                <div class="welcome-greeting">✦ Your Dashboard</div>
+                <h1 class="welcome-title">Welcome back, <em>{{ request.user.first_name|default:request.user.username }}</em></h1>
+                <p class="welcome-sub">{{ trips|length }} trip{{ trips|length|pluralize }} planned · {{ bookings|length }} booking{{ bookings|length|pluralize }} confirmed</p>
+            </div>
+            <div class="welcome-cta">
+                <a href="{% url 'package_search' %}" class="welcome-cta-btn-outline">📦 Browse Packages</a>
+                <a href="{% url 'planner' %}" class="welcome-cta-btn">✦ Plan New Trip</a>
+            </div>
+        </div>
+
+        <!-- EMERGENCY CONTACT -->
+        <div class="emergency-banner">
+            <div class="emergency-left">
+                <div class="emergency-icon">🆘</div>
+                <div class="emergency-text">
+                    <strong>24/7 Emergency Travel Support</strong>
+                    <span>If you're in trouble during a trip, call us anytime — we'll help immediately.</span>
+                </div>
+            </div>
+            <a href="tel:+916295771697" class="emergency-btn">📞 +91 62957 71697</a>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-card-icon">🗺️</div>
+                <div class="stat-card-num">{{ trips|length }}</div>
+                <div class="stat-card-label">Trips Planned</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon">✅</div>
+                <div class="stat-card-num">{{ bookings|length }}</div>
+                <div class="stat-card-label">Bookings Made</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon">💰</div>
+                <div class="stat-card-num">₹{{ total_spent|default:"0" }}</div>
+                <div class="stat-card-label">Total Spent</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon">💬</div>
+                <div class="stat-card-num">{{ chatrooms|length|default:"0" }}</div>
+                <div class="stat-card-label">Active Chats</div>
+            </div>
+        </div>
+
+        <!-- TABS -->
+        <div class="dash-tabs">
+            <button class="dash-tab active" onclick="switchTab('trips', this)">🗺️ My Trips</button>
+            <button class="dash-tab" onclick="switchTab('bookings', this)">✅ Bookings</button>
+            <button class="dash-tab" onclick="switchTab('chats', this)">💬 Chats</button>
+            <button class="dash-tab" onclick="switchTab('packages', this)">📦 Browse Packages</button>
+        </div>
+
+        <!-- ── TAB: TRIPS ── -->
+        <div class="tab-content active" id="tab-trips">
+            <div class="section-header">
+                <h2 class="section-title">My Trips <span class="section-count">{{ trips|length }}</span></h2>
+                <a href="{% url 'planner' %}" style="font-size:0.875rem; color:var(--sea); text-decoration:none; font-weight:500;">+ New trip →</a>
+            </div>
+
+            {% if trips %}
+            <div class="trips-grid">
+                {% for trip in trips %}
+                <div class="trip-card">
+                    <div class="trip-card-visual">
+                        <div class="trip-card-dest">{{ trip.destination }}</div>
+                        <div class="trip-card-icon">
+                            {% if trip.travel_type == 'adventure' %}🏔️
+                            {% elif trip.travel_type == 'family' %}👨‍👩‍👧
+                            {% elif trip.travel_type == 'couple' %}💑
+                            {% elif trip.travel_type == 'luxury' %}✨
+                            {% elif trip.travel_type == 'business' %}💼
+                            {% else %}✈️{% endif %}
+                        </div>
+                    </div>
+                    <div class="trip-card-body">
+                        <div class="trip-card-meta">
+                            <span class="meta-chip">📅 {{ trip.days }} days</span>
+                            <span class="meta-chip">💰 ₹{{ trip.budget }}</span>
+                            <span class="meta-chip">👥 {{ trip.num_people|default:1 }}</span>
+                            <span class="meta-chip">{{ trip.travel_type|capfirst }}</span>
+                        </div>
+                        <div class="trip-card-date">Planned {{ trip.created_at|date:"N j, Y" }}</div>
+                    </div>
+                    <div class="trip-card-actions">
+                        <a href="{% url 'trip_detail' trip.id %}" class="trip-action-btn tap-primary">View Plan</a>
+                        <a href="{% url 'offers' trip.id %}" class="trip-action-btn tap-secondary">Offers</a>
+                        {% if trip.offer_set.count > 1 %}
+                        <a href="{% url 'compare_offers' trip.id %}" class="trip-action-btn tap-secondary">Compare</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-dash">
+                <div class="empty-dash-icon">🗺️</div>
+                <h3 class="empty-dash-title">No trips yet</h3>
+                <p class="empty-dash-desc">Start your first AI-powered journey!</p>
+                <a href="{% url 'planner' %}" class="btn btn-primary">✦ Plan My First Trip</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ── TAB: BOOKINGS ── -->
+        <div class="tab-content" id="tab-bookings">
+            <div class="section-header">
+                <h2 class="section-title">My Bookings <span class="section-count">{{ bookings|length }}</span></h2>
+            </div>
+
+            {% if bookings %}
+            <div class="table-wrap">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Destination / Package</th>
+                            <th>Agency</th>
+                            <th>Amount Paid</th>
+                            <th>GST (5%)</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr>
+                            <td style="color:var(--muted); font-size:0.8rem;">#TRV{{ booking.id|stringformat:"05d" }}</td>
+                            <td>
+                                {% if booking.offer %}
+                                    <div class="booking-dest">{{ booking.offer.trip.destination }}</div>
+                                    <div style="font-size:0.75rem; color:var(--muted);">
+                                        {{ booking.offer.trip.days }} days · ✈️ Trip offer
+                                    </div>
+                                {% elif booking.package %}
+                                    <div class="booking-dest">{{ booking.package.title }}</div>
+                                    <div style="font-size:0.75rem; color:var(--muted);">
+                                        📍 {{ booking.package.destination }} · {{ booking.package.duration }} days
+                                    </div>
+                                {% endif %}
+                            </td>
+                            <td style="font-size:0.875rem;">
+                                {% if booking.offer %}{{ booking.offer.agency.name }}
+                                {% elif booking.package %}{{ booking.package.agency.name }}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="booking-amount">₹{{ booking.total_amount }}</div>
+                                <div class="booking-breakdown">Base ₹{{ booking.base_amount }}</div>
+                            </td>
+                            <td style="font-size:0.8rem; color:var(--muted);">₹{{ booking.gst_amount|default:"—" }}</td>
+                            <td style="font-size:0.8rem; color:var(--muted);">{{ booking.created_at|date:"N j, Y" }}</td>
+                            <td><span class="badge badge-confirmed">✅ Confirmed</span></td>
+                            <td>
+                                <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                                    {% if booking.offer and booking.offer.chatroom %}
+                                        <a href="{% url 'chat_room' booking.offer.chatroom.id %}" class="badge badge-chat">💬 Chat</a>
+                                    {% elif booking.package %}
+                                        {% for room in booking.package.chatrooms.all %}
+                                            {% if room.user == request.user %}
+                                            <a href="{% url 'chat_room' room.id %}" class="badge badge-chat">💬 Chat</a>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                    <a href="{% url 'trip_tracking' booking.id %}" class="badge badge-track">📍 Track</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-dash">
+                <div class="empty-dash-icon">📋</div>
+                <h3 class="empty-dash-title">No bookings yet</h3>
+                <p class="empty-dash-desc">Book a package or accept an agency offer to see your bookings here.</p>
+                <a href="{% url 'package_search' %}" class="btn btn-primary">📦 Browse Packages</a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ── TAB: CHATS ── -->
+        <div class="tab-content" id="tab-chats">
+            <div class="section-header">
+                <h2 class="section-title">Active Chats <span class="section-count">{{ chatrooms|length|default:"0" }}</span></h2>
+            </div>
+
+            {% if chatrooms %}
+            <div class="chat-list">
+                {% for room in chatrooms %}
+                <a href="{% url 'chat_room' room.id %}" class="chat-list-item">
+                    <div class="chat-list-avatar">
+                        {% if room.package %}📦{% else %}🏢{% endif %}
+                    </div>
+                    <div class="chat-list-info">
+                        <div class="chat-list-name">{{ room.agency.name }}</div>
+                        <div class="chat-list-preview">
+                            {% if room.package %}
+                                📦 {{ room.package.title }} · {{ room.package.destination }}
+                            {% elif room.offer %}
+                                ✈️ {{ room.offer.trip.destination }} · {{ room.offer.trip.days }} days
+                            {% endif %}
+                            ·
+                            {% with last=room.messages.last %}
+                                {% if last %}{{ last.content|truncatechars:45 }}{% else %}No messages yet{% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                    <div class="chat-list-meta">
+                        <div class="chat-list-time">
+                            {% with last=room.messages.last %}
+                                {% if last %}{{ last.created_at|timesince }} ago{% endif %}
+                            {% endwith %}
+                        </div>
+                        {% if room.package %}
+                            <span class="chat-pkg-badge">📦 Package</span>
+                        {% elif room.offer and room.offer.booking.is_paid %}
+                            <span class="chat-paid-badge">🔓 Paid</span>
+                        {% else %}
+                            <div class="unread-dot"></div>
+                        {% endif %}
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-dash">
+                <div class="empty-dash-icon">💬</div>
+                <h3 class="empty-dash-title">No chats yet</h3>
+                <p class="empty-dash-desc">Approve an agency offer or tap Chat on any package to get started.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ── TAB: BROWSE PACKAGES ── -->
+        <div class="tab-content" id="tab-packages">
+            <div class="section-header">
+                <h2 class="section-title">Browse Packages</h2>
+                <a href="{% url 'package_search' %}" style="font-size:0.875rem; color:var(--sea); text-decoration:none; font-weight:500;">View all →</a>
+            </div>
+
+            {% if featured_packages %}
+            <div class="pkg-promo-grid">
+                {% for pkg in featured_packages %}
+                <div class="pkg-promo-card">
+                    <div class="pkg-promo-img">
+                        {% if pkg.image_url %}
+                        <img src="{{ pkg.image_url }}" alt="{{ pkg.title }}"
+                             onerror="this.style.display='none'">
+                        {% endif %}
+                        <span class="pkg-promo-img-emoji">
+                            {% if pkg.category == 'adventure' %}🏔️
+                            {% elif pkg.category == 'cultural' %}🏛️
+                            {% elif pkg.category == 'leisure' %}🌴
+                            {% elif pkg.category == 'romantic' %}💑
+                            {% elif pkg.category == 'family' %}👨‍👩‍👧
+                            {% elif pkg.category == 'luxury' %}✨
+                            {% elif pkg.category == 'solo' %}🎒
+                            {% else %}✈️{% endif %}
+                        </span>
+                        <div class="pkg-promo-agency-badge">🏢 {{ pkg.agency.name }}</div>
+                    </div>
+                    <div class="pkg-promo-body">
+                        <div class="pkg-promo-category">{{ pkg.get_category_display }}</div>
+                        <div class="pkg-promo-title">{{ pkg.title }}</div>
+                        <div class="pkg-promo-dest">📍 {{ pkg.destination }} · 📅 {{ pkg.duration }} days</div>
+                        <div class="pkg-promo-footer">
+                            <div>
+                                <div class="pkg-promo-price">₹{{ pkg.price }}</div>
+                                <div class="pkg-promo-price-sub">+ 5% GST per person</div>
+                            </div>
+                            <div class="pkg-promo-actions">
+                                <a href="{% url 'package_chat' pkg.id %}" class="pkg-promo-btn pkg-promo-btn-chat">💬 Chat</a>
+                                <a href="{% url 'package_book' pkg.id %}" class="pkg-promo-btn pkg-promo-btn-book">Book</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <div class="packages-cta-bar">
+                <div class="packages-cta-text">
+                    <strong>Find your perfect journey</strong>
+                    <span>Filter {{ featured_packages|length }}+ packages by destination, price, duration and travel style.</span>
+                </div>
+                <a href="{% url 'package_search' %}" class="btn btn-primary">🔍 Search All Packages</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.dash-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+}
+</script>
+{% endblock %}

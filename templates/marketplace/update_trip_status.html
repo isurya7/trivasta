@@ -1,0 +1,492 @@
+{% extends "base.html" %}
+{% block title %}Update Trip Status — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Outfit', sans-serif; }
+
+    .status-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        padding: 3rem 1rem 5rem;
+    }
+
+    .status-container { max-width: 860px; margin: 0 auto; }
+
+    /* Header */
+    .status-header {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 16px;
+        padding: 2.5rem 3rem;
+        margin-bottom: 1.75rem;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+    }
+
+    .status-header::before {
+        content: '';
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.07) 1px, transparent 1px);
+        background-size: 28px 28px;
+    }
+
+    .status-header-left { position: relative; z-index: 1; }
+    .status-eyebrow { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #e8c97a; margin-bottom: 0.4rem; }
+
+    .status-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.875rem;
+        font-weight: 300;
+        color: white;
+        margin-bottom: 0.3rem;
+    }
+
+    .status-title em { font-style: italic; color: #e8c97a; }
+    .status-sub { font-size: 0.85rem; color: rgba(255,255,255,0.5); }
+
+    .status-header-right { position: relative; z-index: 1; flex-shrink: 0; }
+
+    .current-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(201,168,76,0.15);
+        border: 1px solid rgba(201,168,76,0.35);
+        border-radius: var(--radius);
+        padding: 0.625rem 1.125rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #e8c97a;
+    }
+
+    /* Progress timeline */
+    .progress-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-label {
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-steps {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+
+    .progress-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: 1;
+        min-width: 70px;
+        position: relative;
+    }
+
+    .progress-step:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 16px;
+        left: 50%;
+        width: 100%;
+        height: 2px;
+        background: var(--cream-dark);
+        z-index: 0;
+    }
+
+    .progress-step.done:not(:last-child)::after { background: var(--sea); }
+
+    .step-dot {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        background: var(--cream-dark);
+        display: grid;
+        place-items: center;
+        font-size: 0.875rem;
+        position: relative;
+        z-index: 1;
+        transition: all 0.3s;
+        border: 2px solid var(--cream-dark);
+        flex-shrink: 0;
+    }
+
+    .progress-step.done .step-dot {
+        background: var(--sea);
+        border-color: var(--sea);
+    }
+
+    .progress-step.current .step-dot {
+        background: var(--gold);
+        border-color: var(--gold);
+        box-shadow: 0 0 0 4px rgba(201,168,76,0.2);
+    }
+
+    .step-label {
+        font-size: 0.6rem;
+        font-weight: 600;
+        color: var(--muted);
+        text-align: center;
+        margin-top: 0.4rem;
+        line-height: 1.3;
+    }
+
+    .progress-step.done .step-label,
+    .progress-step.current .step-label { color: var(--ink); }
+
+    /* Update form */
+    .update-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .update-card-header {
+        background: var(--cream);
+        padding: 1.25rem 1.75rem;
+        border-bottom: 1px solid var(--cream-dark);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .update-card-header::before {
+        content: '';
+        width: 3px; height: 14px;
+        background: var(--gold);
+        border-radius: 2px;
+    }
+
+    .update-card-body { padding: 1.75rem; }
+
+    /* Status grid */
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .status-option {
+        position: relative;
+    }
+
+    .status-option input[type="radio"] {
+        position: absolute;
+        opacity: 0;
+        width: 0; height: 0;
+    }
+
+    .status-option label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 1rem 0.5rem;
+        background: var(--cream);
+        border: 2px solid var(--cream-dark);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
+    }
+
+    .status-option label:hover {
+        border-color: rgba(15,52,96,0.3);
+        background: white;
+    }
+
+    .status-option input:checked + label {
+        border-color: var(--sea);
+        background: rgba(15,52,96,0.05);
+        box-shadow: 0 0 0 3px rgba(15,52,96,0.1);
+    }
+
+    .status-emoji { font-size: 1.375rem; }
+
+    .status-name {
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--ink);
+        line-height: 1.3;
+    }
+
+    /* Note textarea */
+    .note-field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.25rem; }
+
+    .note-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .note-input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 1.5px solid var(--cream-dark);
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9375rem;
+        color: var(--ink);
+        background: var(--cream);
+        outline: none;
+        resize: vertical;
+        min-height: 100px;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+    .note-input:focus { border-color: var(--sea); background: white; box-shadow: 0 0 0 3px rgba(15,52,96,0.08); }
+
+    .note-hint { font-size: 0.75rem; color: var(--muted); }
+
+    .form-actions { display: flex; gap: 1rem; justify-content: flex-end; }
+
+    /* History timeline */
+    .history-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .history-header {
+        background: var(--cream);
+        padding: 1.25rem 1.75rem;
+        border-bottom: 1px solid var(--cream-dark);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .history-header::before {
+        content: '';
+        width: 3px; height: 14px;
+        background: var(--gold);
+        border-radius: 2px;
+    }
+
+    .history-body { padding: 1.75rem; }
+
+    .timeline { position: relative; }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px; top: 0; bottom: 0;
+        width: 2px;
+        background: var(--cream-dark);
+    }
+
+    .timeline-item {
+        display: flex;
+        gap: 1.25rem;
+        padding-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .timeline-item:last-child { padding-bottom: 0; }
+
+    .timeline-dot {
+        width: 32px; height: 32px;
+        border-radius: 50%;
+        background: var(--sea);
+        display: grid;
+        place-items: center;
+        font-size: 0.875rem;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+        border: 3px solid white;
+        box-shadow: 0 0 0 2px var(--sea);
+    }
+
+    .timeline-content { flex: 1; padding-top: 0.25rem; }
+
+    .timeline-status {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: var(--ink);
+        margin-bottom: 0.2rem;
+    }
+
+    .timeline-note { font-size: 0.85rem; color: var(--muted); line-height: 1.6; margin-bottom: 0.3rem; }
+
+    .timeline-time {
+        font-size: 0.72rem;
+        color: var(--muted);
+    }
+
+    .empty-history { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.875rem; }
+
+    @media (max-width: 640px) {
+        .status-grid { grid-template-columns: repeat(2, 1fr); }
+        .status-header { flex-direction: column; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="status-page">
+    <div class="status-container">
+
+        <!-- Header -->
+        <div class="status-header">
+            <div class="status-header-left">
+                <div class="status-eyebrow">📍 Trip Management</div>
+                <div class="status-title">
+                    Update <em>{% if booking.offer %}{{ booking.offer.trip.destination }}{% elif booking.package %}{{ booking.package.title }}{% else %}Booking #{{ booking.id }}{% endif %}</em>
+                </div>
+                <div class="status-sub">
+                    Booking #TRV{{ booking.id|stringformat:"05d" }} ·
+                    {{ booking.user.username }}
+                </div>
+            </div>
+            <div class="status-header-right">
+                <div class="current-status-badge">
+                    {{ trip_status.get_status_display|default:"✅ Booking Confirmed" }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress bar -->
+        <div class="progress-card">
+            <div class="progress-label">Trip Progress</div>
+            <div class="progress-steps">
+                {% with current=trip_status.status|default:"confirmed" %}
+                {% for val, label in choices %}
+                {% if val != 'cancelled' %}
+                <div class="progress-step
+                    {% if val == current %}current
+                    {% elif forloop.counter < choices|length %}done{% endif %}">
+                    <div class="step-dot">
+                        {% if val == 'confirmed' %}✅
+                        {% elif val == 'preparing' %}📋
+                        {% elif val == 'documents' %}📄
+                        {% elif val == 'departing' %}🚀
+                        {% elif val == 'on_trip' %}🗺️
+                        {% elif val == 'returning' %}🏠
+                        {% elif val == 'completed' %}🎉
+                        {% else %}•{% endif %}
+                    </div>
+                    <div class="step-label">{{ label|slice:"3:" }}</div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                {% endwith %}
+            </div>
+        </div>
+
+        <!-- Update form -->
+        <div class="update-card">
+            <div class="update-card-header">Select New Status</div>
+            <div class="update-card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="status-grid">
+                        {% for val, label in choices %}
+                        <div class="status-option">
+                            <input type="radio" name="status" id="s_{{ val }}" value="{{ val }}"
+                                   {% if trip_status.status == val %}checked{% endif %}>
+                            <label for="s_{{ val }}">
+                                <span class="status-emoji">
+                                    {% if val == 'confirmed' %}✅
+                                    {% elif val == 'preparing' %}📋
+                                    {% elif val == 'documents' %}📄
+                                    {% elif val == 'departing' %}🚀
+                                    {% elif val == 'on_trip' %}🗺️
+                                    {% elif val == 'returning' %}🏠
+                                    {% elif val == 'completed' %}🎉
+                                    {% elif val == 'cancelled' %}❌
+                                    {% endif %}
+                                </span>
+                                <span class="status-name">{{ label|slice:"3:" }}</span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="note-field">
+                        <label class="note-label">Message to Traveler (optional)</label>
+                        <textarea class="note-input" name="note"
+                                  placeholder="e.g. Your documents are ready. Please check your email for the itinerary PDF.">{{ trip_status.note }}</textarea>
+                        <span class="note-hint">This message appears in the chat and on the traveler's tracking page.</span>
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="{% url 'agency_dashboard' %}" class="btn btn-outline">← Back</a>
+                        <button type="submit" class="btn btn-primary">✦ Update Status</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div class="history-card">
+            <div class="history-header">Update History</div>
+            <div class="history-body">
+                {% if history %}
+                <div class="timeline">
+                    {% for update in history %}
+                    <div class="timeline-item">
+                        <div class="timeline-dot">
+                            {% if update.status == 'confirmed' %}✅
+                            {% elif update.status == 'preparing' %}📋
+                            {% elif update.status == 'documents' %}📄
+                            {% elif update.status == 'departing' %}🚀
+                            {% elif update.status == 'on_trip' %}🗺️
+                            {% elif update.status == 'returning' %}🏠
+                            {% elif update.status == 'completed' %}🎉
+                            {% elif update.status == 'cancelled' %}❌
+                            {% endif %}
+                        </div>
+                        <div class="timeline-content">
+                            <div class="timeline-status">{{ update.get_status_display }}</div>
+                            {% if update.note %}
+                            <div class="timeline-note">{{ update.note }}</div>
+                            {% endif %}
+                            <div class="timeline-time">{{ update.created_at|date:"N j, Y" }} at {{ update.created_at|time:"h:i A" }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="empty-history">No updates recorded yet.</div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,200 @@
+{% extends "base.html" %}
+{% block title %}Request Refund — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600&display=swap');
+    :root { --font-display:'Cormorant Garamond',Georgia,serif; --font-body:'Outfit',sans-serif; }
+    * { font-family: var(--font-body); }
+    body { background: var(--cream); }
+
+    .rf-page { min-height: calc(100vh - 68px); padding: 3rem 1.5rem 5rem; }
+    .rf-inner { max-width: 640px; margin: 0 auto; }
+
+    /* Back link */
+    .back-link { display: inline-flex; align-items: center; gap: .5rem; color: var(--muted); font-size: .875rem; text-decoration: none; margin-bottom: 1.5rem; transition: color .2s; }
+    .back-link:hover { color: var(--sea); }
+
+    /* Hero banner */
+    .rf-hero {
+        background: linear-gradient(135deg, #92400e 0%, #78350f 100%);
+        border-radius: 16px; padding: 2.5rem; margin-bottom: 2rem;
+        position: relative; overflow: hidden; text-align: center;
+    }
+    .rf-hero::before {
+        content: '💰'; position: absolute; right: 2rem; top: 50%;
+        transform: translateY(-50%); font-size: 6rem; opacity: .08; pointer-events: none;
+    }
+    .rf-hero-inner { position: relative; z-index: 1; }
+    .rf-eyebrow { font-size: .68rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #fde68a; margin-bottom: .5rem; }
+    .rf-amount { font-family: var(--font-display); font-size: 3.5rem; font-weight: 700; color: #fde68a; line-height: 1; margin-bottom: .25rem; }
+    .rf-amount-label { font-size: .875rem; color: rgba(255,255,255,.5); }
+    .rf-booking-ref { margin-top: 1rem; background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12); border-radius: 8px; padding: .5rem 1.25rem; display: inline-block; font-size: .8125rem; color: rgba(255,255,255,.6); }
+
+    /* Booking summary card */
+    .summary-card {
+        background: white; border-radius: 14px;
+        box-shadow: 0 4px 24px rgba(13,17,23,.08);
+        overflow: hidden; margin-bottom: 1.5rem;
+    }
+    .card-header {
+        background: var(--cream); border-bottom: 1px solid var(--cream-dark);
+        padding: 1.1rem 1.5rem; display: flex; align-items: center; gap: .5rem;
+    }
+    .card-header::before { content: ''; width: 3px; height: 14px; background: var(--gold); border-radius: 2px; }
+    .card-header h3 { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0; }
+    .card-body { padding: 1.5rem; }
+
+    .summary-row { display: flex; justify-content: space-between; align-items: flex-start; padding: .625rem 0; border-bottom: 1px solid #f5f0e8; font-size: .875rem; gap: 1rem; }
+    .summary-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .summary-row.total { padding-top: .875rem; border-top: 2px solid var(--cream-dark); border-bottom: none; margin-top: .25rem; }
+    .sr-label { color: var(--muted); flex-shrink: 0; }
+    .sr-value { font-weight: 600; color: var(--ink); text-align: right; }
+    .sr-value.highlight { font-family: var(--font-display); font-size: 1.25rem; color: var(--sea); }
+
+    /* Warning */
+    .warning-box {
+        background: #fffbeb; border: 1px solid #fde68a; border-left: 3px solid #f59e0b;
+        border-radius: 10px; padding: 1rem 1.25rem;
+        font-size: .875rem; color: #92400e; margin-bottom: 1.5rem;
+        display: flex; gap: .75rem; align-items: flex-start;
+    }
+
+    /* Form card */
+    .form-card { background: white; border-radius: 14px; box-shadow: 0 4px 24px rgba(13,17,23,.08); overflow: hidden; }
+
+    .field { margin-bottom: 1.1rem; }
+    .field label { display: block; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); margin-bottom: .5rem; }
+    .field label .req { color: #e74c3c; margin-left: 2px; }
+    .field input, .field select, .field textarea {
+        width: 100%; box-sizing: border-box; padding: .875rem 1rem;
+        border: 1.5px solid var(--cream-dark); border-radius: 8px;
+        font-family: var(--font-body); font-size: .9375rem; color: var(--ink);
+        background: #faf7f2; outline: none; transition: all .2s;
+        appearance: none; -webkit-appearance: none;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--sea); background: white; box-shadow: 0 0 0 3px rgba(15,52,96,.08); }
+    .field input::placeholder, .field textarea::placeholder { color: #b0aaa0; }
+    .field .hint { font-size: .75rem; color: var(--muted); margin-top: .35rem; }
+
+    /* Amount input with ₹ */
+    .amount-wrap { position: relative; }
+    .amount-wrap .rupee { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); font-size: 1rem; font-weight: 700; color: var(--sea); pointer-events: none; }
+    .amount-wrap input { padding-left: 2rem; font-size: 1.125rem; font-weight: 600; }
+
+    .btn-submit {
+        width: 100%; padding: 1.1rem; background: linear-gradient(135deg, #92400e, #78350f);
+        color: white; border: none; border-radius: 10px; font-family: var(--font-body);
+        font-size: 1rem; font-weight: 600; cursor: pointer; transition: all .3s;
+        display: flex; align-items: center; justify-content: center; gap: .5rem;
+    }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(120,53,15,.35); }
+
+    /* Process info */
+    .process-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    @media(max-width:500px) { .process-steps { grid-template-columns: 1fr; } }
+    .ps-item { background: white; border: 1px solid var(--cream-dark); border-radius: 12px; padding: 1.25rem 1rem; text-align: center; }
+    .ps-icon { font-size: 1.5rem; margin-bottom: .5rem; }
+    .ps-title { font-size: .8rem; font-weight: 700; color: var(--ink); margin-bottom: .25rem; }
+    .ps-desc  { font-size: .72rem; color: var(--muted); line-height: 1.4; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rf-page">
+<div class="rf-inner">
+
+    <a href="{% url 'support_chat' %}" class="back-link">← Back to Support</a>
+
+    <!-- Hero -->
+    <div class="rf-hero">
+        <div class="rf-hero-inner">
+            <div class="rf-eyebrow">Refund Request</div>
+            <div class="rf-amount">₹{{ booking.total_amount|floatformat:0 }}</div>
+            <div class="rf-amount-label">Maximum refundable amount</div>
+            <div class="rf-booking-ref">Booking #{{ booking.id }}</div>
+        </div>
+    </div>
+
+    <!-- Process timeline -->
+    <div class="process-steps">
+        <div class="ps-item">
+            <div class="ps-icon">📋</div>
+            <div class="ps-title">Submit Request</div>
+            <div class="ps-desc">Fill the form below and submit</div>
+        </div>
+        <div class="ps-item">
+            <div class="ps-icon">👤</div>
+            <div class="ps-title">Team Reviews</div>
+            <div class="ps-desc">Our team reviews within 2 hours</div>
+        </div>
+        <div class="ps-item">
+            <div class="ps-icon">💸</div>
+            <div class="ps-title">Refund Sent</div>
+            <div class="ps-desc">Back to original payment in 5–7 days</div>
+        </div>
+    </div>
+
+    <!-- Booking summary -->
+    <div class="summary-card">
+        <div class="card-header"><h3>Booking Details</h3></div>
+        <div class="card-body">
+            {% if booking.package %}
+            <div class="summary-row"><span class="sr-label">Package</span><span class="sr-value">{{ booking.package.title }}</span></div>
+            <div class="summary-row"><span class="sr-label">Agency</span><span class="sr-value">{{ booking.package.agency.name }}</span></div>
+            {% elif booking.offer %}
+            <div class="summary-row"><span class="sr-label">Destination</span><span class="sr-value">{{ booking.offer.trip.destination }}</span></div>
+            <div class="summary-row"><span class="sr-label">Agency</span><span class="sr-value">{{ booking.offer.agency.name }}</span></div>
+            {% endif %}
+            <div class="summary-row"><span class="sr-label">Base Amount</span><span class="sr-value">₹{{ booking.base_amount|floatformat:0 }}</span></div>
+            <div class="summary-row"><span class="sr-label">GST (5%)</span><span class="sr-value">₹{{ booking.gst_amount|floatformat:0 }}</span></div>
+            <div class="summary-row total"><span class="sr-label">Total Paid</span><span class="sr-value highlight">₹{{ booking.total_amount|floatformat:0 }}</span></div>
+        </div>
+    </div>
+
+    <div class="warning-box">
+        ⚠️ <div>Refunds are subject to review. The refund will be credited to your <strong>original payment method</strong> (UPI, card, or net banking). Razorpay transaction fees are non-refundable.</div>
+    </div>
+
+    <!-- Refund form -->
+    <div class="form-card">
+        <div class="card-header"><h3>Refund Details</h3></div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="field">
+                    <label>Reason for Refund <span class="req">*</span></label>
+                    <select name="reason" required>
+                        {% for val, label in reasons %}<option value="{{ val }}">{{ label }}</option>{% endfor %}
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label>Refund Amount <span class="req">*</span></label>
+                    <div class="amount-wrap">
+                        <span class="rupee">₹</span>
+                        <input type="number" name="amount"
+                               value="{{ booking.total_amount }}"
+                               min="1" max="{{ booking.total_amount }}"
+                               required>
+                    </div>
+                    <p class="hint">Maximum: ₹{{ booking.total_amount|floatformat:0 }} · Enter a lower amount for partial refund</p>
+                </div>
+
+                <div class="field">
+                    <label>Additional Details</label>
+                    <textarea name="description" rows="4"
+                              placeholder="Describe why you're requesting a refund. The more detail, the faster we can process it."></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    💰 Submit Refund Request
+                </button>
+            </form>
+        </div>
+    </div>
+
+</div>
+</div>
+{% endblock %}

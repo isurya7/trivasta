@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% block title %}Process Refund #{{ refund.id }} — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,700&family=Outfit:wght@300;400;500;600&display=swap');
+    :root { --font-display:'Cormorant Garamond',Georgia,serif; --font-body:'Outfit',sans-serif; }
+    * { font-family: var(--font-body); }
+    body { background: var(--cream); }
+
+    .pr-page { min-height: calc(100vh - 68px); padding: 3rem 1.5rem 5rem; }
+    .pr-inner { max-width: 660px; margin: 0 auto; }
+
+    .back-link { display: inline-flex; align-items: center; gap: .5rem; color: var(--muted); font-size: .875rem; text-decoration: none; margin-bottom: 1.5rem; transition: color .2s; }
+    .back-link:hover { color: var(--sea); }
+
+    /* Amount hero */
+    .amount-hero {
+        background: linear-gradient(135deg, #78350f 0%, #451a03 100%);
+        border-radius: 16px; padding: 2.5rem; margin-bottom: 2rem;
+        text-align: center; position: relative; overflow: hidden;
+    }
+    .amount-hero::before {
+        content: ''; position: absolute; inset: 0;
+        background-image: linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
+                          linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+        background-size: 28px 28px;
+    }
+    .ah-inner  { position: relative; z-index: 1; }
+    .ah-label  { font-size: .68rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: rgba(253,230,138,.6); margin-bottom: .5rem; }
+    .ah-amount { font-family: var(--font-display); font-size: 4rem; font-weight: 700; color: #fde68a; line-height: 1; margin-bottom: .35rem; }
+    .ah-sub    { font-size: .875rem; color: rgba(255,255,255,.4); }
+
+    .ah-status { margin-top: 1.25rem; }
+    .status-pill-done { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 20px; display: inline-flex; align-items: center; gap: .4rem; padding: .4rem 1.1rem; font-size: .8rem; font-weight: 700; color: #166534; }
+    .status-pill-reject { background: #fef2f2; border: 1px solid #fecaca; border-radius: 20px; display: inline-flex; align-items: center; gap: .4rem; padding: .4rem 1.1rem; font-size: .8rem; font-weight: 700; color: #991b1b; }
+
+    /* Cards */
+    .detail-card { background: white; border-radius: 14px; box-shadow: 0 4px 24px rgba(13,17,23,.08); overflow: hidden; margin-bottom: 1.25rem; }
+    .card-header { background: var(--cream); border-bottom: 1px solid var(--cream-dark); padding: 1.1rem 1.5rem; display: flex; align-items: center; gap: .5rem; }
+    .card-header::before { content: ''; width: 3px; height: 14px; background: var(--gold); border-radius: 2px; }
+    .card-header h3 { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0; }
+    .card-body { padding: 1.5rem; }
+
+    .detail-row { display: flex; justify-content: space-between; align-items: flex-start; padding: .625rem 0; border-bottom: 1px solid #f5f0e8; font-size: .875rem; gap: 1rem; }
+    .detail-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .dr-label { color: var(--muted); flex-shrink: 0; }
+    .dr-value { font-weight: 600; color: var(--ink); text-align: right; }
+    .dr-value.mono { font-family: monospace; font-size: .8rem; color: var(--sea); }
+
+    /* Warning */
+    .warning-box { background: #fffbeb; border: 1px solid #fde68a; border-left: 3px solid #f59e0b; border-radius: 10px; padding: 1rem 1.25rem; font-size: .875rem; color: #92400e; margin-bottom: 1.25rem; display: flex; gap: .75rem; align-items: flex-start; line-height: 1.6; }
+
+    /* Buttons */
+    .btn-approve {
+        width: 100%; padding: 1.1rem; background: linear-gradient(135deg,#059669,#047857);
+        color: white; border: none; border-radius: 10px; font-family: var(--font-body);
+        font-size: 1rem; font-weight: 700; cursor: pointer; transition: all .3s;
+        display: flex; align-items: center; justify-content: center; gap: .5rem;
+        margin-bottom: .75rem;
+    }
+    .btn-approve:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(5,150,105,.35); }
+
+    .btn-reject {
+        width: 100%; padding: 1rem; background: white;
+        color: #dc2626; border: 1.5px solid #fecaca; border-radius: 10px;
+        font-family: var(--font-body); font-size: .9375rem; font-weight: 600;
+        cursor: pointer; transition: all .2s;
+        display: flex; align-items: center; justify-content: center; gap: .5rem;
+    }
+    .btn-reject:hover { background: #fef2f2; border-color: #dc2626; }
+
+    .field { margin-bottom: 1rem; }
+    .field label { display: block; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); margin-bottom: .5rem; }
+    .field textarea { width: 100%; box-sizing: border-box; padding: .875rem 1rem; border: 1.5px solid var(--cream-dark); border-radius: 8px; font-family: var(--font-body); font-size: .9375rem; color: var(--ink); background: #faf7f2; outline: none; transition: all .2s; resize: vertical; }
+    .field textarea:focus { border-color: #dc2626; background: white; box-shadow: 0 0 0 3px rgba(220,38,38,.08); }
+
+    /* Already processed */
+    .done-notice { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; padding: 2rem; text-align: center; color: #166534; }
+    .done-notice .dn-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+    .done-notice h3 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 300; margin-bottom: .5rem; }
+    .done-notice .dn-ref { font-family: monospace; font-size: .8rem; color: #065f46; background: #dcfce7; border-radius: 6px; padding: .3rem .75rem; display: inline-block; margin-top: .5rem; }
+
+    .rejected-notice { background: #fef2f2; border: 1px solid #fecaca; border-radius: 14px; padding: 2rem; text-align: center; color: #991b1b; }
+    .rejected-notice .rn-icon { font-size: 2.5rem; margin-bottom: .75rem; }
+    .rejected-notice h3 { font-family: var(--font-display); font-size: 1.5rem; font-weight: 300; margin-bottom: .5rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pr-page">
+<div class="pr-inner">
+
+    <a href="{% url 'refund_dashboard' %}" class="back-link">← Back to Refund Dashboard</a>
+
+    <!-- Amount hero -->
+    <div class="amount-hero">
+        <div class="ah-inner">
+            <div class="ah-label">Refund #{{ refund.id }}</div>
+            <div class="ah-amount">₹{{ refund.amount|floatformat:0 }}</div>
+            <div class="ah-sub">Booking #{{ booking.id }} · {{ booking.user.email }}</div>
+            {% if refund.status == 'processed' %}
+            <div class="ah-status"><span class="status-pill-done">✅ Already Processed</span></div>
+            {% elif refund.status == 'rejected' %}
+            <div class="ah-status"><span class="status-pill-reject">✕ Rejected</span></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Booking details -->
+    <div class="detail-card">
+        <div class="card-header"><h3>Booking Details</h3></div>
+        <div class="card-body">
+            <div class="detail-row"><span class="dr-label">User</span><span class="dr-value">{{ booking.user.get_full_name|default:booking.user.username }}</span></div>
+            <div class="detail-row"><span class="dr-label">Email</span><span class="dr-value">{{ booking.user.email }}</span></div>
+            {% if booking.package %}
+            <div class="detail-row"><span class="dr-label">Package</span><span class="dr-value">{{ booking.package.title }}</span></div>
+            {% elif booking.offer %}
+            <div class="detail-row"><span class="dr-label">Destination</span><span class="dr-value">{{ booking.offer.trip.destination }}</span></div>
+            {% endif %}
+            <div class="detail-row"><span class="dr-label">Amount Paid</span><span class="dr-value">₹{{ booking.total_amount|floatformat:0 }}</span></div>
+            <div class="detail-row"><span class="dr-label">Payment ID</span><span class="dr-value mono">{{ booking.razorpay_payment_id|default:"—" }}</span></div>
+            <div class="detail-row"><span class="dr-label">Booking Date</span><span class="dr-value">{{ booking.created_at|date:"M j, Y" }}</span></div>
+        </div>
+    </div>
+
+    <!-- Refund details -->
+    <div class="detail-card">
+        <div class="card-header"><h3>Refund Request</h3></div>
+        <div class="card-body">
+            <div class="detail-row"><span class="dr-label">Reason</span><span class="dr-value">{{ refund.get_reason_display }}</span></div>
+            <div class="detail-row"><span class="dr-label">Requested By</span><span class="dr-value">{{ refund.requested_by.get_full_name|default:refund.requested_by.username }}</span></div>
+            <div class="detail-row"><span class="dr-label">Requested At</span><span class="dr-value">{{ refund.created_at|date:"M j, Y · g:i A" }}</span></div>
+            {% if refund.description %}
+            <div class="detail-row" style="flex-direction:column;gap:.4rem">
+                <span class="dr-label">User's Description</span>
+                <span style="font-size:.875rem;color:#444;line-height:1.6;background:#faf7f2;border-radius:8px;padding:.75rem;display:block">{{ refund.description }}</span>
+            </div>
+            {% endif %}
+            {% if refund.status == 'processed' and refund.razorpay_refund_id %}
+            <div class="detail-row"><span class="dr-label">Razorpay Refund ID</span><span class="dr-value mono">{{ refund.razorpay_refund_id }}</span></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Actions -->
+    {% if refund.status == 'processed' %}
+    <div class="done-notice">
+        <div class="dn-icon">✅</div>
+        <h3>Refund processed successfully</h3>
+        <p style="font-size:.875rem;color:#065f46">The refund has been sent to the user's original payment method.</p>
+        {% if refund.razorpay_refund_id %}<div class="dn-ref">{{ refund.razorpay_refund_id }}</div>{% endif %}
+    </div>
+
+    {% elif refund.status == 'rejected' %}
+    <div class="rejected-notice">
+        <div class="rn-icon">✕</div>
+        <h3>Refund was rejected</h3>
+        {% if refund.rejection_reason %}<p style="font-size:.875rem">Reason: {{ refund.rejection_reason }}</p>{% endif %}
+    </div>
+
+    {% else %}
+    <!-- Pending — show approve / reject -->
+    <div class="warning-box">
+        ⚠️ <div>Approving will <strong>immediately call the Razorpay API</strong> and send ₹{{ refund.amount|floatformat:0 }} back to the user's original payment method. This action <strong>cannot be undone</strong>.</div>
+    </div>
+
+    <!-- APPROVE -->
+    <div class="detail-card">
+        <div class="card-header"><h3>Approve &amp; Process Refund</h3></div>
+        <div class="card-body">
+            <form method="post" onsubmit="return confirm('Send ₹{{ refund.amount }} refund to {{ booking.user.email }}? This cannot be undone.')">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="approve">
+                <button type="submit" class="btn-approve">
+                    ✓ Approve &amp; Send Refund — ₹{{ refund.amount|floatformat:0 }}
+                </button>
+                <p style="text-align:center;font-size:.75rem;color:var(--muted);margin-top:.5rem">Refund will reach user within 5–7 business days via Razorpay.</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- REJECT -->
+    <div class="detail-card">
+        <div class="card-header"><h3>Reject Refund Request</h3></div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="reject">
+                <div class="field">
+                    <label>Reason for Rejection <span style="font-weight:400;text-transform:none;letter-spacing:0">(required)</span></label>
+                    <textarea name="rejection_reason" rows="3"
+                              placeholder="Explain clearly why this refund is being rejected. The user will see this message." required></textarea>
+                </div>
+                <button type="submit" class="btn-reject">✕ Reject Refund Request</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+</div>
+{% endblock %}

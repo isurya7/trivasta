@@ -1,0 +1,546 @@
+{% extends "base.html" %}
+{% block title %}Track Trip — {{ booking.offer.trip.destination }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    .track-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        padding: 3rem 2rem;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .track-inner {
+        max-width: 720px;
+        margin: 0 auto;
+    }
+
+    /* ── HEADER ── */
+    .track-hero {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 20px;
+        padding: 2.5rem 3rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .track-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.07) 1px, transparent 1px);
+        background-size: 32px 32px;
+    }
+
+    .track-hero-content { position: relative; z-index: 1; }
+
+    .track-eyebrow {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #e8c97a;
+        margin-bottom: 0.5rem;
+    }
+
+    .track-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(1.75rem, 4vw, 2.5rem);
+        font-weight: 300;
+        color: white;
+        line-height: 1.1;
+        margin-bottom: 0.4rem;
+    }
+
+    .track-title em { font-style: italic; color: #e8c97a; }
+    .track-sub { font-size: 0.9rem; color: rgba(255,255,255,0.5); }
+
+    .track-meta-pills {
+        display: flex;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+        margin-top: 1.25rem;
+    }
+
+    .track-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 100px;
+        padding: 0.35rem 0.875rem;
+        font-size: 0.775rem;
+        color: rgba(255,255,255,0.75);
+    }
+
+    /* ── STATUS STEPS ── */
+    .status-steps-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: var(--shadow);
+        margin-bottom: 1.5rem;
+    }
+
+    .steps-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.375rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 1.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .steps-title::before {
+        content: '';
+        width: 4px; height: 22px;
+        background: var(--gold);
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+
+    .steps-track {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .step-item {
+        display: flex;
+        gap: 1.25rem;
+        position: relative;
+    }
+
+    .step-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: 23px;
+        top: 48px;
+        height: calc(100% - 24px);
+        width: 2px;
+        background: var(--cream-dark);
+    }
+
+    .step-item.done:not(:last-child)::after {
+        background: linear-gradient(to bottom, var(--sea), var(--cream-dark));
+    }
+
+    .step-dot {
+        width: 48px; height: 48px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+        transition: all 0.3s;
+    }
+
+    .step-dot.done {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        box-shadow: 0 4px 12px rgba(15,52,96,0.3);
+    }
+
+    .step-dot.active {
+        background: linear-gradient(135deg, var(--gold), #b8860b);
+        box-shadow: 0 4px 16px rgba(201,168,76,0.4);
+        animation: activePulse 2s infinite;
+    }
+
+    .step-dot.pending {
+        background: var(--cream);
+        border: 2px solid var(--cream-dark);
+        font-size: 0.875rem;
+        color: var(--muted);
+    }
+
+    @keyframes activePulse {
+        0%,100% { box-shadow: 0 4px 16px rgba(201,168,76,0.4); }
+        50%      { box-shadow: 0 4px 28px rgba(201,168,76,0.7); }
+    }
+
+    .step-body {
+        flex: 1;
+        padding-bottom: 2rem;
+    }
+
+    .step-name {
+        font-weight: 600;
+        font-size: 0.9375rem;
+        color: var(--ink);
+        margin-bottom: 0.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .step-name.active-name { color: var(--sea); }
+    .step-name.pending-name { color: var(--muted); font-weight: 400; }
+
+    .active-tag {
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        background: var(--gold);
+        color: var(--ink);
+        padding: 0.15rem 0.5rem;
+        border-radius: 2px;
+    }
+
+    .step-note {
+        font-size: 0.8375rem;
+        color: var(--muted);
+        line-height: 1.6;
+        margin-bottom: 0.3rem;
+    }
+
+    .step-time {
+        font-size: 0.72rem;
+        color: var(--muted);
+    }
+
+    /* ── CURRENT STATUS BANNER ── */
+    .current-banner {
+        background: linear-gradient(135deg, rgba(15,52,96,0.08), rgba(15,52,96,0.04));
+        border: 1px solid rgba(15,52,96,0.15);
+        border-radius: 14px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        animation: fadeUp 0.5s ease both;
+    }
+
+    .cb-icon {
+        width: 56px; height: 56px;
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+        animation: activePulse 2.5s infinite;
+    }
+
+    .cb-eyebrow {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.25rem;
+    }
+
+    .cb-status {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--sea);
+        margin-bottom: 0.2rem;
+    }
+
+    .cb-note {
+        font-size: 0.875rem;
+        color: var(--muted);
+        line-height: 1.55;
+    }
+
+    /* ── QUICK ACTIONS ── */
+    .quick-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .qa-card {
+        background: white;
+        border-radius: 14px;
+        padding: 1.25rem;
+        box-shadow: var(--shadow);
+        text-decoration: none;
+        color: inherit;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border: 1.5px solid transparent;
+        transition: all 0.25s;
+    }
+
+    .qa-card:hover {
+        border-color: rgba(15,52,96,0.2);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-deep);
+    }
+
+    .qa-icon {
+        width: 44px; height: 44px;
+        border-radius: 10px;
+        display: grid;
+        place-items: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .qa-icon.blue  { background: rgba(15,52,96,0.08); }
+    .qa-icon.gold  { background: rgba(201,168,76,0.12); }
+    .qa-icon.green { background: rgba(39,174,96,0.08); }
+    .qa-icon.red   { background: rgba(231,76,60,0.08); }
+
+    .qa-title { font-weight: 600; font-size: 0.9rem; color: var(--ink); }
+    .qa-sub   { font-size: 0.775rem; color: var(--muted); }
+
+    /* ── NO STATUS ── */
+    .no-status-card {
+        background: white;
+        border-radius: 16px;
+        padding: 3rem 2rem;
+        text-align: center;
+        box-shadow: var(--shadow);
+        margin-bottom: 1.5rem;
+    }
+
+    .no-status-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+    .no-status-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.625rem;
+        font-weight: 300;
+        color: var(--ink);
+        margin-bottom: 0.4rem;
+    }
+
+    .no-status-desc {
+        font-size: 0.875rem;
+        color: var(--muted);
+        line-height: 1.65;
+        max-width: 380px;
+        margin: 0 auto;
+    }
+
+    @keyframes fadeUp {
+        from { opacity:0; transform:translateY(16px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+
+    .track-inner > * { animation: fadeUp 0.5s ease both; }
+    .track-inner > *:nth-child(2) { animation-delay: 0.07s; }
+    .track-inner > *:nth-child(3) { animation-delay: 0.12s; }
+    .track-inner > *:nth-child(4) { animation-delay: 0.17s; }
+    .track-inner > *:nth-child(5) { animation-delay: 0.22s; }
+
+    @media (max-width: 600px) {
+        .quick-actions { grid-template-columns: 1fr; }
+        .track-hero { padding: 2rem 1.5rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="track-page">
+    <div class="track-inner">
+
+        <!-- Hero -->
+        <div class="track-hero">
+            <div class="track-hero-content">
+                <div class="track-eyebrow">✦ Live Trip Tracking</div>
+                <h1 class="track-title">Your trip to <em>{{ booking.offer.trip.destination }}</em></h1>
+                <p class="track-sub">Managed by {{ booking.offer.agency.name }}</p>
+                <div class="track-meta-pills">
+                    <span class="track-pill">📅 {{ booking.offer.trip.days }} days</span>
+                    <span class="track-pill">👥 {{ booking.offer.trip.num_people|default:1 }} traveller{{ booking.offer.trip.num_people|default:1|pluralize }}</span>
+                    <span class="track-pill">💰 ₹{{ booking.total_amount }} paid</span>
+                    <span class="track-pill">🏷️ #TRV{{ booking.id|stringformat:"05d" }}</span>
+                </div>
+            </div>
+        </div>
+
+        {% if trip_status %}
+
+        <!-- Current status banner -->
+        <div class="current-banner">
+            <div class="cb-icon">
+                {% if trip_status.status == 'confirmed' %}✅
+                {% elif trip_status.status == 'preparing' %}📋
+                {% elif trip_status.status == 'documents' %}📄
+                {% elif trip_status.status == 'departing' %}🚀
+                {% elif trip_status.status == 'on_trip' %}🗺️
+                {% elif trip_status.status == 'returning' %}🏠
+                {% elif trip_status.status == 'completed' %}🎉
+                {% elif trip_status.status == 'cancelled' %}❌
+                {% endif %}
+            </div>
+            <div>
+                <div class="cb-eyebrow">Current Status</div>
+                <div class="cb-status">{{ trip_status.get_status_display }}</div>
+                {% if trip_status.note %}
+                <div class="cb-note">{{ trip_status.note }}</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Progress steps -->
+        <div class="status-steps-card">
+            <div class="steps-title">Trip Progress</div>
+
+            {% with current=trip_status.status %}
+            <div class="steps-track">
+
+                {% for value, label in trip_status.STATUS_CHOICES %}
+                {% if value != 'cancelled' %}
+
+                {% comment %}Determine step state{% endcomment %}
+                {% with statuses="confirmed preparing documents departing on_trip returning completed" %}
+
+                {% if value == current %}
+                <!-- ACTIVE step -->
+                <div class="step-item">
+                    <div class="step-dot active">
+                        {% if value == 'confirmed' %}✅
+                        {% elif value == 'preparing' %}📋
+                        {% elif value == 'documents' %}📄
+                        {% elif value == 'departing' %}🚀
+                        {% elif value == 'on_trip' %}🗺️
+                        {% elif value == 'returning' %}🏠
+                        {% elif value == 'completed' %}🎉
+                        {% endif %}
+                    </div>
+                    <div class="step-body">
+                        <div class="step-name active-name">
+                            {{ label|slice:"3:" }}
+                            <span class="active-tag">Now</span>
+                        </div>
+                        {% if trip_status.note %}
+                        <div class="step-note">{{ trip_status.note }}</div>
+                        {% endif %}
+                        <div class="step-time">Updated {{ trip_status.updated_at|timesince }} ago</div>
+                    </div>
+                </div>
+
+                {% else %}
+                <!-- Check if this step is in history (done) or pending -->
+                {% with done_statuses=history %}
+                {% if value in done_statuses|dictsortreversed:"created_at"|first|default:'' %}
+                <!-- DONE step -->
+                <div class="step-item done">
+                    <div class="step-dot done">
+                        {% if value == 'confirmed' %}✅
+                        {% elif value == 'preparing' %}📋
+                        {% elif value == 'documents' %}📄
+                        {% elif value == 'departing' %}🚀
+                        {% elif value == 'on_trip' %}🗺️
+                        {% elif value == 'returning' %}🏠
+                        {% elif value == 'completed' %}🎉
+                        {% endif %}
+                    </div>
+                    <div class="step-body">
+                        <div class="step-name">{{ label|slice:"3:" }}</div>
+                        {% for update in history %}
+                            {% if update.status == value %}
+                            <div class="step-time">{{ update.created_at|date:"N j" }} at {{ update.created_at|time:"h:i A" }}</div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% else %}
+                <!-- PENDING step -->
+                <div class="step-item">
+                    <div class="step-dot pending">
+                        {% if value == 'confirmed' %}✅
+                        {% elif value == 'preparing' %}📋
+                        {% elif value == 'documents' %}📄
+                        {% elif value == 'departing' %}🚀
+                        {% elif value == 'on_trip' %}🗺️
+                        {% elif value == 'returning' %}🏠
+                        {% elif value == 'completed' %}🎉
+                        {% endif %}
+                    </div>
+                    <div class="step-body">
+                        <div class="step-name pending-name">{{ label|slice:"3:" }}</div>
+                    </div>
+                </div>
+                {% endif %}
+                {% endwith %}
+                {% endif %}
+
+                {% endwith %}
+                {% endif %}
+                {% endfor %}
+
+            </div>
+            {% endwith %}
+        </div>
+
+        {% else %}
+
+        <!-- No status yet -->
+        <div class="no-status-card">
+            <div class="no-status-icon">⏳</div>
+            <h2 class="no-status-title">Awaiting first update</h2>
+            <p class="no-status-desc">
+                {{ booking.offer.agency.name }} hasn't posted a status update yet.
+                Your booking is confirmed — check back soon or send them a message.
+            </p>
+        </div>
+
+        {% endif %}
+
+        <!-- Quick actions -->
+        <div class="quick-actions">
+            {% if booking.offer.chatroom %}
+            <a href="{% url 'chat_room' booking.offer.chatroom.id %}" class="qa-card">
+                <div class="qa-icon blue">💬</div>
+                <div>
+                    <div class="qa-title">Message Agency</div>
+                    <div class="qa-sub">Open chat with {{ booking.offer.agency.name }}</div>
+                </div>
+            </a>
+            {% endif %}
+
+            <a href="tel:+916295771697" class="qa-card">
+                <div class="qa-icon red">🆘</div>
+                <div>
+                    <div class="qa-title">Emergency Support</div>
+                    <div class="qa-sub">24/7 Trivasta helpline</div>
+                </div>
+            </a>
+
+            {% if trip_status and trip_status.status == 'completed' %}
+            <a href="{% url 'dashboard' %}" class="qa-card">
+                <div class="qa-icon gold">⭐</div>
+                <div>
+                    <div class="qa-title">Leave a Review</div>
+                    <div class="qa-sub">Rate {{ booking.offer.agency.name }}</div>
+                </div>
+            </a>
+            {% endif %}
+
+            <a href="{% url 'dashboard' %}" class="qa-card">
+                <div class="qa-icon green">🏠</div>
+                <div>
+                    <div class="qa-title">Dashboard</div>
+                    <div class="qa-sub">Back to your trips</div>
+                </div>
+            </a>
+        </div>
+
+        <div style="text-align:center; font-size:0.8rem; color:var(--muted); margin-top:0.5rem;">
+            Booking #TRV{{ booking.id|stringformat:"05d" }} ·
+            Paid ₹{{ booking.total_amount }} ·
+            {{ booking.created_at|date:"N j, Y" }}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

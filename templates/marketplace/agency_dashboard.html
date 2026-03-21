@@ -1,0 +1,1036 @@
+{% extends "base.html" %}
+{% block title %}Agency Dashboard — {{ agency.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    body { font-family: 'Outfit', sans-serif; }
+
+    .agency-dash {
+        background: var(--cream);
+        min-height: calc(100vh - 68px);
+        padding: 2.5rem 0 5rem;
+    }
+
+    .agency-dash-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+    }
+
+    /* ── BANNER ── */
+    .agency-banner {
+        background: linear-gradient(135deg, var(--sea) 0%, #0a2240 100%);
+        border-radius: 16px;
+        padding: 2.5rem 3rem;
+        margin-bottom: 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .agency-banner::before {
+        content: '';
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.06) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+
+    .agency-banner-text { position: relative; z-index: 1; }
+    .agency-banner-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #e8c97a; margin-bottom: 0.4rem; }
+
+    .agency-banner-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem; font-weight: 300; color: white; line-height: 1.15;
+    }
+
+    .agency-banner-title em { font-style: italic; color: #e8c97a; }
+    .agency-banner-sub { font-size: 0.875rem; color: rgba(255,255,255,0.5); margin-top: 0.4rem; }
+    .agency-banner-actions {
+        display: flex; gap: 0.75rem; flex-shrink: 0;
+        position: relative; z-index: 1; flex-wrap: wrap; justify-content: flex-end;
+    }
+
+    /* ── STATS ROW ── */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: white; border-radius: 12px; padding: 1.5rem;
+        box-shadow: var(--shadow); border-bottom: 3px solid var(--cream-dark);
+        transition: border-color 0.3s, transform 0.3s;
+    }
+
+    .stat-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+    .stat-card-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+
+    .stat-card-num {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem; font-weight: 600; color: var(--sea); line-height: 1;
+    }
+
+    .stat-card-label { font-size: 0.8125rem; color: var(--muted); margin-top: 0.25rem; }
+
+    /* ── TABS ── */
+    .dash-tabs {
+        display: flex; gap: 0.25rem; background: white; border-radius: 8px;
+        padding: 0.35rem; box-shadow: var(--shadow); margin-bottom: 1.75rem;
+        overflow-x: auto;
+    }
+
+    .dash-tab {
+        padding: 0.6rem 1.25rem; border-radius: 6px; font-size: 0.875rem;
+        font-weight: 500; color: var(--muted); cursor: pointer; border: none;
+        background: none; font-family: 'Outfit', sans-serif; white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+    .dash-tab.active { background: var(--sea); color: white; }
+    .dash-tab:hover:not(.active) { color: var(--sea); background: rgba(15,52,96,0.06); }
+
+    .tab-content { display: none; animation: fadeUp 0.35s ease both; }
+    .tab-content.active { display: block; }
+
+    /* ── SECTION HEADER ── */
+    .section-header {
+        display: flex; align-items: center;
+        justify-content: space-between; margin-bottom: 1.25rem;
+    }
+
+    .section-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem; font-weight: 600; color: var(--ink);
+        display: flex; align-items: center; gap: 0.75rem;
+    }
+
+    .section-title::before {
+        content: '';
+        width: 4px; height: 24px; background: var(--gold);
+        border-radius: 2px; display: inline-block;
+    }
+
+    /* ── PACKAGES GRID ── */
+    .packages-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .package-card {
+        background: white; border-radius: 12px; box-shadow: var(--shadow);
+        overflow: hidden; transition: transform 0.3s, box-shadow 0.3s;
+        display: flex; flex-direction: column;
+    }
+
+    .package-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-deep); }
+
+    .package-img {
+        height: 140px; background: linear-gradient(135deg, var(--sea), #1a4f82);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 3rem; position: relative; overflow: hidden;
+    }
+
+    .package-img img {
+        width: 100%; height: 100%; object-fit: cover;
+        position: absolute; inset: 0;
+    }
+
+    .package-img-emoji { position: relative; z-index: 1; }
+
+    .pkg-status-dot {
+        position: absolute; top: 0.75rem; right: 0.75rem; z-index: 2;
+        font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.55rem;
+        border-radius: 100px; letter-spacing: 0.06em;
+    }
+
+    .pkg-status-active   { background: rgba(39,174,96,0.9);  color: white; }
+    .pkg-status-inactive { background: rgba(231,76,60,0.85); color: white; }
+
+    .package-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
+    .package-category { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.35rem; }
+
+    .package-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.2rem; font-weight: 600; color: var(--ink); margin-bottom: 0.2rem;
+    }
+
+    .package-dest { font-size: 0.8125rem; color: var(--muted); margin-bottom: 0.75rem; }
+
+    .package-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.875rem; }
+
+    .meta-chip {
+        font-size: 0.72rem; font-weight: 500; color: var(--sea);
+        background: rgba(15,52,96,0.07); padding: 0.2rem 0.6rem;
+        border-radius: 100px;
+    }
+
+    /* ── ANALYTICS BAR ── */
+    .pkg-analytics {
+        background: var(--cream);
+        border-radius: 8px;
+        padding: 0.875rem 1rem;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        border: 1px solid var(--cream-dark);
+    }
+
+    .pkg-stat {
+        text-align: center;
+    }
+
+    .pkg-stat-num {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.25rem; font-weight: 600; color: var(--sea);
+        line-height: 1;
+    }
+
+    .pkg-stat-num.gold { color: var(--gold); }
+    .pkg-stat-num.green { color: #27ae60; }
+
+    .pkg-stat-label {
+        font-size: 0.6rem; font-weight: 600; letter-spacing: 0.08em;
+        text-transform: uppercase; color: var(--muted); margin-top: 0.2rem;
+    }
+
+    .pkg-stat-divider {
+        width: 1px; background: var(--cream-dark); margin: 0 auto;
+    }
+
+    .package-price {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.375rem; font-weight: 600; color: var(--sea); margin-bottom: 1rem;
+        margin-top: auto;
+    }
+
+    .package-price span { font-size: 0.75rem; color: var(--muted); font-family: 'Outfit', sans-serif; font-weight: 400; }
+
+    .package-actions { display: flex; gap: 0.5rem; }
+
+    .pkg-btn {
+        flex: 1; padding: 0.5rem; border-radius: var(--radius);
+        font-size: 0.8rem; font-weight: 600; text-align: center;
+        text-decoration: none; border: none; cursor: pointer;
+        font-family: 'Outfit', sans-serif; transition: all 0.2s;
+    }
+
+    .pkg-btn-edit   { background: var(--cream); color: var(--sea); border: 1px solid var(--cream-dark); }
+    .pkg-btn-edit:hover { border-color: var(--sea); }
+    .pkg-btn-toggle { background: rgba(201,168,76,0.1); color: #a07c20; border: 1px solid rgba(201,168,76,0.25); }
+    .pkg-btn-toggle:hover { background: rgba(201,168,76,0.2); }
+    .pkg-btn-del    { background: rgba(231,76,60,0.08); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
+    .pkg-btn-del:hover { background: rgba(231,76,60,0.15); }
+
+    /* ── CONVERSION BAR ── */
+    .conversion-bar-wrap { margin-top: 0.35rem; }
+
+    .conversion-track {
+        height: 4px; background: var(--cream-dark); border-radius: 100px; overflow: hidden;
+    }
+
+    .conversion-fill {
+        height: 100%; border-radius: 100px; background: var(--gold);
+        transition: width 0.6s ease;
+    }
+
+    /* ── TABLE ── */
+    .table-wrap {
+        background: white; border-radius: 12px;
+        box-shadow: var(--shadow); overflow: hidden;
+    }
+
+    .data-table { width: 100%; border-collapse: collapse; }
+
+    .data-table th {
+        text-align: left; padding: 1rem 1.5rem; font-size: 0.7rem;
+        font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+        color: var(--muted); background: var(--cream);
+        border-bottom: 1px solid var(--cream-dark);
+    }
+
+    .data-table td {
+        padding: 1rem 1.5rem; border-bottom: 1px solid var(--cream-dark);
+        font-size: 0.9rem; color: var(--ink); vertical-align: middle;
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: rgba(15,52,96,0.02); }
+
+    /* ── BADGES ── */
+    .badge {
+        display: inline-flex; align-items: center; gap: 0.25rem;
+        font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
+        text-transform: uppercase; padding: 0.25rem 0.65rem; border-radius: 2px;
+    }
+
+    .badge-paid    { background: rgba(39,174,96,0.1);  color: #27ae60; border: 1px solid rgba(39,174,96,0.2); }
+    .badge-pending { background: rgba(243,156,18,0.1); color: #e67e22; border: 1px solid rgba(243,156,18,0.2); }
+    .badge-new     { background: rgba(15,52,96,0.08);  color: var(--sea); border: 1px solid rgba(15,52,96,0.15); }
+    .badge-pkg     { background: rgba(201,168,76,0.1); color: #a07c20; border: 1px solid rgba(201,168,76,0.25); }
+
+    /* ── CHAT LIST ── */
+    .chat-list { display: flex; flex-direction: column; gap: 0.875rem; }
+
+    .chat-list-item {
+        background: white; border-radius: 12px; box-shadow: var(--shadow);
+        padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1.25rem;
+        text-decoration: none; color: inherit; transition: all 0.25s;
+        border: 1.5px solid transparent;
+    }
+
+    .chat-list-item:hover { border-color: rgba(15,52,96,0.2); transform: translateX(4px); }
+
+    .chat-list-avatar {
+        width: 48px; height: 48px; background: var(--cream); border-radius: 12px;
+        display: grid; place-items: center; font-size: 1.25rem; flex-shrink: 0;
+        border: 1px solid var(--cream-dark);
+    }
+
+    .chat-list-info { flex: 1; min-width: 0; }
+    .chat-list-name { font-weight: 600; font-size: 0.9375rem; color: var(--ink); margin-bottom: 0.2rem; }
+    .chat-list-preview { font-size: 0.8125rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-list-time { font-size: 0.72rem; color: var(--muted); }
+
+    .raise-btn {
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        padding: 0.4rem 0.875rem; background: var(--sea); color: white;
+        border-radius: var(--radius); font-size: 0.775rem; font-weight: 600;
+        text-decoration: none; transition: all 0.2s; white-space: nowrap;
+    }
+
+    .raise-btn:hover { background: #0a2240; }
+    .raise-btn-gold  { background: var(--gold); color: var(--ink); }
+    .raise-btn-gold:hover { background: #e8c97a; }
+
+    /* ── PROFILE ── */
+    .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+
+    .profile-info-card {
+        background: white; border-radius: 12px; padding: 1.75rem;
+        box-shadow: var(--shadow);
+    }
+
+    .profile-card-label {
+        font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em;
+        text-transform: uppercase; color: var(--muted); margin-bottom: 1.25rem;
+        display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .profile-card-label::before {
+        content: ''; width: 3px; height: 14px; background: var(--gold);
+        border-radius: 2px; flex-shrink: 0;
+    }
+
+    .profile-row {
+        display: flex; align-items: flex-start; gap: 0.875rem;
+        padding: 0.75rem 0; border-bottom: 1px solid var(--cream-dark);
+    }
+
+    .profile-row:last-child { border-bottom: none; }
+    .profile-row-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .profile-row-lbl { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.15rem; }
+    .profile-row-val { font-size: 0.9rem; font-weight: 500; color: var(--ink); word-break: break-word; }
+    .profile-row-val a { color: var(--sea); text-decoration: none; }
+    .profile-row-val a:hover { text-decoration: underline; }
+
+    .profile-desc-card {
+        background: white; border-radius: 12px; padding: 1.75rem;
+        box-shadow: var(--shadow); grid-column: 1 / -1;
+    }
+
+    .profile-desc-text { font-size: 0.9375rem; color: var(--ink); line-height: 1.8; white-space: pre-wrap; }
+    .profile-empty-desc { font-size: 0.875rem; color: var(--muted); font-style: italic; text-align: center; padding: 1rem 0; }
+
+    .status-chip {
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        padding: 0.2rem 0.65rem; border-radius: 100px;
+        font-size: 0.75rem; font-weight: 600;
+    }
+
+    .status-approved { background: rgba(39,174,96,0.1);  color: #27ae60; border: 1px solid rgba(39,174,96,0.2); }
+    .status-pending  { background: rgba(243,156,18,0.1); color: #e67e22; border: 1px solid rgba(243,156,18,0.2); }
+    .status-rejected { background: rgba(231,76,60,0.08); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
+
+    .warning-bar {
+        display: flex; align-items: center; gap: 0.75rem;
+        background: rgba(231,76,60,0.05); border: 1px solid rgba(231,76,60,0.15);
+        border-radius: 10px; padding: 0.875rem 1.25rem; margin-top: 1.25rem;
+        font-size: 0.8375rem; color: #c0392b; font-weight: 500;
+    }
+
+    .warning-pips { display: flex; gap: 0.35rem; }
+
+    .warning-pip {
+        width: 10px; height: 10px; border-radius: 50%;
+        background: var(--cream-dark); border: 1.5px solid #e0c0b0;
+    }
+
+    .warning-pip.filled { background: #e74c3c; border-color: #c0392b; }
+
+    /* ── EMPTY STATE ── */
+    .empty-state { text-align: center; padding: 3rem; color: var(--muted); }
+    .empty-state-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 900px) {
+        .agency-banner { flex-direction: column; }
+        .stats-row { grid-template-columns: repeat(2, 1fr); }
+        .table-wrap { overflow-x: auto; }
+        .profile-grid { grid-template-columns: 1fr; }
+        .packages-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+        .agency-dash-container { padding: 0 1rem; }
+        .agency-banner { padding: 1.75rem; }
+        .stats-row { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
+        .pkg-analytics { grid-template-columns: repeat(2, 1fr); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="agency-dash">
+    <div class="agency-dash-container">
+
+        <!-- ── BANNER ── -->
+        <div class="agency-banner">
+            <div class="agency-banner-text">
+                <div class="agency-banner-label">Agency Dashboard</div>
+                <div class="agency-banner-title">Welcome, <em>{{ agency.name }}</em></div>
+                <div class="agency-banner-sub">
+                    📍 {{ agency.location|default:"Location not set" }} &nbsp;·&nbsp;
+                    {% if agency.plan == 'enterprise' %}🏆 Enterprise
+                    {% elif agency.plan == 'professional' %}💼 Professional
+                    {% else %}🌱 Starter{% endif %}
+                    Plan
+                </div>
+            </div>
+            <div class="agency-banner-actions">
+                <a href="{% url 'agency_profile_edit' %}" class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.3);">🏢 Profile</a>
+                <a href="{% url 'package_create' %}" class="btn btn-gold">+ New Package</a>
+                <a href="{% url 'agency_logout' %}" class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.3);">Logout</a>
+            </div>
+        </div>
+
+        <!-- ── STATS ── -->
+        <div class="stats-row">
+            <div class="stat-card">
+                <div class="stat-card-icon">📦</div>
+                <div class="stat-card-num">{{ packages|length }}</div>
+                <div class="stat-card-label">Active Packages</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon">✉️</div>
+                <div class="stat-card-num">{{ offers|length }}</div>
+                <div class="stat-card-label">Offers Sent</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon">✅</div>
+                <div class="stat-card-num">{{ bookings|length }}</div>
+                <div class="stat-card-label">Total Bookings</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-card-icon">💰</div>
+                <div class="stat-card-num">₹{{ revenue }}</div>
+                <div class="stat-card-label">Revenue Earned</div>
+            </div>
+        </div>
+
+        <!-- ── TABS ── -->
+        <div class="dash-tabs">
+            <button class="dash-tab active" onclick="switchTab('packages', this)">📦 Packages</button>
+            <button class="dash-tab" onclick="switchTab('analytics', this)">📊 Analytics</button>
+            <button class="dash-tab" onclick="switchTab('trips', this)">🗺️ Trip Requests</button>
+            <button class="dash-tab" onclick="switchTab('offers', this)">✉️ Offers</button>
+            <button class="dash-tab" onclick="switchTab('bookings', this)">✅ Bookings</button>
+            <button class="dash-tab" onclick="switchTab('chats', this)">💬 Chats</button>
+            <button class="dash-tab" onclick="switchTab('profile', this)">🏢 Profile</button>
+        </div>
+
+        <!-- ── TAB: PACKAGES ── -->
+        <div class="tab-content active" id="tab-packages">
+            <div class="section-header">
+                <h2 class="section-title">My Packages <span style="font-size:0.8125rem; color:var(--muted); background:var(--cream-dark); padding:0.2rem 0.65rem; border-radius:100px; font-family:'Outfit',sans-serif; font-weight:400;">{{ packages|length }}</span></h2>
+                <a href="{% url 'package_create' %}" class="btn btn-primary">+ Create Package</a>
+            </div>
+
+            {% if packages %}
+            <div class="packages-grid">
+                {% for stat in package_stats %}
+                {% with pkg=stat.pkg %}
+                <div class="package-card">
+                    <div class="package-img">
+                        {% if pkg.image_url %}
+                        <img src="{{ pkg.image_url }}" alt="{{ pkg.title }}" onerror="this.style.display='none'">
+                        {% endif %}
+                        <span class="package-img-emoji">
+                            {% if pkg.category == 'adventure' %}🏔️
+                            {% elif pkg.category == 'cultural' %}🏛️
+                            {% elif pkg.category == 'leisure' %}🌴
+                            {% elif pkg.category == 'romantic' %}💑
+                            {% elif pkg.category == 'family' %}👨‍👩‍👧
+                            {% elif pkg.category == 'luxury' %}✨
+                            {% elif pkg.category == 'solo' %}🎒
+                            {% else %}✈️{% endif %}
+                        </span>
+                        <span class="pkg-status-dot {% if pkg.is_active %}pkg-status-active{% else %}pkg-status-inactive{% endif %}">
+                            {% if pkg.is_active %}● Active{% else %}● Inactive{% endif %}
+                        </span>
+                    </div>
+                    <div class="package-body">
+                        <div class="package-category">{{ pkg.get_category_display }}</div>
+                        <div class="package-title">{{ pkg.title }}</div>
+                        <div class="package-dest">📍 {{ pkg.destination }} &nbsp;·&nbsp; 📅 {{ pkg.duration }} days</div>
+
+                        <!-- Analytics mini-bar -->
+                        <div class="pkg-analytics">
+                            <div class="pkg-stat">
+                                <div class="pkg-stat-num">{{ stat.views }}</div>
+                                <div class="pkg-stat-label">Views</div>
+                            </div>
+                            <div class="pkg-stat">
+                                <div class="pkg-stat-num">{{ stat.chats }}</div>
+                                <div class="pkg-stat-label">Chats</div>
+                            </div>
+                            <div class="pkg-stat">
+                                <div class="pkg-stat-num green">{{ stat.bookings }}</div>
+                                <div class="pkg-stat-label">Bookings</div>
+                            </div>
+                            <div class="pkg-stat">
+                                <div class="pkg-stat-num gold">{{ stat.conversion }}%</div>
+                                <div class="pkg-stat-label">Conv.</div>
+                            </div>
+                        </div>
+
+                        <!-- Conversion progress bar -->
+                        <div class="conversion-bar-wrap">
+                            <div class="conversion-track">
+                                <div class="conversion-fill" style="width: {{ stat.conversion|floatformat:0 }}%"></div>
+                            </div>
+                        </div>
+
+                        <div class="package-price" style="margin-top:0.875rem;">
+                            ₹{{ pkg.price }} <span>+ 5% GST</span>
+                            {% if stat.revenue %}
+                            <span style="display:block; font-size:0.75rem; color:#27ae60; font-family:'Outfit',sans-serif; font-weight:500; margin-top:0.2rem;">
+                                ₹{{ stat.revenue }} earned
+                            </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="package-actions">
+                            <a href="{% url 'package_edit' pkg.id %}" class="pkg-btn pkg-btn-edit">✏️ Edit</a>
+                            <a href="{% url 'package_toggle' pkg.id %}" class="pkg-btn pkg-btn-toggle">
+                                {% if pkg.is_active %}⏸ Pause{% else %}▶ Activate{% endif %}
+                            </a>
+                            <a href="{% url 'package_delete' pkg.id %}"
+                               class="pkg-btn pkg-btn-del"
+                               onclick="return confirm('Delete this package?')">🗑️</a>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📦</div>
+                <p>No packages yet. <a href="{% url 'package_create' %}" style="color:var(--sea);">Create your first one →</a></p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ── TAB: ANALYTICS ── -->
+        <div class="tab-content" id="tab-analytics">
+            <div class="section-header">
+                <h2 class="section-title">Package Analytics</h2>
+            </div>
+
+            {% if package_stats %}
+            <div class="table-wrap" style="margin-bottom:1.5rem;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Package</th>
+                            <th>Destination</th>
+                            <th>Price</th>
+                            <th>👁 Views</th>
+                            <th>💬 Chats</th>
+                            <th>✅ Bookings</th>
+                            <th>📈 Conversion</th>
+                            <th>💰 Revenue</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in package_stats %}
+                        <tr>
+                            <td>
+                                <strong style="color:var(--sea);">{{ stat.pkg.title }}</strong>
+                                <div style="font-size:0.72rem; color:var(--muted);">{{ stat.pkg.get_category_display }}</div>
+                            </td>
+                            <td style="font-size:0.875rem;">{{ stat.pkg.destination }}</td>
+                            <td>
+                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--sea);">₹{{ stat.pkg.price }}</strong>
+                            </td>
+                            <td>
+                                <strong style="font-size:1rem; color:var(--ink);">{{ stat.views }}</strong>
+                            </td>
+                            <td>
+                                <strong style="font-size:1rem; color:var(--sea);">{{ stat.chats }}</strong>
+                            </td>
+                            <td>
+                                <strong style="font-size:1rem; color:#27ae60;">{{ stat.bookings }}</strong>
+                            </td>
+                            <td>
+                                <div style="display:flex; align-items:center; gap:0.5rem;">
+                                    <strong style="color:{% if stat.conversion >= 10 %}#27ae60{% elif stat.conversion >= 3 %}var(--gold){% else %}var(--muted){% endif %};">
+                                        {{ stat.conversion }}%
+                                    </strong>
+                                    <div class="conversion-track" style="width:60px;">
+                                        <div class="conversion-fill" style="width:{{ stat.conversion|floatformat:0 }}%"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--sea);">
+                                    {% if stat.revenue %}₹{{ stat.revenue }}{% else %}—{% endif %}
+                                </strong>
+                            </td>
+                            <td>
+                                {% if stat.pkg.is_active %}
+                                    <span class="badge badge-paid">● Active</span>
+                                {% else %}
+                                    <span class="badge badge-pending">● Paused</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Totals summary bar -->
+            {% with total_views=package_stats|length %}
+            <div style="background:white; border-radius:12px; box-shadow:var(--shadow); padding:1.5rem 2rem; display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; text-align:center;">
+                <div>
+                    <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; color:var(--sea); line-height:1;">
+                        {% for s in package_stats %}{{ s.views }}{% if not forloop.last %}+{% endif %}{% endfor %}
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--muted); margin-top:0.2rem;">Total Views</div>
+                </div>
+                <div>
+                    <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; color:var(--sea); line-height:1;">
+                        {{ bookings|length }}
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--muted); margin-top:0.2rem;">Total Bookings</div>
+                </div>
+                <div>
+                    <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; color:var(--gold); line-height:1;">
+                        ₹{{ revenue }}
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--muted); margin-top:0.2rem;">Total Revenue</div>
+                </div>
+                <div>
+                    <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; color:#27ae60; line-height:1;">
+                        {{ packages|length }}
+                    </div>
+                    <div style="font-size:0.75rem; color:var(--muted); margin-top:0.2rem;">Live Packages</div>
+                </div>
+            </div>
+            {% endwith %}
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">📊</div>
+                <p>Create packages to see analytics here.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ── TAB: TRIP REQUESTS ── -->
+        <div class="tab-content" id="tab-trips">
+            <div class="section-header">
+                <h2 class="section-title">Trip Requests</h2>
+            </div>
+            <div class="table-wrap">
+                {% if trips %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Destination</th>
+                            <th>From</th>
+                            <th>Duration</th>
+                            <th>Budget</th>
+                            <th>People</th>
+                            <th>Style</th>
+                            <th>Mode</th>
+                            <th>Posted</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for trip in trips %}
+                        <tr>
+                            <td><strong>{{ trip.destination }}</strong></td>
+                            <td style="color:var(--muted);">{{ trip.origin|default:"—" }}</td>
+                            <td>{{ trip.days }} days</td>
+                            <td>₹{{ trip.budget }}</td>
+                            <td>{{ trip.num_people|default:1 }}</td>
+                            <td><span class="badge badge-new">{{ trip.travel_type|capfirst }}</span></td>
+                            <td style="font-size:0.8rem;">
+                                {% if trip.travel_mode == 'flight' %}✈️
+                                {% elif trip.travel_mode == 'train' %}🚂
+                                {% elif trip.travel_mode == 'bus' %}🚌
+                                {% elif trip.travel_mode == 'car' %}🚗
+                                {% else %}🚀{% endif %}
+                            </td>
+                            <td style="color:var(--muted); font-size:0.8rem;">{{ trip.created_at|date:"N j" }}</td>
+                            <td>
+                                {% if trip.id in sent_offer_trip_ids %}
+                                    <span style="color:#27ae60; font-size:0.8rem; font-weight:600;">✅ Sent</span>
+                                {% else %}
+                                    <a href="{% url 'send_offer' trip.id %}" class="btn btn-primary" style="padding:0.4rem 1rem; font-size:0.8rem;">Send Offer</a>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">🗺️</div>
+                    <p>No trip requests available yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ── TAB: OFFERS ── -->
+        <div class="tab-content" id="tab-offers">
+            <div class="section-header">
+                <h2 class="section-title">Offers Sent</h2>
+            </div>
+            <div class="table-wrap">
+                {% if offers %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Trip</th>
+                            <th>Price Offered</th>
+                            <th>Message</th>
+                            <th>Date</th>
+                            <th>Chat</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for offer in offers %}
+                        <tr>
+                            <td>
+                                <strong>{{ offer.trip.destination }}</strong>
+                                <div style="font-size:0.75rem; color:var(--muted);">
+                                    {{ offer.trip.days }} days · {{ offer.trip.num_people|default:1 }} people
+                                </div>
+                            </td>
+                            <td>
+                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--sea);">
+                                    ₹{{ offer.price }}
+                                </strong>
+                            </td>
+                            <td style="max-width:220px; font-size:0.8375rem; color:var(--muted);">
+                                {{ offer.message|truncatechars:70 }}
+                            </td>
+                            <td style="font-size:0.8rem; color:var(--muted);">{{ offer.created_at|date:"N j, Y" }}</td>
+                            <td>
+                                {% if offer.chatroom %}
+                                <a href="{% url 'chat_room' offer.chatroom.id %}" class="raise-btn">💬 Open</a>
+                                {% else %}—{% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">✉️</div>
+                    <p>No offers sent yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ── TAB: BOOKINGS ── -->
+        <div class="tab-content" id="tab-bookings">
+            <div class="section-header">
+                <h2 class="section-title">Confirmed Bookings</h2>
+            </div>
+            <div class="table-wrap">
+                {% if bookings %}
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Ref</th>
+                            <th>Trip / Package</th>
+                            <th>Traveler</th>
+                            <th>Amount</th>
+                            <th>Your Payout</th>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for booking in bookings %}
+                        <tr>
+                            <td style="font-size:0.8rem; color:var(--muted);">#TRV{{ booking.id|stringformat:"05d" }}</td>
+                            <td>
+                                {% if booking.offer %}
+                                    <strong>{{ booking.offer.trip.destination }}</strong>
+                                    <div style="font-size:0.72rem; color:var(--muted);">✈️ Trip offer · {{ booking.offer.trip.days }} days</div>
+                                {% elif booking.package %}
+                                    <strong>{{ booking.package.title }}</strong>
+                                    <div style="font-size:0.72rem; color:var(--muted);">📦 Package · {{ booking.package.destination }}</div>
+                                {% endif %}
+                            </td>
+                            <td style="font-size:0.875rem;">{{ booking.user.username }}</td>
+                            <td>
+                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--sea);">
+                                    ₹{{ booking.total_amount }}
+                                </strong>
+                                <div style="font-size:0.72rem; color:var(--muted);">incl. 5% GST</div>
+                            </td>
+                            <td>
+                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:#27ae60;">
+                                    ₹{{ booking.agency_payout }}
+                                </strong>
+                                <div style="font-size:0.72rem; color:var(--muted);">after 10% commission</div>
+                            </td>
+                            <td style="font-size:0.8rem; color:var(--muted);">{{ booking.created_at|date:"N j, Y" }}</td>
+                            <td><span class="badge badge-paid">✅ Paid</span></td>
+                            <td>
+                                <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                                    {% if booking.offer and booking.offer.chatroom %}
+                                        <a href="{% url 'chat_room' booking.offer.chatroom.id %}" class="raise-btn">💬</a>
+                                    {% elif booking.package %}
+                                        {% for room in booking.package.chatrooms.all %}
+                                            {% if room.user == booking.user %}
+                                            <a href="{% url 'chat_room' room.id %}" class="raise-btn">💬</a>
+                                            {% endif %}
+                                        {% endfor %}
+                                    {% endif %}
+                                    <a href="{% url 'update_trip_status' booking.id %}" class="raise-btn raise-btn-gold">📍 Status</a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">✅</div>
+                    <p>No confirmed bookings yet.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ── TAB: CHATS ── -->
+        <div class="tab-content" id="tab-chats">
+            <div class="section-header">
+                <h2 class="section-title">Active Chats <span style="font-size:0.8125rem; color:var(--muted); background:var(--cream-dark); padding:0.2rem 0.65rem; border-radius:100px; font-family:'Outfit',sans-serif; font-weight:400;">{{ chatrooms|length }}</span></h2>
+            </div>
+            {% if chatrooms %}
+            <div class="chat-list">
+                {% for room in chatrooms %}
+                <a href="{% url 'chat_room' room.id %}" class="chat-list-item">
+                    <div class="chat-list-avatar">
+                        {% if room.package %}📦{% else %}👤{% endif %}
+                    </div>
+                    <div class="chat-list-info">
+                        <div class="chat-list-name">
+                            {{ room.user.username }}
+                            {% if room.package %}
+                                <span class="badge badge-pkg" style="margin-left:0.5rem;">📦 {{ room.package.title|truncatechars:25 }}</span>
+                            {% elif room.offer %}
+                                — {{ room.offer.trip.destination }}
+                            {% endif %}
+                        </div>
+                        <div class="chat-list-preview">
+                            {% if room.package %}
+                                📍 {{ room.package.destination }} ·
+                            {% elif room.offer %}
+                                ₹{{ room.offer.price }} offer ·
+                            {% endif %}
+                            {% with last=room.messages.last %}
+                                {% if last %}{{ last.content|truncatechars:50 }}{% else %}No messages yet{% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                    <div style="flex-shrink:0; text-align:right;">
+                        <div class="chat-list-time">
+                            {% with last=room.messages.last %}
+                                {% if last %}{{ last.created_at|timesince }} ago{% endif %}
+                            {% endwith %}
+                        </div>
+                        <div style="margin-top:0.35rem;">
+                            <span class="raise-btn" style="font-size:0.72rem; padding:0.3rem 0.75rem;">
+                                💳 Raise Payment
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">💬</div>
+                <p>No active chats yet.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ── TAB: PROFILE ── -->
+        <div class="tab-content" id="tab-profile">
+            <div class="section-header">
+                <h2 class="section-title">Agency Profile</h2>
+                <a href="{% url 'agency_profile_edit' %}" class="btn btn-primary">✏️ Edit Profile</a>
+            </div>
+
+            <div class="profile-grid">
+                <div class="profile-info-card">
+                    <div class="profile-card-label">Contact Details</div>
+                    <div class="profile-row">
+                        <span class="profile-row-icon">📧</span>
+                        <div>
+                            <div class="profile-row-lbl">Email</div>
+                            <div class="profile-row-val"><a href="mailto:{{ agency.email }}">{{ agency.email }}</a></div>
+                        </div>
+                    </div>
+                    <div class="profile-row">
+                        <span class="profile-row-icon">📞</span>
+                        <div>
+                            <div class="profile-row-lbl">Phone</div>
+                            <div class="profile-row-val">
+                                {% if agency.phone %}<a href="tel:{{ agency.phone }}">{{ agency.phone }}</a>
+                                {% else %}<span style="color:var(--muted); font-style:italic;">Not set</span>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-row">
+                        <span class="profile-row-icon">📍</span>
+                        <div>
+                            <div class="profile-row-lbl">Location</div>
+                            <div class="profile-row-val">{{ agency.location|default:"Not set" }}</div>
+                        </div>
+                    </div>
+                    <div class="profile-row">
+                        <span class="profile-row-icon">🌐</span>
+                        <div>
+                            <div class="profile-row-lbl">Website</div>
+                            <div class="profile-row-val">
+                                {% if agency.website %}<a href="{{ agency.website }}" target="_blank">{{ agency.website }}</a>
+                                {% else %}<span style="color:var(--muted); font-style:italic;">Not set</span>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-info-card">
+                    <div class="profile-card-label">Account Status</div>
+                    <div class="profile-row">
+                        <span class="profile-row-icon">✅</span>
+                        <div>
+                            <div class="profile-row-lbl">Approval</div>
+                            <div class="profile-row-val">
+                                <span class="status-chip status-{{ agency.status }}">
+                                    {% if agency.status == 'approved' %}✅ Approved
+                                    {% elif agency.status == 'pending' %}⏳ Pending
+                                    {% else %}❌ Rejected{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-row">
+                        <span class="profile-row-icon">🏷️</span>
+                        <div>
+                            <div class="profile-row-lbl">Plan</div>
+                            <div class="profile-row-val">
+                                {% if agency.plan == 'enterprise' %}🏆 Enterprise
+                                {% elif agency.plan == 'professional' %}💼 Professional
+                                {% else %}🌱 Starter{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="profile-row">
+                        <span class="profile-row-icon">⭐</span>
+                        <div>
+                            <div class="profile-row-lbl">Rating</div>
+                            <div class="profile-row-val">{{ agency.rating }} / 5.0</div>
+                        </div>
+                    </div>
+                    <div class="profile-row">
+                        <span class="profile-row-icon">🔄</span>
+                        <div>
+                            <div class="profile-row-lbl">Subscription expires</div>
+                            <div class="profile-row-val">
+                                {% if agency.subscription_expires_at %}{{ agency.subscription_expires_at|date:"N j, Y" }}
+                                {% else %}<span style="color:var(--muted);">—</span>{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% with wc=agency.warnings.count %}
+                    {% if wc > 0 %}
+                    <div class="warning-bar">
+                        <div class="warning-pips">
+                            <div class="warning-pip {% if wc >= 1 %}filled{% endif %}"></div>
+                            <div class="warning-pip {% if wc >= 2 %}filled{% endif %}"></div>
+                            <div class="warning-pip {% if wc >= 3 %}filled{% endif %}"></div>
+                        </div>
+                        <span>{{ wc }}/3 warning{{ wc|pluralize }}{% if wc >= 3 %} — Plan downgraded{% endif %}</span>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+
+                <div class="profile-desc-card">
+                    <div class="profile-card-label">About Your Agency</div>
+                    {% if agency.description %}
+                        <div class="profile-desc-text">{{ agency.description }}</div>
+                    {% else %}
+                        <div class="profile-empty-desc">
+                            No description yet. <a href="{% url 'agency_profile_edit' %}" style="color:var(--sea);">Add one →</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.dash-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+}
+</script>
+{% endblock %}

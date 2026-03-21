@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Application Pending{% endblock %}
+{% block content %}
+<div style="max-width:500px; margin:5rem auto; padding:0 1.5rem; text-align:center;">
+    <div style="font-size:3.5rem; margin-bottom:1rem;">⏳</div>
+    <h2 style="font-family:var(--font-display); color:var(--sea); font-size:2rem; margin-bottom:0.75rem;">Application Under Review</h2>
+    <p style="color:var(--muted); font-size:0.9375rem; line-height:1.7; margin-bottom:2rem;">
+        Hi <strong>{{ agency.name }}</strong>, your application is being reviewed by our team.
+        We'll notify you at <strong>{{ agency.email }}</strong> once approved. This usually takes 24–48 hours.
+    </p>
+    <a href="{% url 'home' %}" class="btn btn-outline">Back to Home</a>
+</div>
+{% endblock %}

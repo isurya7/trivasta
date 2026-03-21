@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Reviews — {{ agency.name }}{% endblock %}
+
+{% block extra_head %}
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&family=DM+Sans:wght@400;500;600&display=swap');
+
+  :root {
+    --cream: #F9F5EE; --ink: #1A1714; --amber: #D4762A;
+    --amber-lt: #F5E6D3; --sage: #5C7A6B; --border: #E0D8CE; --r: 12px;
+  }
+
+  body { background: var(--cream); color: var(--ink); font-family: 'DM Sans', sans-serif; }
+
+  .rv-page  { max-width: 1060px; margin: 0 auto; padding: 48px 20px 80px; }
+  .rv-layout { display: grid; grid-template-columns: 280px 1fr; gap: 40px; align-items: start; }
+  @media(max-width:780px){ .rv-layout { grid-template-columns: 1fr; } }
+
+  .sidebar { position: sticky; top: 24px; }
+
+  .agency-hero {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--r); padding: 28px 24px;
+    text-align: center; margin-bottom: 20px;
+  }
+  .agency-hero .logo {
+    width: 72px; height: 72px; border-radius: 14px;
+    background: var(--amber-lt); display: flex; align-items: center;
+    justify-content: center; margin: 0 auto 14px;
+    font-family: 'Fraunces', serif; font-size: 28px; color: var(--amber); overflow: hidden;
+  }
+  .agency-hero h2   { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 700; margin: 0 0 6px; }
+  .agency-hero .location { font-size: 13px; color: #888; margin-bottom: 18px; }
+
+  .big-rating  { font-family: 'Fraunces', serif; font-size: 52px; font-weight: 700; color: var(--amber); line-height: 1; margin-bottom: 4px; }
+  .big-stars   { font-size: 22px; color: var(--amber); letter-spacing: 3px; margin-bottom: 6px; }
+  .big-count   { font-size: 13px; color: #888; margin-bottom: 20px; }
+
+  .dist-row {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; margin-bottom: 8px; cursor: pointer;
+    text-decoration: none; color: inherit;
+  }
+  .dist-bar-bg   { flex: 1; height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .dist-bar-fill { height: 100%; background: var(--amber); border-radius: 99px; transition: width .4s; }
+  .dist-row .dist-count { width: 24px; text-align: right; color: #888; }
+  .dist-row.active .dist-bar-fill { background: var(--sage); }
+
+  .cat-breakdown {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--r); padding: 20px 24px;
+  }
+  .cat-breakdown h4 {
+    font-size: 12px; font-weight: 600; text-transform: uppercase;
+    letter-spacing: .08em; color: #888; margin: 0 0 16px;
+  }
+  .cat-row { display: flex; justify-content: space-between; align-items: center; font-size: 13px; margin-bottom: 12px; }
+  .cat-score { font-family: 'Fraunces', serif; font-weight: 700; color: var(--amber); font-size: 15px; }
+
+  .reviews-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px; }
+  .reviews-header h1 { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 300; margin: 0; }
+
+  .filter-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 24px; }
+  .filter-btn {
+    background: #fff; border: 1.5px solid var(--border); border-radius: 20px;
+    padding: 6px 16px; font-size: 13px; color: var(--ink);
+    text-decoration: none; transition: all .2s; font-family: 'DM Sans', sans-serif;
+  }
+  .filter-btn:hover { border-color: var(--amber); color: var(--amber); }
+  .filter-btn.active { background: var(--amber); border-color: var(--amber); color: #fff; }
+
+  .review-card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--r); padding: 28px; margin-bottom: 20px;
+    animation: fadeUp .35s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .review-card:nth-child(1){ animation-delay:.05s }
+  .review-card:nth-child(2){ animation-delay:.10s }
+  .review-card:nth-child(3){ animation-delay:.15s }
+
+  .rc-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; gap: 12px; }
+  .rc-reviewer { display: flex; align-items: center; gap: 12px; }
+  .rc-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--amber-lt); display: flex; align-items: center;
+    justify-content: center; font-family: 'Fraunces', serif;
+    font-size: 16px; color: var(--amber); flex-shrink: 0; font-weight: 600;
+  }
+  .rc-name { font-weight: 600; font-size: 14px; }
+  .rc-date { font-size: 12px; color: #aaa; margin-top: 2px; }
+  .rc-stars { color: var(--amber); font-size: 18px; letter-spacing: 2px; }
+  .rc-stars .empty { color: #D9D0C4; }
+
+  .rc-title { font-family: 'Fraunces', serif; font-size: 18px; font-weight: 600; margin: 0 0 10px; }
+  .rc-body  { font-size: 14px; line-height: 1.7; color: #444; margin-bottom: 16px; }
+
+  .rc-cats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .cat-pill {
+    background: var(--amber-lt); border-radius: 6px;
+    padding: 4px 10px; font-size: 12px; color: var(--amber); font-weight: 500;
+  }
+
+  .rc-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid var(--border); padding-top: 14px; flex-wrap: wrap; gap: 10px;
+  }
+  .helpful-btn {
+    background: none; border: 1.5px solid var(--border); border-radius: 20px;
+    padding: 6px 16px; font-size: 13px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all .2s; font-family: 'DM Sans', sans-serif; color: #666;
+  }
+  .helpful-btn:hover { border-color: var(--sage); color: var(--sage); }
+  .helpful-btn.voted { background: #E8F5EE; border-color: var(--sage); color: var(--sage); }
+
+  .agency-reply {
+    background: #F0F7F4; border-left: 3px solid var(--sage);
+    border-radius: 0 var(--r) var(--r) 0; padding: 16px 20px; margin-top: 16px;
+  }
+  .agency-reply .reply-header {
+    font-size: 12px; font-weight: 600; color: var(--sage);
+    text-transform: uppercase; letter-spacing: .06em; margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .agency-reply .reply-body { font-size: 14px; color: #444; line-height: 1.6; }
+
+  .reply-form { margin-top: 14px; display: none; }
+  .reply-form.open { display: block; }
+  .reply-form textarea {
+    width: 100%; box-sizing: border-box; border: 1.5px solid var(--border);
+    border-radius: var(--r); padding: 12px 14px; font-size: 14px;
+    font-family: 'DM Sans', sans-serif; resize: vertical; outline: none;
+  }
+  .reply-form textarea:focus { border-color: var(--sage); }
+  .reply-form .btn-reply {
+    background: var(--sage); color: #fff; border: none; border-radius: 8px;
+    padding: 10px 22px; font-size: 14px; cursor: pointer; margin-top: 8px;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .reply-toggle {
+    background: none; border: none; color: var(--sage); font-size: 13px;
+    cursor: pointer; font-family: 'DM Sans', sans-serif; padding: 0; text-decoration: underline;
+  }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: #bbb; }
+  .empty-state p { font-size: 15px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="rv-page">
+<div class="rv-layout">
+
+  <aside class="sidebar">
+    <div class="agency-hero">
+      <div class="logo">
+        {% if agency.logo %}
+          <img src="{{ agency.logo.url }}" width="72" height="72" style="object-fit:cover;">
+        {% else %}
+          {{ agency.name|first|upper }}
+        {% endif %}
+      </div>
+      <h2>{{ agency.name }}</h2>
+      <p class="location">{{ agency.city }}, {{ agency.state }}</p>
+
+      <div class="big-rating">{{ agency.avg_overall_rating|default:"—" }}</div>
+      <div class="big-stars">
+        {% with rating=agency.avg_overall_rating|floatformat:"0" %}
+          {% for i in "12345" %}
+            {% if forloop.counter <= rating %}★{% else %}<span class="empty">★</span>{% endif %}
+          {% endfor %}
+        {% endwith %}
+      </div>
+      <div class="big-count">{{ agency.total_review_count }} review{{ agency.total_review_count|pluralize }}</div>
+
+      {% for star, count in star_dist.items %}
+      <a class="dist-row {% if current_star == star|stringformat:'s' %}active{% endif %}"
+         href="?stars={{ star }}{% if current_sort %}&sort={{ current_sort }}{% endif %}">
+        <span style="width:52px;font-size:13px;white-space:nowrap;">{{ star }}★</span>
+        <span class="dist-bar-bg">
+          <span class="dist-bar-fill" style="width:{% if agency.total_review_count %}{% widthratio count agency.total_review_count 100 %}{% else %}0{% endif %}%"></span>
+        </span>
+        <span class="dist-count">{{ count }}</span>
+      </a>
+      {% endfor %}
+      {% if current_star %}
+        <a href="?" style="font-size:12px;color:#aaa;display:block;margin-top:6px;">Clear filter ×</a>
+      {% endif %}
+    </div>
+
+    {% if agency.avg_guides_rating or agency.avg_accommodation_rating %}
+    <div class="cat-breakdown">
+      <h4>Category Ratings</h4>
+      {% if agency.avg_guides_rating %}<div class="cat-row"><span>Guides</span><span class="cat-score">{{ agency.avg_guides_rating }}</span></div>{% endif %}
+      {% if agency.avg_accommodation_rating %}<div class="cat-row"><span>Accommodation</span><span class="cat-score">{{ agency.avg_accommodation_rating }}</span></div>{% endif %}
+      {% if agency.avg_value_rating %}<div class="cat-row"><span>Value for Money</span><span class="cat-score">{{ agency.avg_value_rating }}</span></div>{% endif %}
+      {% if agency.avg_transport_rating %}<div class="cat-row"><span>Transport</span><span class="cat-score">{{ agency.avg_transport_rating }}</span></div>{% endif %}
+    </div>
+    {% endif %}
+  </aside>
+
+  <main>
+    <div class="reviews-header">
+      <h1>Reviews</h1>
+      <a href="{% url 'marketplace:agency_detail' agency.pk %}" class="filter-btn">← Back to Agency</a>
+    </div>
+
+    <div class="filter-bar">
+      <span style="font-size:13px;color:#888;font-weight:500;">Sort:</span>
+      {% for key, label in "newest,Most Recent|oldest,Oldest First|highest,Highest Rated|lowest,Lowest Rated|helpful,Most Helpful"|split:"|" %}
+        <a href="?sort={{ key }}{% if current_star %}&stars={{ current_star }}{% endif %}"
+           class="filter-btn {% if current_sort == key %}active{% endif %}">{{ label }}</a>
+      {% endfor %}
+    </div>
+
+    {% if reviews %}
+      {% for review in reviews %}
+      <div class="review-card" id="review-{{ review.pk }}">
+
+        <div class="rc-header">
+          <div class="rc-reviewer">
+            <div class="rc-avatar">{{ review.reviewer.get_full_name|first|upper|default:review.reviewer.email|first|upper }}</div>
+            <div>
+              <div class="rc-name">{{ review.reviewer.get_full_name|default:review.reviewer.email }}</div>
+              <div class="rc-date">{{ review.created_at|date:"F j, Y" }}</div>
+            </div>
+          </div>
+          <div class="rc-stars">
+            {% for i in "12345" %}
+              {% if forloop.counter <= review.overall_rating %}★{% else %}<span class="empty">★</span>{% endif %}
+            {% endfor %}
+          </div>
+        </div>
+
+        <h3 class="rc-title">{{ review.title }}</h3>
+        <p class="rc-body">{{ review.body }}</p>
+
+        {% if review.rating_guides or review.rating_accommodation or review.rating_value or review.rating_transport %}
+        <div class="rc-cats">
+          {% if review.rating_guides %}<span class="cat-pill">Guides: {{ review.rating_guides }}★</span>{% endif %}
+          {% if review.rating_accommodation %}<span class="cat-pill">Stay: {{ review.rating_accommodation }}★</span>{% endif %}
+          {% if review.rating_value %}<span class="cat-pill">Value: {{ review.rating_value }}★</span>{% endif %}
+          {% if review.rating_transport %}<span class="cat-pill">Transport: {{ review.rating_transport }}★</span>{% endif %}
+        </div>
+        {% endif %}
+
+        {% if review.agency_reply %}
+        <div class="agency-reply">
+          <div class="reply-header">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+            </svg>
+            Response from {{ agency.name }}
+            <span style="font-weight:400;text-transform:none;letter-spacing:0;color:#888;font-size:11px;">
+              · {{ review.agency_reply.created_at|date:"F j, Y" }}
+            </span>
+          </div>
+          <p class="reply-body">{{ review.agency_reply.body }}</p>
+        </div>
+        {% endif %}
+
+        <div class="rc-footer">
+          <button class="helpful-btn" data-review="{{ review.pk }}"
+                  data-url="{% url 'trips:mark_helpful' review.pk %}">
+            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3H14z"/>
+              <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/>
+            </svg>
+            <span class="helpful-label">Helpful ({{ review.helpful_votes }})</span>
+          </button>
+
+          {% if user.is_authenticated and user.agency == agency and not review.agency_reply %}
+          <button class="reply-toggle" onclick="toggleReplyForm({{ review.pk }})">Reply as agency</button>
+          {% endif %}
+        </div>
+
+        {% if user.is_authenticated and user.agency == agency and not review.agency_reply %}
+        <div class="reply-form" id="reply-form-{{ review.pk }}">
+          <form method="post" action="{% url 'trips:reply_to_review' review.pk %}">
+            {% csrf_token %}
+            <textarea name="body" rows="3" placeholder="Write a public response to this review…"></textarea>
+            <br>
+            <button type="submit" class="btn-reply">Post Reply</button>
+          </form>
+        </div>
+        {% endif %}
+
+      </div>
+      {% endfor %}
+
+    {% else %}
+      <div class="empty-state">
+        <svg width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <p>No reviews yet{% if current_star %} for {{ current_star }}★{% endif %}.</p>
+        {% if current_star %}<a href="?" class="filter-btn" style="display:inline-block;margin-top:12px;">View all reviews</a>{% endif %}
+      </div>
+    {% endif %}
+  </main>
+
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  function toggleReplyForm(id) {
+    document.getElementById('reply-form-' + id).classList.toggle('open');
+  }
+
+  document.querySelectorAll('.helpful-btn').forEach(btn => {
+    btn.addEventListener('click', async function () {
+      const res = await fetch(this.dataset.url, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+      });
+      if (res.status === 403 || res.status === 401) {
+        window.location.href = '/accounts/login/?next=' + window.location.pathname;
+        return;
+      }
+      const data = await res.json();
+      this.querySelector('.helpful-label').textContent = `Helpful (${data.helpful_votes})`;
+      this.classList.toggle('voted', !data.removed);
+    });
+  });
+</script>
+{% endblock %}

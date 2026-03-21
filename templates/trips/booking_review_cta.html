@@ -1,0 +1,49 @@
+{% comment %}
+Paste inside booking_detail.html inside the booking detail section.
+{% endcomment %}
+
+<div style="margin-top:32px; border-top:1px solid #E0D8CE; padding-top:28px;">
+
+  {% if booking.status == 'completed' %}
+
+    {% if booking.review %}
+    <div style="background:#F9F5EE;border:1px solid #E0D8CE;border-radius:12px;padding:20px 24px;">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+        <div>
+          <p style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#888;margin:0 0 6px;">Your Review</p>
+          <div style="color:#D4762A;font-size:18px;letter-spacing:3px;margin-bottom:6px;">
+            {% for i in "12345" %}
+              {% if forloop.counter <= booking.review.overall_rating %}★{% else %}<span style="color:#D9D0C4;">★</span>{% endif %}
+            {% endfor %}
+          </div>
+          <p style="font-weight:600;margin:0 0 6px;">{{ booking.review.title }}</p>
+          <p style="font-size:14px;color:#444;margin:0;">{{ booking.review.body|truncatewords:30 }}</p>
+        </div>
+        <a href="{% url 'trips:agency_reviews' booking.agency.pk %}"
+           style="background:#fff;border:1.5px solid #E0D8CE;border-radius:8px;padding:8px 18px;font-size:13px;text-decoration:none;color:#1A1714;white-space:nowrap;flex-shrink:0;">
+          View Review
+        </a>
+      </div>
+    </div>
+
+    {% else %}
+    <div style="background:linear-gradient(135deg,#FFF8F2 0%,#F9F5EE 100%);border:1px solid #F5E6D3;border-radius:12px;padding:24px;display:flex;align-items:center;gap:20px;">
+      <div style="width:48px;height:48px;border-radius:10px;background:#D4762A;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">⭐</div>
+      <div style="flex:1;">
+        <p style="font-weight:600;font-size:16px;margin:0 0 4px;">How was your trip?</p>
+        <p style="font-size:13px;color:#888;margin:0;">Share your experience and help other travellers discover great agencies.</p>
+      </div>
+      <a href="{% url 'trips:submit_review' booking.pk %}"
+         style="background:#D4762A;color:#fff;text-decoration:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:500;white-space:nowrap;flex-shrink:0;">
+        Write a Review
+      </a>
+    </div>
+    {% endif %}
+
+  {% elif booking.status == 'ongoing' %}
+    <p style="font-size:13px;color:#aaa;font-style:italic;">
+      🔒 Reviews unlock once the agency marks your trip as complete.
+    </p>
+  {% endif %}
+
+</div>

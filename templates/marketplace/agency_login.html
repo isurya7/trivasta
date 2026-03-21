@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Agency Login — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600&display=swap');
+
+    .agency-login-page {
+        min-height: calc(100vh - 68px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background: var(--cream);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .agency-login-page::before {
+        content: '';
+        position: absolute;
+        width: 700px; height: 700px;
+        border-radius: 50%;
+        border: 1px solid rgba(201,168,76,0.08);
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+    }
+
+    .login-card {
+        background: var(--white);
+        border-radius: 12px;
+        box-shadow: var(--shadow-deep);
+        padding: 3rem;
+        width: 100%;
+        max-width: 420px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .login-card-icon {
+        width: 60px; height: 60px;
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 24px rgba(15,52,96,0.25);
+    }
+
+    .login-card h1 {
+        font-family: 'Fraunces', serif;
+        font-size: 1.875rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 0.35rem;
+    }
+
+    .login-card .sub {
+        font-size: 0.875rem;
+        color: var(--muted);
+        margin-bottom: 2rem;
+    }
+
+    .login-card .sub a { color: var(--sea); text-decoration: none; font-weight: 500; }
+
+    .field { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+
+    .field label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--ink-light);
+    }
+
+    .field input {
+        width: 100%;
+        padding: 0.85rem 1rem;
+        border: 1.5px solid var(--cream-dark);
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9rem;
+        color: var(--ink);
+        background: var(--cream);
+        outline: none;
+        transition: all 0.2s;
+    }
+
+    .field input:focus {
+        border-color: var(--sea);
+        background: var(--white);
+        box-shadow: 0 0 0 3px rgba(15,52,96,0.08);
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 0.9rem;
+        background: var(--sea);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        margin-top: 0.5rem;
+        transition: all 0.3s;
+    }
+
+    .submit-btn:hover { background: var(--sea-mid); transform: translateY(-1px); }
+
+    .divider {
+        text-align: center;
+        font-size: 0.775rem;
+        color: var(--muted);
+        margin: 1.5rem 0;
+        position: relative;
+    }
+
+    .divider::before, .divider::after {
+        content: '';
+        position: absolute;
+        top: 50%; width: 40%;
+        height: 1px;
+        background: var(--cream-dark);
+    }
+
+    .divider::before { left: 0; }
+    .divider::after  { right: 0; }
+
+    .user-link {
+        display: block;
+        text-align: center;
+        font-size: 0.8125rem;
+        color: var(--muted);
+    }
+
+    .user-link a { color: var(--sea); font-weight: 500; text-decoration: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="agency-login-page">
+    <div class="login-card">
+        <div class="login-card-icon">🏢</div>
+        <h1>Agency Portal</h1>
+        <p class="sub">New agency? <a href="{% url 'agency_register' %}">Apply to join →</a></p>
+
+        <form method="POST">
+            {% csrf_token %}
+            <div class="field">
+                <label>Username</label>
+                <input type="text" name="username" placeholder="Your agency username" required autocomplete="username">
+            </div>
+            <div class="field">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Your password" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="submit-btn">Sign In to Dashboard →</button>
+        </form>
+
+        <div class="divider">or</div>
+        <p class="user-link">Are you a traveler? <a href="{% url 'login' %}">Sign in here</a></p>
+    </div>
+</div>
+{% endblock %}

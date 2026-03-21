@@ -1,0 +1,776 @@
+{% extends "base.html" %}
+{% block title %}Trivasta — AI-Powered Travel Planning{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    :root {
+        --font-display: 'Cormorant Garamond', Georgia, serif;
+        --font-body: 'Outfit', sans-serif;
+    }
+    * { font-family: var(--font-body); }
+
+    /* ── HERO ─────────────────────────────────── */
+    .hero {
+        min-height: 100vh;
+        position: relative;
+        display: flex;
+        align-items: center;
+        overflow: hidden;
+    }
+
+    .hero-bg {
+        position: absolute; inset: 0;
+        background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=85');
+        background-size: cover;
+        background-position: center;
+        transform: scale(1.05);
+        animation: heroZoom 20s ease-in-out infinite alternate;
+    }
+
+    @keyframes heroZoom {
+        from { transform: scale(1.05); }
+        to   { transform: scale(1.12); }
+    }
+
+    .hero-overlay {
+        position: absolute; inset: 0;
+        background: linear-gradient(135deg, rgba(13,17,23,0.88) 0%, rgba(15,52,96,0.65) 50%, rgba(13,17,23,0.4) 100%);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        padding-top: 68px;
+    }
+
+    .hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: rgba(201,168,76,0.15);
+        border: 1px solid rgba(201,168,76,0.35);
+        padding: 0.45rem 1.1rem;
+        border-radius: 2px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #e8c97a;
+        margin-bottom: 2rem;
+        opacity: 0;
+        animation: fadeUp 0.8s 0.3s forwards;
+    }
+
+    .hero-headline {
+        font-family: var(--font-display);
+        font-size: clamp(3.5rem, 7vw, 7rem);
+        font-weight: 300;
+        color: white;
+        line-height: 1.0;
+        margin-bottom: 1.5rem;
+        opacity: 0;
+        animation: fadeUp 0.8s 0.5s forwards;
+        max-width: 800px;
+    }
+
+    .hero-headline em { font-style: italic; color: #e8c97a; display: block; }
+
+    .hero-sub {
+        font-size: 1.125rem;
+        color: rgba(255,255,255,0.65);
+        line-height: 1.7;
+        max-width: 520px;
+        margin-bottom: 2.5rem;
+        opacity: 0;
+        animation: fadeUp 0.8s 0.7s forwards;
+        font-weight: 300;
+    }
+
+    .hero-actions {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        flex-wrap: wrap;
+        opacity: 0;
+        animation: fadeUp 0.8s 0.9s forwards;
+        margin-bottom: 5rem;
+    }
+
+    /* Floating destination cards */
+    .hero-float-cards {
+        position: absolute;
+        right: 5%; top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 0.875rem;
+        z-index: 2;
+    }
+
+    .float-card {
+        background: rgba(255,255,255,0.08);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 12px;
+        padding: 0.875rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+        min-width: 240px;
+        opacity: 0;
+        transform: translateX(40px);
+        animation: slideLeft 0.7s forwards;
+        transition: transform 0.3s, background 0.3s;
+    }
+
+    .float-card:hover { background: rgba(255,255,255,0.13); transform: translateX(-4px); }
+    .float-card:nth-child(1) { animation-delay: 1.0s; }
+    .float-card:nth-child(2) { animation-delay: 1.2s; }
+    .float-card:nth-child(3) { animation-delay: 1.4s; }
+    .float-card:nth-child(4) { animation-delay: 1.6s; }
+
+    @keyframes slideLeft { to { opacity: 1; transform: translateX(0); } }
+
+    .float-card-img {
+        width: 44px; height: 44px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        display: grid;
+        place-items: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+    }
+
+    .float-card-name { font-family: var(--font-display); font-size: 1rem; font-weight: 600; color: white; }
+    .float-card-meta { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 0.1rem; }
+    .float-card-price { margin-left: auto; font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; color: #e8c97a; flex-shrink: 0; }
+
+    .scroll-indicator {
+        position: absolute;
+        bottom: 2.5rem; left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        color: rgba(255,255,255,0.4);
+        font-size: 0.72rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        animation: bounce 2s ease-in-out infinite;
+        z-index: 2;
+    }
+
+    .scroll-indicator::after {
+        content: '';
+        width: 1px; height: 40px;
+        background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateX(-50%) translateY(0); }
+        50%       { transform: translateX(-50%) translateY(8px); }
+    }
+
+    /* ── PACKAGES ─────────────────────────────── */
+    .packages-section {
+        background: var(--ink);
+        padding: 6rem 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .packages-section::before {
+        content: '';
+        position: absolute; inset: 0;
+        background:
+            radial-gradient(ellipse 60% 50% at 20% 50%, rgba(201,168,76,0.06) 0%, transparent 60%),
+            radial-gradient(ellipse 40% 60% at 80% 50%, rgba(15,52,96,0.3) 0%, transparent 60%);
+        pointer-events: none;
+    }
+
+    .packages-header {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        margin-bottom: 3rem;
+        gap: 2rem;
+    }
+
+    .packages-header-left .section-eyebrow {
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #e8c97a;
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .packages-header-left .section-eyebrow::before { content: ''; width: 28px; height: 1px; background: #e8c97a; }
+
+    .packages-header-left h2 { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 300; color: white; line-height: 1.1; }
+    .packages-header-left h2 em { font-style: italic; color: #e8c97a; }
+
+    .carousel-controls { display: flex; gap: 0.75rem; flex-shrink: 0; }
+
+    .carousel-btn {
+        width: 48px; height: 48px;
+        border-radius: 50%;
+        border: 1px solid rgba(255,255,255,0.15);
+        background: rgba(255,255,255,0.06);
+        color: white;
+        font-size: 1.1rem;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        transition: all 0.3s;
+    }
+
+    .carousel-btn:hover { background: #c9a84c; border-color: #c9a84c; color: #0d1117; transform: scale(1.05); }
+
+    .carousel-track-wrap { overflow: hidden; padding: 0 2rem; }
+
+    .carousel-track {
+        display: flex;
+        gap: 1.5rem;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+    }
+
+    /* Package Card */
+    .pkg-card {
+        flex: 0 0 340px;
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 16px;
+        overflow: hidden;
+        transition: transform 0.4s, border-color 0.4s, box-shadow 0.4s;
+        cursor: pointer;
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .pkg-card:hover { transform: translateY(-8px); border-color: rgba(201,168,76,0.4); box-shadow: 0 24px 60px rgba(0,0,0,0.4); }
+
+    .pkg-card-img {
+        height: 220px;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #0f3460, #0a2240);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+    }
+
+    .pkg-card-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; transition: transform 0.6s; }
+    .pkg-card:hover .pkg-card-img img { transform: scale(1.08); }
+
+    .pkg-card-img-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(13,17,23,0.8) 0%, transparent 50%); }
+
+    .pkg-card-category {
+        position: absolute; top: 1rem; left: 1rem;
+        background: rgba(201,168,76,0.9);
+        color: #0d1117;
+        font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+        padding: 0.3rem 0.75rem; border-radius: 2px;
+    }
+
+    .pkg-card-agency { position: absolute; bottom: 1rem; left: 1rem; font-size: 0.75rem; color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 0.4rem; }
+
+    .pkg-card-body { padding: 1.5rem; }
+
+    .pkg-card-title { font-family: var(--font-display); font-size: 1.375rem; font-weight: 600; color: white; line-height: 1.2; margin-bottom: 0.4rem; }
+    .pkg-card-dest  { font-size: 0.8125rem; color: rgba(255,255,255,0.45); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.35rem; }
+
+    .pkg-card-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+
+    .pkg-chip { font-size: 0.72rem; font-weight: 500; color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); padding: 0.25rem 0.65rem; border-radius: 100px; }
+
+    .pkg-card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); }
+
+    .pkg-card-price { font-family: var(--font-display); font-size: 1.625rem; font-weight: 600; color: #e8c97a; }
+    .pkg-card-price span { font-size: 0.75rem; color: rgba(255,255,255,0.4); font-family: var(--font-body); font-weight: 400; }
+
+    .pkg-card-btn { background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.35); color: #e8c97a; padding: 0.5rem 1.1rem; border-radius: var(--radius); font-size: 0.8rem; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-block; }
+    .pkg-card-btn:hover { background: #c9a84c; color: #0d1117; }
+
+    .no-packages { text-align: center; padding: 4rem 2rem; color: rgba(255,255,255,0.4); max-width: 1200px; margin: 0 auto; }
+    .no-packages h3 { font-family: var(--font-display); font-size: 1.75rem; font-weight: 300; color: rgba(255,255,255,0.6); margin-bottom: 0.5rem; }
+
+    /* ── DESTINATIONS — India only ────────────── */
+    .destinations-section { background: var(--cream); padding: 6rem 0; }
+
+    .dest-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: auto auto; gap: 1.25rem; margin-top: 3rem; }
+
+    .dest-card { border-radius: 16px; overflow: hidden; position: relative; cursor: pointer; box-shadow: var(--shadow); }
+
+    .dest-card-img { width: 100%; height: 280px; object-fit: cover; display: block; transition: transform 0.6s; background: linear-gradient(135deg, var(--sea), #0a2240); }
+    .dest-card:hover .dest-card-img { transform: scale(1.06); }
+
+    .dest-card-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(13,17,23,0.85) 0%, rgba(13,17,23,0.1) 60%); display: flex; flex-direction: column; justify-content: flex-end; padding: 1.75rem; }
+
+    .dest-card-name { font-family: var(--font-display); font-size: 1.625rem; font-weight: 600; color: white; line-height: 1.1; margin-bottom: 0.35rem; }
+    .dest-card-meta { font-size: 0.8125rem; color: rgba(255,255,255,0.6); margin-bottom: 0.75rem; }
+    .dest-card-price { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; color: #e8c97a; }
+
+    .dest-card.featured { grid-row: span 2; min-height: 580px; }
+    .dest-card.featured .dest-card-img { height: 100%; position: absolute; inset: 0; width: 100%; }
+    .dest-card.featured .dest-card-name { font-size: 2.25rem; }
+
+    /* ── HOW IT WORKS ─────────────────────────── */
+    .how-section { background: white; padding: 6rem 0; position: relative; overflow: hidden; }
+
+    .how-section::before {
+        content: 'JOURNEY';
+        position: absolute; top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: var(--font-display);
+        font-size: 16rem; font-weight: 600;
+        color: rgba(15,52,96,0.025);
+        white-space: nowrap; pointer-events: none;
+    }
+
+    .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; margin-top: 4rem; }
+
+    .steps-grid::before {
+        content: '';
+        position: absolute;
+        top: 2.5rem; left: 12.5%; right: 12.5%;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--gold), var(--gold), transparent);
+        opacity: 0.3; z-index: 0;
+    }
+
+    .step-item { text-align: center; padding: 0 2rem 3rem; position: relative; }
+
+    .step-num-wrap {
+        width: 56px; height: 56px; border-radius: 50%;
+        background: white; border: 2px solid var(--cream-dark);
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 1.5rem; position: relative; z-index: 1;
+        transition: all 0.3s; font-size: 1.5rem;
+    }
+
+    .step-item:hover .step-num-wrap { border-color: var(--gold); background: rgba(201,168,76,0.08); transform: scale(1.1); }
+
+    .step-title { font-weight: 600; font-size: 1rem; color: var(--ink); margin-bottom: 0.5rem; }
+    .step-desc  { font-size: 0.875rem; color: var(--muted); line-height: 1.65; }
+
+    /* ── AGENCY CTA ───────────────────────────── */
+    .agency-cta {
+        background: linear-gradient(135deg, #0f3460 0%, #0a2240 100%);
+        padding: 5rem 2rem; position: relative; overflow: hidden;
+    }
+
+    .agency-cta::before {
+        content: '';
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+        background-size: 60px 60px;
+    }
+
+    .agency-cta-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 3rem; position: relative; }
+    .agency-cta h2 { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 300; color: white; line-height: 1.15; margin-bottom: 0.75rem; }
+    .agency-cta h2 em { font-style: italic; color: #e8c97a; }
+    .agency-cta p { color: rgba(255,255,255,0.55); font-size: 0.9375rem; line-height: 1.7; max-width: 500px; }
+    .agency-cta-btns { display: flex; gap: 0.75rem; flex-shrink: 0; }
+
+    /* ── FINAL CTA ────────────────────────────── */
+    .final-cta { background: var(--cream); padding: 7rem 2rem; text-align: center; position: relative; overflow: hidden; }
+
+    .final-cta::before { content: ''; position: absolute; width: 800px; height: 800px; border-radius: 50%; border: 1px solid rgba(201,168,76,0.1); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+    .final-cta::after  { content: ''; position: absolute; width: 500px; height: 500px; border-radius: 50%; border: 1px solid rgba(201,168,76,0.08); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+
+    .final-cta-content { position: relative; z-index: 1; }
+    .final-cta h2 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 5.5rem); font-weight: 300; color: var(--ink); line-height: 1.05; margin-bottom: 1.25rem; }
+    .final-cta h2 em { font-style: italic; color: var(--sea); }
+    .final-cta p { font-size: 1.0625rem; color: var(--muted); max-width: 480px; margin: 0 auto 2.5rem; line-height: 1.7; }
+
+    /* ── SHARED ───────────────────────────────── */
+    .section-eyebrow { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .section-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--gold); }
+    .section-title { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.25rem); font-weight: 300; color: var(--ink); line-height: 1.1; }
+    .section-title em { font-style: italic; color: var(--sea); }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 1024px) {
+        .hero-float-cards { display: none; }
+        .dest-grid { grid-template-columns: 1fr 1fr; }
+        .dest-card.featured { grid-row: span 1; min-height: 280px; }
+        .dest-card.featured .dest-card-img { position: relative; inset: auto; height: 280px; width: 100%; }
+        .steps-grid { grid-template-columns: repeat(2, 1fr); }
+        .steps-grid::before { display: none; }
+        .agency-cta-inner { grid-template-columns: 1fr; }
+        .agency-cta-btns { flex-wrap: wrap; }
+    }
+
+    @media (max-width: 768px) {
+        .hero-headline { font-size: 3rem; }
+        .dest-grid { grid-template-columns: 1fr; }
+        .pkg-card { flex: 0 0 280px; }
+        .steps-grid { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+        <div class="hero-eyebrow">✦ AI-Powered Travel Planning</div>
+
+        {% if user_agency %}
+        <h1 class="hero-headline">Welcome back,<em>{{ user_agency.name }}</em></h1>
+        <p class="hero-sub">Manage your packages, respond to trip requests and grow your revenue — all from your agency dashboard.</p>
+        <div class="hero-actions">
+            <a href="{% url 'agency_dashboard' %}" class="btn btn-gold" style="font-size:1rem;padding:1rem 2.25rem;">🏢 Go to Dashboard</a>
+            <a href="#packages" class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.3);font-size:1rem;">Browse Packages</a>
+        </div>
+
+        {% elif user.is_authenticated %}
+        <h1 class="hero-headline">Welcome back,<em>{{ user.username }}</em></h1>
+        <p class="hero-sub">Ready for your next adventure? Plan a new trip or explore packages from verified agencies.</p>
+        <div class="hero-actions">
+            <a href="{% url 'planner' %}" class="btn btn-gold" style="font-size:1rem;padding:1rem 2.25rem;">✦ Plan a New Trip</a>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.3);font-size:1rem;">My Dashboard</a>
+        </div>
+
+        {% else %}
+        <h1 class="hero-headline">Discover India<em>your way</em></h1>
+        <p class="hero-sub">Tell us your dream destination. Our AI crafts a personalised itinerary in seconds, then connects you with verified travel agencies competing for your business.</p>
+        <div class="hero-actions">
+            <a href="{% url 'planner' %}" class="btn btn-gold" style="font-size:1rem;padding:1rem 2.25rem;">✦ Plan My Trip — Free</a>
+            <a href="#packages" class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.3);font-size:1rem;">Browse Packages</a>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if not user_agency %}
+    <div class="hero-float-cards">
+        <div class="float-card">
+            <div class="float-card-img">🏔️</div>
+            <div><div class="float-card-name">Leh–Ladakh</div><div class="float-card-meta">7 days · Adventure</div></div>
+            <div class="float-card-price">₹45K</div>
+        </div>
+        <div class="float-card">
+            <div class="float-card-img">🌴</div>
+            <div><div class="float-card-name">Kerala Backwaters</div><div class="float-card-meta">6 days · Leisure</div></div>
+            <div class="float-card-price">₹28K</div>
+        </div>
+        <div class="float-card">
+            <div class="float-card-img">🏯</div>
+            <div><div class="float-card-name">Rajasthan</div><div class="float-card-meta">8 days · Heritage</div></div>
+            <div class="float-card-price">₹32K</div>
+        </div>
+        <div class="float-card">
+            <div class="float-card-img">🏖️</div>
+            <div><div class="float-card-name">Goa</div><div class="float-card-meta">5 days · Beach</div></div>
+            <div class="float-card-price">₹18K</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="scroll-indicator">Scroll</div>
+</section>
+
+
+<!-- PACKAGES CAROUSEL -->
+<section class="packages-section" id="packages">
+    <div class="packages-header">
+        <div class="packages-header-left">
+            <div class="section-eyebrow" style="color:#e8c97a;">Featured Packages</div>
+            <h2>Curated by our <em>partner agencies</em></h2>
+        </div>
+        <div class="carousel-controls">
+            <button class="carousel-btn" id="prevBtn" onclick="moveCarousel(-1)" aria-label="Previous">←</button>
+            <button class="carousel-btn" id="nextBtn" onclick="moveCarousel(1)"  aria-label="Next">→</button>
+        </div>
+    </div>
+
+    {% if packages %}
+    <div class="carousel-track-wrap">
+        <div class="carousel-track" id="carouselTrack">
+            {% for pkg in packages %}
+            <a href="{% url 'package_detail' pkg.id %}" class="pkg-card">
+                <div class="pkg-card-img">
+                    {% if pkg.images.first %}
+                        <img src="{{ pkg.images.first.get_url }}" alt="{{ pkg.title }}" loading="lazy">
+                        <div class="pkg-card-img-overlay"></div>
+                    {% elif pkg.image_url %}
+                        <img src="{{ pkg.image_url }}" alt="{{ pkg.title }}" loading="lazy">
+                        <div class="pkg-card-img-overlay"></div>
+                    {% else %}
+                        {% if pkg.category == 'adventure' %}🏔️
+                        {% elif pkg.category == 'cultural' %}🏛️
+                        {% elif pkg.category == 'leisure' %}🌴
+                        {% elif pkg.category == 'romantic' %}💑
+                        {% elif pkg.category == 'family' %}👨‍👩‍👧
+                        {% elif pkg.category == 'luxury' %}✨
+                        {% elif pkg.category == 'solo' %}🎒
+                        {% else %}✈️{% endif %}
+                    {% endif %}
+                    <div class="pkg-card-category">{{ pkg.get_category_display }}</div>
+                    <div class="pkg-card-agency">🏢 {{ pkg.agency.name }}</div>
+                </div>
+                <div class="pkg-card-body">
+                    <div class="pkg-card-title">{{ pkg.title }}</div>
+                    <div class="pkg-card-dest">📍 {{ pkg.destination }}</div>
+                    <div class="pkg-card-meta">
+                        <span class="pkg-chip">📅 {{ pkg.duration }} days</span>
+                        {% if pkg.agency.avg_overall_rating > 0 %}
+                        <span class="pkg-chip">⭐ {{ pkg.agency.avg_overall_rating }}</span>
+                        {% endif %}
+                        {% if pkg.agency.status == 'approved' %}
+                        <span class="pkg-chip" style="color:#27ae60;border-color:rgba(39,174,96,0.3);">✓ Verified</span>
+                        {% endif %}
+                    </div>
+                    <div class="pkg-card-footer">
+                        <div class="pkg-card-price">₹{{ pkg.price|floatformat:0 }} <span>/ person</span></div>
+                        <span class="pkg-card-btn">View →</span>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% else %}
+    <div class="no-packages">
+        <div style="font-size:3rem;margin-bottom:1rem;">📦</div>
+        <h3>No packages yet</h3>
+        {% if not user.is_authenticated %}
+        <p style="margin-top:0.5rem;">Are you a travel agency? <a href="{% url 'agency_register' %}" style="color:#e8c97a;text-decoration:none;font-weight:600;">Join Trivasta →</a></p>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+
+
+<!-- DESTINATIONS — India only -->
+<section class="destinations-section">
+    <div class="container">
+        <div class="section-eyebrow">Explore India</div>
+        <h2 class="section-title">Popular <em>destinations</em></h2>
+        <p style="color:var(--muted);margin-top:0.75rem;font-size:1rem;max-width:480px;line-height:1.7;">
+            From snow-capped peaks to tropical backwaters — India's diversity is unmatched.
+        </p>
+
+        <div class="dest-grid">
+            <div class="dest-card featured">
+                <img class="dest-card-img"
+                     src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=80"
+                     alt="Rajasthan" loading="lazy">
+                <div class="dest-card-overlay">
+                    <div class="dest-card-name">Rajasthan</div>
+                    <div class="dest-card-meta">6–10 days · Heritage & Culture</div>
+                    <div class="dest-card-price">From ₹25,000</div>
+                </div>
+            </div>
+
+            <div class="dest-card">
+                <img class="dest-card-img"
+                     src="https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800&q=80"
+                     alt="Kerala" loading="lazy">
+                <div class="dest-card-overlay">
+                    <div class="dest-card-name">Kerala</div>
+                    <div class="dest-card-meta">5–8 days · Backwaters & Nature</div>
+                    <div class="dest-card-price">From ₹22,000</div>
+                </div>
+            </div>
+
+            <div class="dest-card">
+                <img class="dest-card-img"
+                     src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80"
+                     alt="Leh Ladakh" loading="lazy">
+                <div class="dest-card-overlay">
+                    <div class="dest-card-name">Leh–Ladakh</div>
+                    <div class="dest-card-meta">7–10 days · Mountains & Adventure</div>
+                    <div class="dest-card-price">From ₹40,000</div>
+                </div>
+            </div>
+
+            <div class="dest-card">
+                <img class="dest-card-img"
+                     src="https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800&q=80"
+                     alt="Goa" loading="lazy">
+                <div class="dest-card-overlay">
+                    <div class="dest-card-name">Goa</div>
+                    <div class="dest-card-meta">4–6 days · Beaches & Nightlife</div>
+                    <div class="dest-card-price">From ₹15,000</div>
+                </div>
+            </div>
+
+            <div class="dest-card">
+                <img class="dest-card-img"
+                     src="https://images.unsplash.com/photo-1548013146-72479768bada?w=800&q=80"
+                     alt="Agra" loading="lazy">
+                <div class="dest-card-overlay">
+                    <div class="dest-card-name">Agra & Golden Triangle</div>
+                    <div class="dest-card-meta">4–6 days · History & Architecture</div>
+                    <div class="dest-card-price">From ₹18,000</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- HOW IT WORKS -->
+{% if not user_agency %}
+<section class="how-section">
+    <div class="container">
+        <div style="text-align:center;">
+            <div class="section-eyebrow" style="justify-content:center;">The Process</div>
+            <h2 class="section-title">Travel planning, <em>reimagined</em></h2>
+            <p style="color:var(--muted);margin-top:0.75rem;font-size:1rem;max-width:500px;margin-left:auto;margin-right:auto;line-height:1.7;">
+                Four steps from dream to departure — powered by AI and trusted agencies.
+            </p>
+        </div>
+        <div class="steps-grid">
+            <div class="step-item">
+                <div class="step-num-wrap">✏️</div>
+                <div class="step-title">Tell us your dream</div>
+                <div class="step-desc">Enter your destination, budget, duration and travel style. That's all we need.</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num-wrap">🤖</div>
+                <div class="step-title">AI builds your plan</div>
+                <div class="step-desc">Our AI crafts a detailed day-by-day itinerary tailored to your preferences in seconds.</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num-wrap">🏢</div>
+                <div class="step-title">Agencies compete</div>
+                <div class="step-desc">Verified travel agencies send you their best offers — you compare and choose.</div>
+            </div>
+            <div class="step-item">
+                <div class="step-num-wrap">✈️</div>
+                <div class="step-title">Book &amp; travel</div>
+                <div class="step-desc">Pay securely through Trivasta and embark on your journey with full support.</div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+
+<!-- AGENCY CTA -->
+<section class="agency-cta">
+    <div class="agency-cta-inner">
+        {% if user_agency %}
+        <div>
+            <div class="section-eyebrow" style="color:#e8c97a;">Your Agency</div>
+            <h2>You're part of<br><em>Trivasta</em></h2>
+            <p>Manage your packages, view incoming trip requests and grow your bookings — everything is in your dashboard.</p>
+        </div>
+        <div class="agency-cta-btns">
+            <a href="{% url 'agency_dashboard' %}" class="btn btn-gold">🏢 Go to Dashboard →</a>
+        </div>
+
+        {% elif user.is_authenticated %}
+        <div>
+            <div class="section-eyebrow" style="color:#e8c97a;">Ready to Explore?</div>
+            <h2>Plan your next<br><em>adventure</em></h2>
+            <p>Use our AI planner to build a personalised itinerary, then let verified agencies compete to give you the best deal.</p>
+        </div>
+        <div class="agency-cta-btns">
+            <a href="{% url 'planner' %}" class="btn btn-gold">✦ Plan a Trip →</a>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.3);">My Dashboard</a>
+        </div>
+
+        {% else %}
+        <div>
+            <div class="section-eyebrow" style="color:#e8c97a;">For Travel Agencies</div>
+            <h2>Grow your business<br>with <em>Trivasta</em></h2>
+            <p>Join our marketplace and connect with travellers actively looking for their perfect trip. List your packages and respond to trip requests directly.</p>
+        </div>
+        <div class="agency-cta-btns">
+            <a href="{% url 'agency_register' %}" class="btn btn-gold">Join as Agency →</a>
+            <a href="{% url 'agency_login' %}" class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.3);">Agency Login</a>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+
+<!-- FINAL CTA -->
+{% if not user_agency %}
+<section class="final-cta">
+    <div class="final-cta-content">
+        <div class="section-eyebrow" style="justify-content:center;margin-bottom:1.5rem;">Ready to Explore</div>
+        <h2>Your next adventure<br><em>starts here</em></h2>
+        <p>Plan your dream trip across India with AI-powered itineraries and verified travel agencies.</p>
+
+        {% if user.is_authenticated %}
+            <a href="{% url 'planner' %}" class="btn btn-primary" style="font-size:1rem;padding:1rem 2.5rem;">✦ Plan a New Trip</a>
+        {% else %}
+            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                <a href="{% url 'planner' %}" class="btn btn-primary" style="font-size:1rem;padding:1rem 2.5rem;">✦ Generate My Itinerary</a>
+                <a href="{% url 'register' %}" class="btn btn-outline" style="font-size:1rem;padding:1rem 2.5rem;">Create Free Account</a>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let currentIndex = 0;
+    const cardWidth  = 340 + 24;
+
+    function moveCarousel(dir) {
+        const track = document.getElementById('carouselTrack');
+        if (!track) return;
+        const cards   = track.querySelectorAll('.pkg-card');
+        const visible = Math.max(1, Math.floor(track.parentElement.offsetWidth / cardWidth));
+        const maxIndex = Math.max(0, cards.length - visible);
+
+        currentIndex = Math.max(0, Math.min(currentIndex + dir, maxIndex));
+        track.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
+
+        document.getElementById('prevBtn').style.opacity = currentIndex === 0        ? '0.4' : '1';
+        document.getElementById('nextBtn').style.opacity = currentIndex >= maxIndex  ? '0.4' : '1';
+    }
+
+    // Auto-play carousel
+    setInterval(() => moveCarousel(1), 5000);
+
+    // Scroll reveal
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(el => {
+            if (el.isIntersecting) {
+                el.target.style.opacity   = '1';
+                el.target.style.transform = 'translateY(0)';
+            }
+        });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.step-item, .dest-card').forEach(el => {
+        el.style.opacity   = '0';
+        el.style.transform = 'translateY(24px)';
+        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(el);
+    });
+</script>
+{% endblock %}

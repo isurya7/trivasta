@@ -1,0 +1,475 @@
+{% extends "base.html" %}
+{% block title %}Checkout — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    .checkout-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        font-family: 'Outfit', sans-serif;
+        padding: 3rem 2rem;
+    }
+
+    .checkout-inner {
+        max-width: 1000px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    .checkout-eyebrow {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .checkout-eyebrow::before { content: ''; width: 20px; height: 1px; background: var(--gold); }
+
+    .checkout-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem;
+        font-weight: 300;
+        color: var(--ink);
+        line-height: 1.1;
+        margin-bottom: 2rem;
+    }
+
+    .checkout-title em { font-style: italic; color: var(--sea); }
+
+    .trip-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .trip-card-header {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .trip-card-header::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.06) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+
+    .trip-card-header-content { position: relative; z-index: 1; }
+
+    .trip-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(201,168,76,0.2);
+        border: 1px solid rgba(201,168,76,0.35);
+        color: #e8c97a;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 0.3rem 0.75rem;
+        border-radius: 2px;
+        margin-bottom: 0.875rem;
+    }
+
+    .trip-destination {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 0.25rem;
+    }
+
+    .trip-agency { font-size: 0.875rem; color: rgba(255,255,255,0.55); }
+
+    .trip-meta {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 1.25rem;
+        flex-wrap: wrap;
+    }
+
+    .trip-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.8125rem;
+        color: rgba(255,255,255,0.65);
+    }
+
+    .trip-card-body { padding: 2rem; }
+
+    .offer-message {
+        background: var(--cream);
+        border-radius: 10px;
+        padding: 1.25rem;
+        font-size: 0.9rem;
+        color: var(--muted);
+        line-height: 1.7;
+        border-left: 3px solid var(--gold);
+        margin-bottom: 1.5rem;
+    }
+
+    .offer-message strong {
+        color: var(--ink);
+        display: block;
+        margin-bottom: 0.4rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    .inclusions-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ink-light);
+        margin-bottom: 0.875rem;
+    }
+
+    .inclusions-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+
+    .inclusion-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8125rem;
+        color: var(--muted);
+    }
+
+    .inclusion-icon { color: #27ae60; flex-shrink: 0; }
+
+    .trust-row {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .trust-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.75rem;
+        color: var(--muted);
+        background: var(--cream);
+        padding: 0.4rem 0.875rem;
+        border-radius: 100px;
+        border: 1px solid var(--cream-dark);
+    }
+
+    /* SIDEBAR */
+    .price-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        position: sticky;
+        top: 88px;
+    }
+
+    .price-card-header {
+        background: linear-gradient(135deg, #0f3460, #0a2240);
+        padding: 1.5rem;
+    }
+
+    .price-card-header h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.375rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 0.2rem;
+    }
+
+    .price-card-header p { font-size: 0.8rem; color: rgba(255,255,255,0.45); }
+
+    .price-card-body { padding: 1.5rem; }
+
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        font-size: 0.9rem;
+        border-bottom: 1px solid var(--cream-dark);
+    }
+
+    .price-row:last-child { border-bottom: none; }
+    .price-row .label { color: var(--muted); }
+    .price-row .amount { font-weight: 500; color: var(--ink); }
+    .price-row .amount.free { color: #27ae60; font-weight: 600; }
+
+    .price-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 2px solid var(--cream-dark);
+    }
+
+    .price-total .label { font-weight: 600; color: var(--ink); font-size: 0.9375rem; }
+
+    .price-total .amount {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--sea);
+    }
+
+    .free-notice {
+        background: rgba(39,174,96,0.07);
+        border: 1px solid rgba(39,174,96,0.2);
+        border-radius: 8px;
+        padding: 0.875rem 1rem;
+        margin: 1rem 0;
+        font-size: 0.8rem;
+        color: #27ae60;
+        line-height: 1.55;
+    }
+
+    .pay-btn {
+        width: 100%;
+        padding: 1.1rem;
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1.25rem;
+    }
+
+    .pay-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(15,52,96,0.35); }
+    .pay-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    .pay-note {
+        text-align: center;
+        font-size: 0.72rem;
+        color: var(--muted);
+        margin-top: 0.875rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+    }
+
+    .cancel-policy {
+        background: var(--cream);
+        border-radius: 10px;
+        padding: 1rem;
+        margin-top: 1rem;
+        font-size: 0.8rem;
+        color: var(--muted);
+        line-height: 1.6;
+    }
+
+    .cancel-policy strong {
+        display: block;
+        color: var(--ink);
+        margin-bottom: 0.25rem;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .checkout-main { animation: fadeUp 0.5s ease both; }
+    .checkout-sidebar { animation: fadeUp 0.5s 0.15s ease both; }
+
+    @media (max-width: 768px) {
+        .checkout-inner { grid-template-columns: 1fr; }
+        .price-card { position: static; }
+        .inclusions-grid { grid-template-columns: 1fr; }
+        .checkout-title { font-size: 2rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-page">
+    <div class="checkout-inner">
+
+        <!-- LEFT -->
+        <div class="checkout-main">
+            <div class="checkout-eyebrow">Secure Checkout</div>
+            <h1 class="checkout-title">Review your <em>booking</em></h1>
+
+            <div class="trip-card">
+                <div class="trip-card-header">
+                    <div class="trip-card-header-content">
+                        <div class="trip-badge">✦ Verified Agency Offer</div>
+                        <div class="trip-destination">{{ offer.trip.destination }}</div>
+                        <div class="trip-agency">by {{ offer.agency.name }}</div>
+                        <div class="trip-meta">
+                            <div class="trip-meta-item">📅 {{ offer.trip.days }} days</div>
+                            <div class="trip-meta-item">👥 {{ offer.trip.num_people|default:"1" }} traveller{{ offer.trip.num_people|default:"1"|pluralize }}</div>
+                            <div class="trip-meta-item">🎒 {{ offer.trip.travel_type|capfirst }}</div>
+                            <div class="trip-meta-item">
+                                {% if offer.trip.travel_mode == 'flight' %}✈️
+                                {% elif offer.trip.travel_mode == 'train' %}🚂
+                                {% elif offer.trip.travel_mode == 'bus' %}🚌
+                                {% elif offer.trip.travel_mode == 'car' %}🚗
+                                {% elif offer.trip.travel_mode == 'cruise' %}🚢
+                                {% else %}🚀{% endif %}
+                                {{ offer.trip.get_travel_mode_display }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="trip-card-body">
+                    <div class="offer-message">
+                        <strong>Message from {{ offer.agency.name }}</strong>
+                        {{ offer.message|default:"We're excited to host your trip! Our team will reach out within 24 hours of booking confirmation to discuss your itinerary in detail." }}
+                    </div>
+
+                    <div class="inclusions-title">What's Included</div>
+                    <div class="inclusions-grid">
+                        <div class="inclusion-item"><span class="inclusion-icon">✓</span> Professional guide</div>
+                        <div class="inclusion-item"><span class="inclusion-icon">✓</span> Accommodation</div>
+                        <div class="inclusion-item"><span class="inclusion-icon">✓</span> Meals as per itinerary</div>
+                        <div class="inclusion-item"><span class="inclusion-icon">✓</span> Local transport</div>
+                        <div class="inclusion-item"><span class="inclusion-icon">✓</span> Activity entry fees</div>
+                        <div class="inclusion-item"><span class="inclusion-icon">✓</span> 24/7 support</div>
+                    </div>
+
+                    <div class="trust-row">
+                        <div class="trust-badge">🔒 Secure Payment</div>
+                        <div class="trust-badge">✅ Verified Agency</div>
+                        <div class="trust-badge">🛡️ Buyer Protected</div>
+                        <div class="trust-badge">📞 24/7 Support</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT SIDEBAR -->
+        <div class="checkout-sidebar">
+            <div class="price-card">
+                <div class="price-card-header">
+                    <h3>Price Summary</h3>
+                    <p>Transparent pricing — no surprises</p>
+                </div>
+                <div class="price-card-body">
+                    <div class="price-row">
+                        <span class="label">Package Price</span>
+                        <span class="amount">₹{{ base_amount }}</span>
+                    </div>
+                    <div class="price-row">
+                        <span class="label">Platform Fee</span>
+                        <span class="amount free">FREE 🎉</span>
+                    </div>
+                    <div class="price-row">
+                        <span class="label">GST (18%)</span>
+                        <span class="amount">₹{{ gst_amount }}</span>
+                    </div>
+                    <div class="price-total">
+                        <span class="label">Total Payable</span>
+                        <span class="amount">₹{{ total }}</span>
+                    </div>
+
+                    <div class="free-notice">
+                        ✅ Trivasta charges <strong>zero platform fee</strong> from travelers. You only pay the package price + 18% GST.
+                    </div>
+
+                    <button class="pay-btn" id="payBtn">
+                        🔒 Pay ₹{{ total }} Securely
+                    </button>
+
+                    <p class="pay-note">🔐 256-bit SSL · Powered by Razorpay</p>
+
+                    <div class="cancel-policy">
+                        <strong>Cancellation Policy</strong>
+                        Free cancellation within 24 hours. Refunds processed in 5–7 business days.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    document.getElementById('payBtn').addEventListener('click', function () {
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Opening payment...';
+
+        var options = {
+            key:         "{{ razorpay_key }}",
+            amount:      {{ total }} * 100,
+            currency:    "INR",
+            name:        "Trivasta",
+            description: "Trip to {{ offer.trip.destination }}",
+            order_id:    "{{ razorpay_order_id }}",
+            prefill: {
+                name:    "{{ user.username }}",
+                email:   "{{ user.email|default:'' }}",
+                contact: ""
+            },
+            theme: { color: "#0f3460" },
+            modal: {
+                ondismiss: function () {
+                    btn.disabled = false;
+                    btn.innerHTML = '🔒 Pay ₹{{ total }} Securely';
+                }
+            },
+            handler: function (response) {
+                btn.innerHTML = '✅ Confirming...';
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = "{% url 'payment_success' %}";
+                var fields = {
+                    'razorpay_order_id':   response.razorpay_order_id,
+                    'razorpay_payment_id': response.razorpay_payment_id,
+                    'razorpay_signature':  response.razorpay_signature,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                };
+                Object.entries(fields).forEach(([k, v]) => {
+                    var i = document.createElement('input');
+                    i.type = 'hidden'; i.name = k; i.value = v;
+                    form.appendChild(i);
+                });
+                document.body.appendChild(form);
+                form.submit();
+            }
+        };
+        new Razorpay(options).open();
+    });
+</script>
+{% endblock %}

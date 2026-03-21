@@ -1,0 +1,1103 @@
+{% extends "base.html" %}
+{% block title %}Trivasta Admin — Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    .admin-page {
+        background: #0d1117;
+        min-height: calc(100vh - 68px);
+        font-family: 'Outfit', sans-serif;
+        padding: 2.5rem 2rem 5rem;
+    }
+
+    .admin-inner {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    /* ── TOP HEADER ── */
+    .admin-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 2.5rem;
+        gap: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .admin-header-left {}
+
+    .admin-eyebrow {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #e8c97a;
+        margin-bottom: 0.4rem;
+    }
+
+    .admin-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.25rem;
+        font-weight: 300;
+        color: white;
+        line-height: 1.1;
+    }
+
+    .admin-title em { font-style: italic; color: #e8c97a; }
+
+    .admin-title-sub {
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.35);
+        margin-top: 0.25rem;
+    }
+
+    .admin-live-badge {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(39,174,96,0.1);
+        border: 1px solid rgba(39,174,96,0.25);
+        border-radius: 100px;
+        padding: 0.5rem 1rem;
+        font-size: 0.775rem;
+        font-weight: 600;
+        color: #27ae60;
+    }
+
+    .live-dot {
+        width: 7px; height: 7px;
+        background: #27ae60;
+        border-radius: 50%;
+        animation: livePulse 1.5s infinite;
+    }
+
+    @keyframes livePulse {
+        0%,100% { opacity:1; transform:scale(1); }
+        50%      { opacity:0.4; transform:scale(0.8); }
+    }
+
+    /* ── STATS GRID ── */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: #161b22;
+        border: 1px solid #21262d;
+        border-radius: 14px;
+        padding: 1.5rem;
+        transition: all 0.3s;
+        animation: fadeUp 0.5s ease both;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 3px;
+        background: var(--accent, #0f3460);
+        border-radius: 0 0 14px 14px;
+    }
+
+    .stat-card:hover {
+        border-color: #30363d;
+        transform: translateY(-2px);
+    }
+
+    .stat-card-icon {
+        font-size: 1.5rem;
+        margin-bottom: 0.875rem;
+    }
+
+    .stat-card-num {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 600;
+        color: white;
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-card-label {
+        font-size: 0.8rem;
+        color: rgba(255,255,255,0.4);
+    }
+
+    .stat-card-delta {
+        font-size: 0.72rem;
+        font-weight: 600;
+        margin-top: 0.4rem;
+        color: #27ae60;
+    }
+
+    /* ── SECTION ── */
+    .admin-section {
+        margin-bottom: 2rem;
+    }
+
+    .section-hd {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+        gap: 1rem;
+    }
+
+    .section-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.375rem;
+        font-weight: 600;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-title::before {
+        content: '';
+        width: 4px; height: 20px;
+        background: #e8c97a;
+        border-radius: 2px;
+        display: inline-block;
+        flex-shrink: 0;
+    }
+
+    .section-count {
+        font-size: 0.75rem;
+        color: rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.06);
+        padding: 0.2rem 0.65rem;
+        border-radius: 100px;
+    }
+
+    /* ── CHARTS ROW ── */
+    .charts-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 2rem;
+    }
+
+    .chart-card {
+        background: #161b22;
+        border: 1px solid #21262d;
+        border-radius: 14px;
+        padding: 1.5rem;
+    }
+
+    .chart-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: rgba(255,255,255,0.7);
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .chart-canvas { width: 100% !important; }
+
+    /* ── TABLES ── */
+    .table-card {
+        background: #161b22;
+        border: 1px solid #21262d;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .table-card-header {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid #21262d;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .table-card-title {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .admin-table { width: 100%; border-collapse: collapse; }
+
+    .admin-table th {
+        text-align: left;
+        padding: 0.875rem 1.5rem;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.3);
+        background: rgba(255,255,255,0.03);
+        border-bottom: 1px solid #21262d;
+    }
+
+    .admin-table td {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #21262d;
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.75);
+        vertical-align: middle;
+    }
+
+    .admin-table tr:last-child td { border-bottom: none; }
+
+    .admin-table tr:hover td {
+        background: rgba(255,255,255,0.02);
+    }
+
+    .td-main { color: white !important; font-weight: 600; }
+    .td-muted { color: rgba(255,255,255,0.35) !important; font-size: 0.8rem !important; }
+
+    .td-amount {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.125rem !important;
+        color: #e8c97a !important;
+        font-weight: 600;
+    }
+
+    /* ── BADGES ── */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 0.2rem 0.6rem;
+        border-radius: 2px;
+    }
+
+    .badge-approved { background: rgba(39,174,96,0.15);  color: #27ae60; }
+    .badge-pending  { background: rgba(243,156,18,0.15); color: #f39c12; }
+    .badge-rejected { background: rgba(231,76,60,0.12);  color: #e74c3c; }
+    .badge-paid     { background: rgba(39,174,96,0.15);  color: #27ae60; }
+    .badge-warn     { background: rgba(231,76,60,0.12);  color: #e74c3c; }
+    .badge-enterprise   { background: rgba(201,168,76,0.15); color: #e8c97a; }
+    .badge-professional { background: rgba(15,52,96,0.3);    color: #7fa8d4; }
+    .badge-starter      { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); }
+
+    /* ── ACTION BUTTONS ── */
+    .action-btn {
+        padding: 0.35rem 0.875rem;
+        border-radius: 6px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.775rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .btn-approve { background: rgba(39,174,96,0.15);  color: #27ae60; }
+    .btn-approve:hover { background: rgba(39,174,96,0.25); }
+    .btn-reject  { background: rgba(231,76,60,0.12);  color: #e74c3c; }
+    .btn-reject:hover  { background: rgba(231,76,60,0.22); }
+    .btn-reset   { background: rgba(243,156,18,0.12); color: #f39c12; }
+    .btn-reset:hover   { background: rgba(243,156,18,0.22); }
+
+    /* ── PENDING AGENCIES ── */
+    .pending-card {
+        background: #161b22;
+        border: 1px solid #21262d;
+        border-radius: 14px;
+        overflow: hidden;
+    }
+
+    .pending-empty {
+        padding: 2.5rem;
+        text-align: center;
+        color: rgba(255,255,255,0.25);
+        font-size: 0.875rem;
+    }
+
+    /* ── TWO COL GRID ── */
+    .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+    }
+
+    /* ── TABS ── */
+    .admin-tabs {
+        display: flex;
+        gap: 0.25rem;
+        background: #161b22;
+        border: 1px solid #21262d;
+        border-radius: 8px;
+        padding: 0.3rem;
+        margin-bottom: 1.75rem;
+        overflow-x: auto;
+    }
+
+    .admin-tab {
+        padding: 0.55rem 1.25rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: rgba(255,255,255,0.4);
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-family: 'Outfit', sans-serif;
+        white-space: nowrap;
+        transition: all 0.2s;
+    }
+
+    .admin-tab.active {
+        background: #0f3460;
+        color: white;
+    }
+
+    .admin-tab:hover:not(.active) {
+        color: rgba(255,255,255,0.7);
+        background: rgba(255,255,255,0.05);
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* ── ALERT BANNER ── */
+    .alert-banner {
+        background: rgba(231,76,60,0.08);
+        border: 1px solid rgba(231,76,60,0.2);
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+        color: #e74c3c;
+    }
+
+    /* ── AI INSIGHTS ── */
+    .insights-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+    }
+
+    .insight-card {
+        background: #161b22;
+        border: 1px solid #21262d;
+        border-radius: 12px;
+        padding: 1.25rem;
+        transition: all 0.25s;
+    }
+
+    .insight-card:hover {
+        border-color: rgba(201,168,76,0.3);
+        background: #1a2030;
+    }
+
+    .insight-icon {
+        font-size: 1.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .insight-title {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 0.4rem;
+    }
+
+    .insight-body {
+        font-size: 0.8rem;
+        color: rgba(255,255,255,0.4);
+        line-height: 1.65;
+    }
+
+    .insight-value {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #e8c97a;
+        margin-bottom: 0.2rem;
+    }
+
+    /* ── SCROLLBAR ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0d1117; }
+    ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+
+    @keyframes fadeUp {
+        from { opacity:0; transform:translateY(12px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+
+    @media (max-width: 1100px) {
+        .stats-grid   { grid-template-columns: repeat(2, 1fr); }
+        .charts-row   { grid-template-columns: 1fr; }
+        .two-col      { grid-template-columns: 1fr; }
+        .insights-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 640px) {
+        .stats-grid    { grid-template-columns: 1fr 1fr; }
+        .insights-grid { grid-template-columns: 1fr; }
+        .admin-tabs { gap: 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-page">
+    <div class="admin-inner">
+
+        <!-- ── HEADER ── -->
+        <div class="admin-header">
+            <div class="admin-header-left">
+                <div class="admin-eyebrow">✦ Trivasta Command Centre</div>
+                <h1 class="admin-title">Admin <em>Dashboard</em></h1>
+                <div class="admin-title-sub">
+                    Full platform overview · Staff access only
+                </div>
+            </div>
+            <div class="admin-live-badge">
+                <div class="live-dot"></div>
+                Live Data
+            </div>
+        </div>
+
+        <!-- Alert if pending approvals -->
+        {% if pending_agencies > 0 %}
+        <div class="alert-banner">
+            🚨 <strong>{{ pending_agencies }} agency{{ pending_agencies|pluralize:" is,s are" }} awaiting approval</strong>
+            — review them in the Agencies tab below.
+        </div>
+        {% endif %}
+
+        <!-- ── STATS ── -->
+        <div class="stats-grid">
+            <div class="stat-card" style="--accent:#e8c97a;">
+                <div class="stat-card-icon">💰</div>
+                <div class="stat-card-num">₹{{ total_revenue|floatformat:0 }}</div>
+                <div class="stat-card-label">Total Revenue</div>
+                <div class="stat-card-delta">↑ GST collected: ₹{{ total_gst|floatformat:0 }}</div>
+            </div>
+            <div class="stat-card" style="--accent:#27ae60;">
+                <div class="stat-card-icon">✅</div>
+                <div class="stat-card-num">{{ total_bookings }}</div>
+                <div class="stat-card-label">Confirmed Bookings</div>
+            </div>
+            <div class="stat-card" style="--accent:#3498db;">
+                <div class="stat-card-icon">👤</div>
+                <div class="stat-card-num">{{ total_users }}</div>
+                <div class="stat-card-label">Registered Users</div>
+            </div>
+            <div class="stat-card" style="--accent:#9b59b6;">
+                <div class="stat-card-icon">🏢</div>
+                <div class="stat-card-num">{{ total_agencies }}</div>
+                <div class="stat-card-label">Approved Agencies
+                    {% if pending_agencies > 0 %}
+                    <span style="display:block; font-size:0.72rem; color:#f39c12; margin-top:0.2rem;">
+                        +{{ pending_agencies }} pending
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="stat-card" style="--accent:#0f3460;">
+                <div class="stat-card-icon">🗺️</div>
+                <div class="stat-card-num">{{ total_trips }}</div>
+                <div class="stat-card-label">Trips Created</div>
+            </div>
+            <div class="stat-card" style="--accent:#e67e22;">
+                <div class="stat-card-icon">💬</div>
+                <div class="stat-card-num">{{ active_chats }}</div>
+                <div class="stat-card-label">Active Chats</div>
+            </div>
+            <div class="stat-card" style="--accent:#e74c3c;">
+                <div class="stat-card-icon">⚠️</div>
+                <div class="stat-card-num">{{ warned_agencies|length }}</div>
+                <div class="stat-card-label">Agencies with Warnings</div>
+            </div>
+            <div class="stat-card" style="--accent:#1abc9c;">
+                <div class="stat-card-icon">📊</div>
+                <div class="stat-card-num">
+                    {% if total_bookings and total_trips %}
+                        {{ total_bookings|floatformat:0 }}/{{ total_trips }}
+                    {% else %}—{% endif %}
+                </div>
+                <div class="stat-card-label">Booking / Trip Ratio</div>
+            </div>
+        </div>
+
+        <!-- ── TABS ── -->
+        <div class="admin-tabs">
+            <button class="admin-tab active" onclick="adminTab('overview', this)">📊 Overview</button>
+            <button class="admin-tab" onclick="adminTab('agencies', this)">🏢 Agencies</button>
+            <button class="admin-tab" onclick="adminTab('bookings', this)">✅ Bookings</button>
+            <button class="admin-tab" onclick="adminTab('trips', this)">🗺️ Trips</button>
+            <button class="admin-tab" onclick="adminTab('warnings', this)">⚠️ Warnings</button>
+            <button class="admin-tab" onclick="adminTab('insights', this)">🤖 AI Insights</button>
+        </div>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- TAB: OVERVIEW                              -->
+        <!-- ══════════════════════════════════════════ -->
+        <div class="tab-content active" id="tab-overview">
+
+            <!-- Charts -->
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-title">📈 Monthly Revenue (last 6 months)</div>
+                    <canvas id="revenueChart" class="chart-canvas" height="120"></canvas>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-title">🗺️ Trip Status Distribution</div>
+                    <canvas id="statusChart" class="chart-canvas" height="120"></canvas>
+                </div>
+            </div>
+
+            <!-- Top agencies -->
+            <div class="admin-section">
+                <div class="section-hd">
+                    <h2 class="section-title">
+                        Top Agencies by Revenue
+                        <span class="section-count">{{ top_agencies|length }}</span>
+                    </h2>
+                </div>
+                <div class="table-card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Agency</th>
+                                <th>Plan</th>
+                                <th>Location</th>
+                                <th>Bookings</th>
+                                <th>Revenue</th>
+                                <th>Warnings</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for agency in top_agencies %}
+                            <tr>
+                                <td class="td-muted">{{ forloop.counter }}</td>
+                                <td>
+                                    <div class="td-main">{{ agency.name }}</div>
+                                    <div class="td-muted">{{ agency.email }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-{{ agency.plan }}">
+                                        {{ agency.plan|capfirst }}
+                                    </span>
+                                </td>
+                                <td class="td-muted">{{ agency.location|default:"—" }}</td>
+                                <td>{{ agency.total_bookings_count|default:0 }}</td>
+                                <td class="td-amount">₹{{ agency.total_revenue|default:0|floatformat:0 }}</td>
+                                <td>
+                                    {% with wc=agency.warnings.count %}
+                                    {% if wc > 0 %}
+                                    <span class="badge badge-warn">⚠️ {{ wc }}</span>
+                                    {% else %}
+                                    <span style="color:rgba(255,255,255,0.2);">—</span>
+                                    {% endif %}
+                                    {% endwith %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="7" class="pending-empty">No agency data yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- TAB: AGENCIES                              -->
+        <!-- ══════════════════════════════════════════ -->
+        <div class="tab-content" id="tab-agencies">
+
+            <!-- Pending approvals -->
+            <div class="admin-section">
+                <div class="section-hd">
+                    <h2 class="section-title">
+                        Pending Approvals
+                        <span class="section-count">{{ pending_agency_list|length }}</span>
+                    </h2>
+                </div>
+                <div class="pending-card">
+                    {% if pending_agency_list %}
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Agency</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Location</th>
+                                <th>Plan Requested</th>
+                                <th>Registered</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for agency in pending_agency_list %}
+                            <tr>
+                                <td class="td-main">{{ agency.name }}</td>
+                                <td class="td-muted">{{ agency.email }}</td>
+                                <td class="td-muted">{{ agency.phone|default:"—" }}</td>
+                                <td class="td-muted">{{ agency.location|default:"—" }}</td>
+                                <td>
+                                    <span class="badge badge-{{ agency.plan }}">{{ agency.plan|capfirst }}</span>
+                                </td>
+                                <td class="td-muted">{{ agency.created_at|date:"N j, Y" }}</td>
+                                <td>
+                                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
+                                        <a href="{% url 'admin_approve_agency' agency.id %}"
+                                           class="action-btn btn-approve">✓ Approve</a>
+                                        <a href="{% url 'admin_reject_agency' agency.id %}"
+                                           class="action-btn btn-reject"
+                                           onclick="return confirm('Reject {{ agency.name }}?')">✗ Reject</a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="pending-empty">
+                        ✅ No pending approvals — all agencies reviewed.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- TAB: BOOKINGS                              -->
+        <!-- ══════════════════════════════════════════ -->
+        <div class="tab-content" id="tab-bookings">
+
+            <div class="admin-section">
+                <div class="section-hd">
+                    <h2 class="section-title">
+                        Recent Bookings
+                        <span class="section-count">{{ recent_bookings|length }}</span>
+                    </h2>
+                </div>
+                <div class="table-card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Ref</th>
+                                <th>Traveler</th>
+                                <th>Destination</th>
+                                <th>Agency</th>
+                                <th>Base</th>
+                                <th>GST</th>
+                                <th>Total</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for booking in recent_bookings %}
+                            <tr>
+                                <td class="td-muted">#TRV{{ booking.id|stringformat:"05d" }}</td>
+                                <td>
+                                    <div class="td-main">{{ booking.user.username }}</div>
+                                    <div class="td-muted">{{ booking.user.email }}</div>
+                                </td>
+                                <td>
+                                    <div class="td-main">{{ booking.offer.trip.destination }}</div>
+                                    <div class="td-muted">{{ booking.offer.trip.days }} days</div>
+                                </td>
+                                <td class="td-muted">{{ booking.offer.agency.name }}</td>
+                                <td class="td-muted">₹{{ booking.base_amount }}</td>
+                                <td class="td-muted">₹{{ booking.gst_amount|default:0 }}</td>
+                                <td class="td-amount">₹{{ booking.total_amount }}</td>
+                                <td class="td-muted">{{ booking.created_at|date:"N j, Y" }}</td>
+                                <td><span class="badge badge-paid">✅ Paid</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="9" class="pending-empty">No bookings yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- TAB: TRIPS                                 -->
+        <!-- ══════════════════════════════════════════ -->
+        <div class="tab-content" id="tab-trips">
+
+            <div class="admin-section">
+                <div class="section-hd">
+                    <h2 class="section-title">
+                        Recent Trip Requests
+                        <span class="section-count">{{ recent_trips|length }}</span>
+                    </h2>
+                </div>
+                <div class="table-card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Destination</th>
+                                <th>From</th>
+                                <th>User</th>
+                                <th>Days</th>
+                                <th>Budget</th>
+                                <th>People</th>
+                                <th>Style</th>
+                                <th>Mode</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for trip in recent_trips %}
+                            <tr>
+                                <td class="td-main">{{ trip.destination }}</td>
+                                <td class="td-muted">{{ trip.origin|default:"—" }}</td>
+                                <td class="td-muted">{{ trip.user.username }}</td>
+                                <td>{{ trip.days }}</td>
+                                <td class="td-amount" style="font-size:0.9rem !important;">₹{{ trip.budget }}</td>
+                                <td>{{ trip.num_people|default:1 }}</td>
+                                <td>
+                                    <span class="badge badge-professional">
+                                        {{ trip.travel_type|capfirst }}
+                                    </span>
+                                </td>
+                                <td class="td-muted">
+                                    {% if trip.travel_mode == 'flight' %}✈️
+                                    {% elif trip.travel_mode == 'train' %}🚂
+                                    {% elif trip.travel_mode == 'bus' %}🚌
+                                    {% elif trip.travel_mode == 'car' %}🚗
+                                    {% else %}🚀{% endif %}
+                                    {{ trip.travel_mode|capfirst|default:"Any" }}
+                                </td>
+                                <td class="td-muted">{{ trip.created_at|date:"N j, Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="9" class="pending-empty">No trips yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- TAB: WARNINGS                              -->
+        <!-- ══════════════════════════════════════════ -->
+        <div class="tab-content" id="tab-warnings">
+
+            <div class="admin-section">
+                <div class="section-hd">
+                    <h2 class="section-title">
+                        Agencies with Violations
+                        <span class="section-count">{{ warned_agencies|length }}</span>
+                    </h2>
+                </div>
+
+                {% if warned_agencies %}
+                <div class="table-card">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Agency</th>
+                                <th>Current Plan</th>
+                                <th>Warnings</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for agency in warned_agencies %}
+                            <tr>
+                                <td>
+                                    <div class="td-main">{{ agency.name }}</div>
+                                    <div class="td-muted">{{ agency.email }}</div>
+                                </td>
+                                <td>
+                                    <span class="badge badge-{{ agency.plan }}">
+                                        {{ agency.plan|capfirst }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div style="display:flex; gap:0.35rem; align-items:center;">
+                                        {% for i in "123" %}
+                                        <div style="
+                                            width:10px; height:10px; border-radius:50%;
+                                            background:{% if forloop.counter <= agency.warning_count %}#e74c3c{% else %}rgba(255,255,255,0.1){% endif %};
+                                        "></div>
+                                        {% endfor %}
+                                        <span style="font-size:0.8rem; color:rgba(255,255,255,0.5); margin-left:0.4rem;">
+                                            {{ agency.warning_count }}/3
+                                        </span>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if agency.warning_count >= 3 %}
+                                    <span class="badge badge-rejected">Plan Downgraded</span>
+                                    {% elif agency.warning_count == 2 %}
+                                    <span class="badge badge-warn">Final Warning</span>
+                                    {% else %}
+                                    <span class="badge badge-pending">Warning Issued</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'admin_reset_warnings' agency.id %}"
+                                       class="action-btn btn-reset"
+                                       onclick="return confirm('Reset all warnings for {{ agency.name }}?')">
+                                        ↺ Reset Warnings
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="table-card">
+                    <div class="pending-empty">✅ No agencies have warnings. Platform is clean.</div>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+
+        <!-- ══════════════════════════════════════════ -->
+        <!-- TAB: AI INSIGHTS                           -->
+        <!-- ══════════════════════════════════════════ -->
+        <div class="tab-content" id="tab-insights">
+
+            <div class="insights-grid">
+
+                <div class="insight-card">
+                    <div class="insight-icon">💰</div>
+                    <div class="insight-value">
+                        {% if total_bookings %}
+                            ₹{% widthratio total_revenue total_bookings 1 %}
+                        {% else %}—{% endif %}
+                    </div>
+                    <div class="insight-title">Avg Revenue per Booking</div>
+                    <div class="insight-body">
+                        Based on {{ total_bookings }} confirmed bookings totalling ₹{{ total_revenue|floatformat:0 }}.
+                    </div>
+                </div>
+
+                <div class="insight-card">
+                    <div class="insight-icon">📊</div>
+                    <div class="insight-value">
+                        {% if total_trips %}
+                            {% widthratio total_bookings total_trips 100 %}%
+                        {% else %}—{% endif %}
+                    </div>
+                    <div class="insight-title">Trip-to-Booking Conversion</div>
+                    <div class="insight-body">
+                        {{ total_bookings }} bookings from {{ total_trips }} trips.
+                        Higher means agencies are converting well.
+                    </div>
+                </div>
+
+                <div class="insight-card">
+                    <div class="insight-icon">🏢</div>
+                    <div class="insight-value">
+                        {% if total_agencies %}
+                            {% widthratio total_bookings total_agencies 1 %}
+                        {% else %}—{% endif %}
+                    </div>
+                    <div class="insight-title">Avg Bookings per Agency</div>
+                    <div class="insight-body">
+                        {{ total_agencies }} active agencies sharing {{ total_bookings }} bookings.
+                    </div>
+                </div>
+
+                <div class="insight-card">
+                    <div class="insight-icon">🔒</div>
+                    <div class="insight-value">{{ warned_agencies|length }}</div>
+                    <div class="insight-title">Privacy Violation Agencies</div>
+                    <div class="insight-body">
+                        Agencies that attempted to share contact details before payment.
+                        {% if warned_agencies|length == 0 %}Platform is clean.{% endif %}
+                    </div>
+                </div>
+
+                <div class="insight-card">
+                    <div class="insight-icon">💬</div>
+                    <div class="insight-value">{{ active_chats }}</div>
+                    <div class="insight-title">Active Negotiations</div>
+                    <div class="insight-body">
+                        Live chat rooms currently open between users and agencies.
+                    </div>
+                </div>
+
+                <div class="insight-card">
+                    <div class="insight-icon">🧾</div>
+                    <div class="insight-value">₹{{ total_gst|floatformat:0 }}</div>
+                    <div class="insight-title">Total GST Collected</div>
+                    <div class="insight-body">
+                        18% GST collected across all bookings.
+                        Trivasta platform fee is ₹0 — all revenue is GST-inclusive.
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+    // ── Tab switching ─────────────────────────────────────────
+    function adminTab(name, btn) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
+        document.getElementById('tab-' + name).classList.add('active');
+        btn.classList.add('active');
+    }
+
+    // ── Chart defaults ────────────────────────────────────────
+    Chart.defaults.color = 'rgba(255,255,255,0.4)';
+    Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+
+    // ── Revenue chart ─────────────────────────────────────────
+    const revenueLabels = {{ revenue_labels|safe }};
+    const revenueData   = {{ revenue_data|safe }};
+    const bookingCounts = {{ booking_counts|safe }};
+
+    new Chart(document.getElementById('revenueChart'), {
+        type: 'bar',
+        data: {
+            labels: revenueLabels,
+            datasets: [
+                {
+                    label: 'Revenue (₹)',
+                    data: revenueData,
+                    backgroundColor: 'rgba(15,52,96,0.7)',
+                    borderColor: '#0f3460',
+                    borderWidth: 2,
+                    borderRadius: 6,
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'Bookings',
+                    data: bookingCounts,
+                    type: 'line',
+                    borderColor: '#e8c97a',
+                    backgroundColor: 'rgba(201,168,76,0.1)',
+                    borderWidth: 2,
+                    pointBackgroundColor: '#e8c97a',
+                    pointRadius: 4,
+                    tension: 0.4,
+                    fill: true,
+                    yAxisID: 'y1',
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            interaction: { intersect: false, mode: 'index' },
+            plugins: {
+                legend: {
+                    labels: { color: 'rgba(255,255,255,0.5)', font: { family: 'Outfit' } }
+                },
+                tooltip: {
+                    backgroundColor: '#161b22',
+                    borderColor: '#30363d',
+                    borderWidth: 1,
+                    titleColor: 'white',
+                    bodyColor: 'rgba(255,255,255,0.6)',
+                    callbacks: {
+                        label: ctx => ctx.datasetIndex === 0
+                            ? ` ₹${ctx.parsed.y.toLocaleString('en-IN')}`
+                            : ` ${ctx.parsed.y} bookings`
+                    }
+                }
+            },
+            scales: {
+                x: { grid: { color: 'rgba(255,255,255,0.04)' } },
+                y: {
+                    type: 'linear',
+                    position: 'left',
+                    grid: { color: 'rgba(255,255,255,0.04)' },
+                    ticks: {
+                        callback: v => '₹' + (v/1000).toFixed(0) + 'k'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'right',
+                    grid: { drawOnChartArea: false },
+                }
+            }
+        }
+    });
+
+    // ── Status doughnut chart ─────────────────────────────────
+    const statusLabels = {{ status_labels|safe }};
+    const statusCounts = {{ status_counts|safe }};
+
+    const statusColors = [
+        '#27ae60','#3498db','#9b59b6','#e8c97a',
+        '#e67e22','#0f3460','#e74c3c','#1abc9c'
+    ];
+
+    new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: {
+            labels: statusLabels,
+            datasets: [{
+                data: statusCounts,
+                backgroundColor: statusColors.slice(0, statusLabels.length),
+                borderColor: '#161b22',
+                borderWidth: 3,
+                hoverOffset: 8,
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: 'rgba(255,255,255,0.5)',
+                        font: { family: 'Outfit', size: 11 },
+                        padding: 12,
+                        usePointStyle: true,
+                    }
+                },
+                tooltip: {
+                    backgroundColor: '#161b22',
+                    borderColor: '#30363d',
+                    borderWidth: 1,
+                    titleColor: 'white',
+                    bodyColor: 'rgba(255,255,255,0.6)',
+                }
+            },
+            cutout: '65%',
+        }
+    });
+</script>
+{% endblock %}

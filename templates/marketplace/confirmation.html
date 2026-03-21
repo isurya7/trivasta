@@ -1,0 +1,422 @@
+{% extends "base.html" %}
+{% block title %}Booking Confirmed — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    .confirm-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        font-family: 'Outfit', sans-serif;
+        padding: 3rem 2rem;
+    }
+
+    .confirm-inner { max-width: 780px; margin: 0 auto; }
+
+    .success-banner {
+        background: linear-gradient(135deg, #0f3460, #0a2240);
+        border-radius: 20px;
+        padding: 3rem 2.5rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 2rem;
+        animation: fadeUp 0.6s ease both;
+    }
+
+    .success-banner::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.06) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+
+    .success-banner-content { position: relative; z-index: 1; }
+
+    .success-icon {
+        width: 80px; height: 80px;
+        background: rgba(39,174,96,0.15);
+        border: 2px solid rgba(39,174,96,0.35);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 2rem;
+        margin: 0 auto 1.5rem;
+        animation: scaleIn 0.5s 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    @keyframes scaleIn {
+        from { opacity: 0; transform: scale(0.5); }
+        to   { opacity: 1; transform: scale(1); }
+    }
+
+    .success-eyebrow {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #e8c97a;
+        margin-bottom: 0.75rem;
+    }
+
+    .success-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 300;
+        color: white;
+        line-height: 1.1;
+        margin-bottom: 0.75rem;
+    }
+
+    .success-title em { font-style: italic; color: #e8c97a; }
+
+    .success-sub {
+        font-size: 0.9375rem;
+        color: rgba(255,255,255,0.5);
+        line-height: 1.65;
+        max-width: 480px;
+        margin: 0 auto 2rem;
+    }
+
+    .booking-ref {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: rgba(201,168,76,0.12);
+        border: 1px solid rgba(201,168,76,0.3);
+        border-radius: 8px;
+        padding: 0.875rem 1.5rem;
+    }
+
+    .booking-ref-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.45);
+    }
+
+    .booking-ref-num {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.375rem;
+        font-weight: 600;
+        color: #e8c97a;
+        letter-spacing: 0.05em;
+    }
+
+    .confirm-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+        animation: fadeUp 0.5s ease both;
+    }
+
+    .card-header {
+        padding: 1.25rem 1.75rem;
+        border-bottom: 1px solid var(--cream-dark);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .card-header-icon {
+        width: 36px; height: 36px;
+        background: var(--cream);
+        border-radius: 8px;
+        display: grid;
+        place-items: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+
+    .card-header h3 {
+        font-size: 0.8125rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink);
+    }
+
+    .card-body { padding: 1.75rem; }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.25rem;
+    }
+
+    .detail-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.3rem;
+    }
+
+    .detail-value { font-size: 1rem; font-weight: 500; color: var(--ink); }
+
+    .detail-value.dest {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+
+    .price-list { display: flex; flex-direction: column; }
+
+    .price-list-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        font-size: 0.9rem;
+        border-bottom: 1px solid var(--cream-dark);
+    }
+
+    .price-list-row:last-child { border-bottom: none; }
+    .price-list-row .pl-label { color: var(--muted); }
+    .price-list-row .pl-val { font-weight: 500; color: var(--ink); }
+    .price-list-row .pl-val.free { color: #27ae60; font-weight: 600; }
+
+    .price-list-row.total-row {
+        margin-top: 0.5rem;
+        padding-top: 1rem;
+        border-top: 2px solid var(--cream-dark);
+        border-bottom: none;
+    }
+
+    .price-list-row.total-row .pl-label { font-weight: 700; color: var(--ink); font-size: 1rem; }
+
+    .price-list-row.total-row .pl-val {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--sea);
+    }
+
+    .payment-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(39,174,96,0.08);
+        border: 1px solid rgba(39,174,96,0.2);
+        border-radius: 6px;
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+        color: #27ae60;
+        font-weight: 600;
+        margin-top: 1rem;
+        word-break: break-all;
+    }
+
+    .next-steps { display: flex; flex-direction: column; gap: 1rem; }
+
+    .next-step { display: flex; gap: 1rem; align-items: flex-start; }
+
+    .next-step-num {
+        width: 32px; height: 32px;
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: white;
+        flex-shrink: 0;
+    }
+
+    .next-step-title { font-weight: 600; font-size: 0.9rem; color: var(--ink); margin-bottom: 0.2rem; }
+    .next-step-desc { font-size: 0.8125rem; color: var(--muted); line-height: 1.55; }
+
+    .action-row { display: flex; gap: 1rem; flex-wrap: wrap; margin-top: 0.5rem; }
+
+    .confetti-wrap { position: fixed; inset: 0; pointer-events: none; z-index: 9999; overflow: hidden; }
+
+    .confetti-piece {
+        position: absolute;
+        width: 8px; height: 8px;
+        border-radius: 2px;
+        animation: confettiFall linear forwards;
+        top: -20px;
+    }
+
+    @keyframes confettiFall {
+        0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 600px) {
+        .details-grid { grid-template-columns: 1fr 1fr; }
+        .action-row { flex-direction: column; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confetti-wrap" id="confettiWrap"></div>
+
+<div class="confirm-page">
+    <div class="confirm-inner">
+
+        <div class="success-banner">
+            <div class="success-banner-content">
+                <div class="success-icon">✅</div>
+                <div class="success-eyebrow">Payment Successful</div>
+                <h1 class="success-title">You're going to<br><em>{{ booking.offer.trip.destination }}!</em></h1>
+                <p class="success-sub">
+                    Your booking is confirmed and {{ booking.offer.agency.name }} has been notified.
+                    Expect a call or email within 24 hours.
+                </p>
+                <div class="booking-ref">
+                    <div>
+                        <div class="booking-ref-label">Booking Reference</div>
+                        <div class="booking-ref-num">#TRV{{ booking.id|stringformat:"05d" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TRIP DETAILS -->
+        <div class="confirm-card">
+            <div class="card-header">
+                <div class="card-header-icon">✈️</div>
+                <h3>Trip Details</h3>
+            </div>
+            <div class="card-body">
+                <div class="details-grid">
+                    <div>
+                        <div class="detail-label">Destination</div>
+                        <div class="detail-value dest">{{ booking.offer.trip.destination }}</div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Duration</div>
+                        <div class="detail-value">{{ booking.offer.trip.days }} days</div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Travellers</div>
+                        <div class="detail-value">{{ booking.offer.trip.num_people|default:"1" }} person{{ booking.offer.trip.num_people|default:"1"|pluralize }}</div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Travel Style</div>
+                        <div class="detail-value">{{ booking.offer.trip.travel_type|capfirst }}</div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Agency</div>
+                        <div class="detail-value">{{ booking.offer.agency.name }}</div>
+                    </div>
+                    <div>
+                        <div class="detail-label">Booked On</div>
+                        <div class="detail-value">{{ booking.created_at|date:"d M Y" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAYMENT -->
+        <div class="confirm-card">
+            <div class="card-header">
+                <div class="card-header-icon">💳</div>
+                <h3>Payment Summary</h3>
+            </div>
+            <div class="card-body">
+                <div class="price-list">
+                    <div class="price-list-row">
+                        <span class="pl-label">Package Price</span>
+                        <span class="pl-val">₹{{ booking.base_amount }}</span>
+                    </div>
+                    <div class="price-list-row">
+                        <span class="pl-label">Platform Fee</span>
+                        <span class="pl-val free">FREE 🎉</span>
+                    </div>
+                    <div class="price-list-row">
+                        <span class="pl-label">GST (18%)</span>
+                        <span class="pl-val">₹{{ booking.gst_amount }}</span>
+                    </div>
+                    <div class="price-list-row total-row">
+                        <span class="pl-label">Amount Paid</span>
+                        <span class="pl-val">₹{{ booking.total_amount }}</span>
+                    </div>
+                </div>
+                <div class="payment-badge">
+                    ✅ Payment ID: {{ booking.razorpay_payment_id }}
+                </div>
+            </div>
+        </div>
+
+        <!-- NEXT STEPS -->
+        <div class="confirm-card">
+            <div class="card-header">
+                <div class="card-header-icon">🗓️</div>
+                <h3>What Happens Next</h3>
+            </div>
+            <div class="card-body">
+                <div class="next-steps">
+                    <div class="next-step">
+                        <div class="next-step-num">1</div>
+                        <div>
+                            <div class="next-step-title">Agency contacts you</div>
+                            <div class="next-step-desc">{{ booking.offer.agency.name }} will call or email you within 24 hours to confirm the trip and share a full itinerary.</div>
+                        </div>
+                    </div>
+                    <div class="next-step">
+                        <div class="next-step-num">2</div>
+                        <div>
+                            <div class="next-step-title">Finalise your plan</div>
+                            <div class="next-step-desc">Personalise the itinerary — accommodation preferences, dietary needs and special requests.</div>
+                        </div>
+                    </div>
+                    <div class="next-step">
+                        <div class="next-step-num">3</div>
+                        <div>
+                            <div class="next-step-title">Pack your bags & go!</div>
+                            <div class="next-step-desc">The agency will provide all documents, vouchers and emergency contacts before departure.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-row">
+            <a href="{% url 'dashboard' %}" class="btn btn-primary">View My Dashboard →</a>
+            <a href="{% url 'planner' %}" class="btn btn-outline">Plan Another Trip</a>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function launchConfetti() {
+        const wrap   = document.getElementById('confettiWrap');
+        const colors = ['#c9a84c','#e8c97a','#0f3460','#27ae60','#fff'];
+        for (let i = 0; i < 80; i++) {
+            const el = document.createElement('div');
+            el.className = 'confetti-piece';
+            el.style.cssText = `
+                left:${Math.random()*100}vw;
+                background:${colors[Math.floor(Math.random()*colors.length)]};
+                width:${4+Math.random()*8}px;
+                height:${4+Math.random()*8}px;
+                border-radius:${Math.random()>0.5?'50%':'2px'};
+                animation-duration:${1.5+Math.random()*2}s;
+                animation-delay:${Math.random()*0.8}s;
+            `;
+            wrap.appendChild(el);
+        }
+        setTimeout(() => wrap.remove(), 4000);
+    }
+    window.addEventListener('load', launchConfetti);
+</script>
+{% endblock %}

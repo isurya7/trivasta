@@ -1,0 +1,528 @@
+{% extends "base.html" %}
+{% block title %}Browse Packages — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Outfit', sans-serif; }
+
+    .search-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        padding: 2.5rem 0 5rem;
+    }
+
+    .search-container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+
+    /* Hero */
+    .search-hero {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 16px;
+        padding: 3rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .search-hero::before {
+        content: '';
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.07) 1px, transparent 1px);
+        background-size: 30px 30px;
+    }
+
+    .search-hero-content { position: relative; z-index: 1; }
+    .search-eyebrow { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #e8c97a; margin-bottom: 0.5rem; }
+
+    .search-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.25rem;
+        font-weight: 300;
+        color: white;
+        margin-bottom: 1.5rem;
+    }
+
+    .search-title em { font-style: italic; color: #e8c97a; }
+
+    /* Search bar */
+    .search-bar {
+        display: flex;
+        gap: 0.75rem;
+        max-width: 640px;
+    }
+
+    .search-input-wrap {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        background: white;
+        border-radius: var(--radius);
+        overflow: hidden;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+    }
+
+    .search-icon { padding: 0 1rem; font-size: 1rem; color: var(--muted); }
+
+    .search-input {
+        flex: 1;
+        border: none;
+        outline: none;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9375rem;
+        color: var(--ink);
+        padding: 0.875rem 0;
+        background: transparent;
+    }
+
+    .search-btn {
+        padding: 0 1.5rem;
+        background: var(--gold);
+        color: var(--ink);
+        border: none;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.875rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+        height: 100%;
+    }
+
+    .search-btn:hover { background: #e8c97a; }
+
+    /* Layout */
+    .search-layout {
+        display: grid;
+        grid-template-columns: 280px 1fr;
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    /* Filters sidebar */
+    .filters-panel {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        position: sticky;
+        top: 88px;
+    }
+
+    .filters-header {
+        background: var(--sea);
+        padding: 1.125rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .filters-title { font-size: 0.875rem; font-weight: 700; color: white; letter-spacing: 0.04em; }
+
+    .filters-clear {
+        font-size: 0.72rem;
+        color: rgba(255,255,255,0.6);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .filters-clear:hover { color: #e8c97a; }
+
+    .filters-body { padding: 1.25rem; }
+
+    .filter-group { margin-bottom: 1.5rem; }
+
+    .filter-label {
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.75rem;
+        display: block;
+    }
+
+    .filter-input {
+        width: 100%;
+        padding: 0.625rem 0.875rem;
+        border: 1.5px solid var(--cream-dark);
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.875rem;
+        color: var(--ink);
+        background: var(--cream);
+        outline: none;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+    .filter-input:focus { border-color: var(--sea); background: white; }
+
+    .filter-range { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+
+    .category-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+    .cat-chip {
+        padding: 0.3rem 0.75rem;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        border: 1.5px solid var(--cream-dark);
+        color: var(--muted);
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s;
+        background: var(--cream);
+    }
+
+    .cat-chip:hover,
+    .cat-chip.active { background: var(--sea); color: white; border-color: var(--sea); }
+
+    .filter-apply {
+        width: 100%;
+        padding: 0.75rem;
+        background: var(--sea);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+
+    .filter-apply:hover { background: #0a2240; }
+
+    /* Results */
+    .results-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+    }
+
+    .results-count {
+        font-size: 0.875rem;
+        color: var(--muted);
+    }
+
+    .results-count strong { color: var(--ink); }
+
+    .sort-select {
+        padding: 0.5rem 1rem;
+        border: 1.5px solid var(--cream-dark);
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.8125rem;
+        color: var(--ink);
+        background: white;
+        cursor: pointer;
+        outline: none;
+    }
+
+    /* Package cards */
+    .packages-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .pkg-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        transition: transform 0.3s, box-shadow 0.3s;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .pkg-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-deep); }
+
+    .pkg-img {
+        height: 160px;
+        background: linear-gradient(135deg, var(--sea), #1a4f82);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3.5rem;
+        position: relative;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
+
+    .pkg-img img {
+        position: absolute; inset: 0;
+        width: 100%; height: 100%;
+        object-fit: cover;
+    }
+
+    .pkg-img-emoji { position: relative; z-index: 1; }
+
+    .pkg-agency-badge {
+        position: absolute;
+        bottom: 0.75rem; left: 0.75rem;
+        background: rgba(0,0,0,0.55);
+        backdrop-filter: blur(4px);
+        border-radius: 100px;
+        padding: 0.2rem 0.625rem;
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: white;
+        z-index: 2;
+    }
+
+    .pkg-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
+    .pkg-category { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.3rem; }
+
+    .pkg-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 0.2rem;
+        line-height: 1.3;
+    }
+
+    .pkg-dest { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.75rem; }
+
+    .pkg-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.875rem; }
+
+    .pkg-chip {
+        font-size: 0.72rem;
+        font-weight: 500;
+        color: var(--sea);
+        background: rgba(15,52,96,0.07);
+        padding: 0.2rem 0.55rem;
+        border-radius: 100px;
+    }
+
+    .pkg-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: auto;
+        padding-top: 0.875rem;
+        border-top: 1px solid var(--cream-dark);
+    }
+
+    .pkg-price {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.375rem;
+        font-weight: 600;
+        color: var(--sea);
+        line-height: 1;
+    }
+
+    .pkg-price-sub { font-size: 0.68rem; color: var(--muted); margin-top: 0.1rem; }
+
+    .pkg-actions { display: flex; gap: 0.4rem; }
+
+    .pkg-btn {
+        padding: 0.5rem 0.875rem;
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.775rem;
+        font-weight: 600;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .pkg-btn-book { background: var(--sea); color: white; }
+    .pkg-btn-book:hover { background: #0a2240; }
+    .pkg-btn-chat { background: rgba(39,174,96,0.1); color: #27ae60; border: 1px solid rgba(39,174,96,0.25); }
+    .pkg-btn-chat:hover { background: rgba(39,174,96,0.2); }
+
+    .empty-results {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        grid-column: 1 / -1;
+    }
+
+    .empty-results-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .empty-results-title { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--ink); margin-bottom: 0.5rem; }
+    .empty-results-desc  { font-size: 0.875rem; color: var(--muted); }
+
+    @media (max-width: 900px) {
+        .search-layout { grid-template-columns: 1fr; }
+        .filters-panel { position: static; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="search-page">
+    <div class="search-container">
+
+        <!-- Hero -->
+        <div class="search-hero">
+            <div class="search-hero-content">
+                <div class="search-eyebrow">✦ Browse Packages</div>
+                <div class="search-title">Find your perfect <em>journey</em></div>
+                <form method="get" action="{% url 'package_search' %}">
+                    <div class="search-bar">
+                        <div class="search-input-wrap">
+                            <span class="search-icon">🔍</span>
+                            <input type="text" name="q" value="{{ q }}"
+                                   class="search-input"
+                                   placeholder="Search destination, package name, agency…">
+                        </div>
+                        <button type="submit" class="search-btn">Search</button>
+                    </div>
+                    <!-- preserve other filters on search -->
+                    {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+                    {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+                </form>
+            </div>
+        </div>
+
+        <div class="search-layout">
+
+            <!-- Filters sidebar -->
+            <div class="filters-panel">
+                <div class="filters-header">
+                    <span class="filters-title">🔧 Filters</span>
+                    <a href="{% url 'package_search' %}" class="filters-clear">Clear all</a>
+                </div>
+                <div class="filters-body">
+                    <form method="get" action="{% url 'package_search' %}" id="filterForm">
+                        {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+                        <input type="hidden" name="sort" value="{{ sort }}" id="sortHidden">
+
+                        <!-- Category -->
+                        <div class="filter-group">
+                            <span class="filter-label">Category</span>
+                            <div class="category-chips">
+                                <a href="?q={{ q }}&sort={{ sort }}"
+                                   class="cat-chip {% if not category %}active{% endif %}">All</a>
+                                {% for val, label in categories %}
+                                <a href="?q={{ q }}&category={{ val }}&sort={{ sort }}"
+                                   class="cat-chip {% if category == val %}active{% endif %}">
+                                    {{ label }}
+                                </a>
+                                {% endfor %}
+                            </div>
+                            {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+                        </div>
+
+                        <!-- Price range -->
+                        <div class="filter-group">
+                            <span class="filter-label">Price Range (₹)</span>
+                            <div class="filter-range">
+                                <input type="number" name="min_price" value="{{ min_price }}"
+                                       class="filter-input" placeholder="Min">
+                                <input type="number" name="max_price" value="{{ max_price }}"
+                                       class="filter-input" placeholder="Max">
+                            </div>
+                        </div>
+
+                        <!-- Duration -->
+                        <div class="filter-group">
+                            <span class="filter-label">Duration (days)</span>
+                            <div class="filter-range">
+                                <input type="number" name="min_days" value="{{ min_days }}"
+                                       class="filter-input" placeholder="Min">
+                                <input type="number" name="max_days" value="{{ max_days }}"
+                                       class="filter-input" placeholder="Max">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="filter-apply">Apply Filters</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Results -->
+            <div>
+                <div class="results-header">
+                    <div class="results-count">
+                        <strong>{{ count }}</strong> package{{ count|pluralize }} found
+                        {% if q %}for "<strong>{{ q }}</strong>"{% endif %}
+                    </div>
+                    <select class="sort-select" onchange="applySort(this.value)">
+                        <option value="popular"    {% if sort == 'popular'    %}selected{% endif %}>Most Popular</option>
+                        <option value="newest"     {% if sort == 'newest'     %}selected{% endif %}>Newest First</option>
+                        <option value="price_asc"  {% if sort == 'price_asc'  %}selected{% endif %}>Price: Low → High</option>
+                        <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: High → Low</option>
+                        <option value="duration"   {% if sort == 'duration'   %}selected{% endif %}>Shortest First</option>
+                    </select>
+                </div>
+
+                {% if packages %}
+                <div class="packages-grid">
+                    {% for pkg in packages %}
+                    <div class="pkg-card">
+                        <div class="pkg-img">
+                            {% if pkg.image_url %}
+                            <img src="{{ pkg.image_url }}" alt="{{ pkg.title }}"
+                                 onerror="this.style.display='none'">
+                            {% endif %}
+                            <span class="pkg-img-emoji">
+                                {% if pkg.category == 'adventure' %}🏔️
+                                {% elif pkg.category == 'cultural' %}🏛️
+                                {% elif pkg.category == 'leisure' %}🌴
+                                {% elif pkg.category == 'romantic' %}💑
+                                {% elif pkg.category == 'family' %}👨‍👩‍👧
+                                {% elif pkg.category == 'luxury' %}✨
+                                {% elif pkg.category == 'solo' %}🎒
+                                {% else %}✈️{% endif %}
+                            </span>
+                            <div class="pkg-agency-badge">🏢 {{ pkg.agency.name }}</div>
+                        </div>
+                        <div class="pkg-body">
+                            <div class="pkg-category">{{ pkg.get_category_display }}</div>
+                            <div class="pkg-title">{{ pkg.title }}</div>
+                            <div class="pkg-dest">📍 {{ pkg.destination }}</div>
+                            <div class="pkg-chips">
+                                <span class="pkg-chip">📅 {{ pkg.duration }} days</span>
+                                <span class="pkg-chip">⭐ {{ pkg.agency.rating }}</span>
+                            </div>
+                            <div class="pkg-footer">
+                                <div>
+                                    <div class="pkg-price">₹{{ pkg.price }}</div>
+                                    <div class="pkg-price-sub">+ 5% GST per person</div>
+                                </div>
+                                <div class="pkg-actions">
+                                    {% if user.is_authenticated %}
+                                    <a href="{% url 'package_chat' pkg.id %}" class="pkg-btn pkg-btn-chat">💬 Chat</a>
+                                    <a href="{% url 'package_book' pkg.id %}" class="pkg-btn pkg-btn-book">Book Now</a>
+                                    {% else %}
+                                    <a href="{% url 'login' %}" class="pkg-btn pkg-btn-book">Login to Book</a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="packages-grid">
+                    <div class="empty-results">
+                        <div class="empty-results-icon">🔍</div>
+                        <div class="empty-results-title">No packages found</div>
+                        <div class="empty-results-desc">Try adjusting your filters or search term.</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function applySort(value) {
+    document.getElementById('sortHidden').value = value;
+    document.getElementById('filterForm').submit();
+}
+</script>
+{% endblock %}

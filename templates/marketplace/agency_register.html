@@ -1,0 +1,949 @@
+{% extends "base.html" %}
+{% block title %}Join as Agency — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600&display=swap');
+
+    .reg-page {
+        font-family: 'Outfit', sans-serif;
+        background: var(--cream);
+    }
+
+    /* ── HERO ── */
+    .reg-hero {
+        background: linear-gradient(135deg, #0f3460 0%, #0a2240 100%);
+        padding: 5rem 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .reg-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: url('https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1400&q=60');
+        background-size: cover;
+        background-position: center;
+        opacity: 0.08;
+    }
+
+    .reg-hero::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
+        background-size: 50px 50px;
+    }
+
+    .reg-hero-content { position: relative; z-index: 2; }
+
+    .reg-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(201,168,76,0.15);
+        border: 1px solid rgba(201,168,76,0.3);
+        padding: 0.4rem 1rem;
+        border-radius: 2px;
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: #e8c97a;
+        margin-bottom: 1.5rem;
+    }
+
+    .reg-hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 300;
+        color: white;
+        line-height: 1.1;
+        margin-bottom: 1rem;
+    }
+
+    .reg-hero h1 em { font-style: italic; color: #e8c97a; }
+
+    .reg-hero p {
+        font-size: 1rem;
+        color: rgba(255,255,255,0.55);
+        max-width: 520px;
+        margin: 0 auto;
+        line-height: 1.7;
+    }
+
+    /* ── PRICING SECTION ── */
+    .pricing-section {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 5rem 2rem;
+    }
+
+    .pricing-header {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .section-eyebrow {
+        font-size: 0.72rem;
+        font-weight: 600;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .section-eyebrow::before, .section-eyebrow::after {
+        content: '';
+        width: 28px; height: 1px;
+        background: var(--gold);
+    }
+
+    .pricing-header h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem;
+        font-weight: 300;
+        color: var(--ink);
+    }
+
+    .pricing-header h2 em { font-style: italic; color: var(--sea); }
+
+    .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .plan-card {
+        background: var(--white);
+        border-radius: 16px;
+        padding: 2.5rem 2rem;
+        box-shadow: var(--shadow);
+        border: 2px solid transparent;
+        transition: all 0.3s;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .plan-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-deep); }
+
+    .plan-card.featured {
+        border-color: var(--gold);
+        background: linear-gradient(160deg, #0f3460 0%, #0a2240 100%);
+        color: white;
+    }
+
+    .plan-badge {
+        position: absolute;
+        top: 1.25rem; right: 1.25rem;
+        background: var(--gold);
+        color: var(--ink);
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.25rem 0.65rem;
+        border-radius: 2px;
+    }
+
+    .plan-name {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 1rem;
+    }
+
+    .plan-price {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3rem;
+        font-weight: 600;
+        color: var(--sea);
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+
+    .plan-card.featured .plan-price { color: #e8c97a; }
+
+    .plan-price span {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1rem;
+        font-weight: 400;
+        color: var(--muted);
+    }
+
+    .plan-card.featured .plan-price span { color: rgba(255,255,255,0.5); }
+
+    .plan-billing {
+        font-size: 0.8125rem;
+        color: var(--muted);
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--cream-dark);
+    }
+
+    .plan-card.featured .plan-billing {
+        color: rgba(255,255,255,0.4);
+        border-bottom-color: rgba(255,255,255,0.1);
+    }
+
+    .plan-features { display: flex; flex-direction: column; gap: 0.875rem; margin-bottom: 2rem; }
+
+    .plan-feature {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.625rem;
+        font-size: 0.875rem;
+        color: var(--ink);
+        line-height: 1.4;
+    }
+
+    .plan-card.featured .plan-feature { color: rgba(255,255,255,0.8); }
+
+    .plan-feature-icon { color: var(--gold); flex-shrink: 0; margin-top: 0.1rem; }
+
+    .plan-cta {
+        display: block;
+        text-align: center;
+        padding: 0.875rem;
+        border-radius: var(--radius);
+        font-weight: 600;
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: all 0.3s;
+        border: 2px solid var(--sea);
+        color: var(--sea);
+        background: transparent;
+        cursor: pointer;
+        font-family: 'Outfit', sans-serif;
+        width: 100%;
+    }
+
+    .plan-cta:hover { background: var(--sea); color: white; }
+
+    .plan-card.featured .plan-cta {
+        background: #c9a84c;
+        border-color: #c9a84c;
+        color: #0d1117;
+    }
+
+    .plan-card.featured .plan-cta:hover {
+        background: #e8c97a;
+        border-color: #e8c97a;
+    }
+
+    .pricing-note {
+        text-align: center;
+        font-size: 0.8125rem;
+        color: var(--muted);
+        margin-top: 1rem;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .how-section {
+        background: white;
+        padding: 5rem 2rem;
+    }
+
+    .how-inner {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .how-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        margin-top: 3rem;
+        position: relative;
+    }
+
+    .how-steps::before {
+        content: '';
+        position: absolute;
+        left: 27px;
+        top: 0; bottom: 0;
+        width: 2px;
+        background: linear-gradient(to bottom, var(--gold), transparent);
+    }
+
+    .how-step {
+        display: flex;
+        gap: 2rem;
+        padding-bottom: 3rem;
+        position: relative;
+    }
+
+    .how-step:last-child { padding-bottom: 0; }
+
+    .how-step-num {
+        width: 56px; height: 56px;
+        background: white;
+        border: 2px solid var(--gold);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+        transition: all 0.3s;
+    }
+
+    .how-step:hover .how-step-num {
+        background: var(--gold);
+        transform: scale(1.08);
+    }
+
+    .how-step-title {
+        font-weight: 600;
+        font-size: 1.0625rem;
+        color: var(--ink);
+        margin-bottom: 0.4rem;
+        margin-top: 0.75rem;
+    }
+
+    .how-step-desc {
+        font-size: 0.9rem;
+        color: var(--muted);
+        line-height: 1.65;
+    }
+
+    /* ── TERMS SECTION ── */
+    .terms-section {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 5rem 2rem;
+    }
+
+    .terms-card {
+        background: var(--white);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .terms-header {
+        background: linear-gradient(135deg, #0f3460, #0a2240);
+        padding: 2.5rem 3rem;
+    }
+
+    .terms-header h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 300;
+        color: white;
+        margin-bottom: 0.5rem;
+    }
+
+    .terms-header p {
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.5);
+    }
+
+    .terms-body {
+        padding: 3rem;
+    }
+
+    .terms-section-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin: 2rem 0 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .terms-section-title:first-child { margin-top: 0; }
+
+    .terms-section-title::before {
+        content: '';
+        width: 16px; height: 1px;
+        background: var(--gold);
+    }
+
+    .terms-body p {
+        font-size: 0.9rem;
+        color: var(--muted);
+        line-height: 1.75;
+        margin-bottom: 0.75rem;
+    }
+
+    .terms-body ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 0.75rem;
+        padding: 0;
+    }
+
+    .terms-body ul li {
+        font-size: 0.9rem;
+        color: var(--muted);
+        line-height: 1.6;
+        display: flex;
+        gap: 0.625rem;
+        align-items: flex-start;
+    }
+
+    .terms-body ul li::before {
+        content: '→';
+        color: var(--gold);
+        flex-shrink: 0;
+        margin-top: 0.05rem;
+    }
+
+    /* ── FORM SECTION ── */
+    .form-section {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 0 2rem 6rem;
+    }
+
+    .form-card {
+        background: var(--white);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .form-card-header {
+        background: var(--cream);
+        border-bottom: 1px solid var(--cream-dark);
+        padding: 2rem 3rem;
+    }
+
+    .form-card-header h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.875rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 0.25rem;
+    }
+
+    .form-card-header p {
+        font-size: 0.875rem;
+        color: var(--muted);
+    }
+
+    .form-card-header p a {
+        color: var(--sea);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .form-body { padding: 2.5rem 3rem; }
+
+    .field { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.25rem; }
+
+    .field label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink-light);
+    }
+
+    .field input, .field textarea, .field select {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 1.5px solid var(--cream-dark);
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9375rem;
+        color: var(--ink);
+        background: var(--cream);
+        outline: none;
+        transition: all 0.2s;
+        resize: vertical;
+    }
+
+    .field input:focus, .field textarea:focus, .field select:focus {
+        border-color: var(--sea);
+        background: var(--white);
+        box-shadow: 0 0 0 3px rgba(15,52,96,0.08);
+    }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+    .field-hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.15rem; }
+
+    .form-divider {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin: 2rem 0 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .form-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--cream-dark);
+    }
+
+    /* Plan selector */
+    .plan-selector {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.875rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .plan-option { display: none; }
+
+    .plan-option-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 1.25rem 1rem;
+        border: 2px solid var(--cream-dark);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.25s;
+        text-align: center;
+        background: var(--cream);
+    }
+
+    .plan-option-label:hover { border-color: var(--sea); }
+
+    .plan-option:checked + .plan-option-label {
+        border-color: var(--sea);
+        background: rgba(15,52,96,0.05);
+    }
+
+    .plan-option-name {
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--sea);
+    }
+
+    .plan-option-price {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--ink);
+    }
+
+    .plan-option-period {
+        font-size: 0.72rem;
+        color: var(--muted);
+    }
+
+    .plan-option-save {
+        background: var(--gold);
+        color: var(--ink);
+        font-size: 0.65rem;
+        font-weight: 800;
+        padding: 0.15rem 0.5rem;
+        border-radius: 2px;
+        letter-spacing: 0.08em;
+    }
+
+    /* Agree checkbox */
+    .agree-box {
+        background: var(--cream);
+        border: 1.5px solid var(--cream-dark);
+        border-radius: 10px;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.875rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .agree-box input[type="checkbox"] {
+        width: 18px; height: 18px;
+        accent-color: var(--sea);
+        flex-shrink: 0;
+        margin-top: 0.15rem;
+        cursor: pointer;
+    }
+
+    .agree-box label {
+        font-size: 0.875rem;
+        color: var(--muted);
+        line-height: 1.6;
+        cursor: pointer;
+    }
+
+    .agree-box label a {
+        color: var(--sea);
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 1.1rem;
+        background: var(--sea);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .submit-btn:hover {
+        background: #0a2240;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 28px rgba(15,52,96,0.3);
+    }
+
+    .submit-note {
+        text-align: center;
+        font-size: 0.775rem;
+        color: var(--muted);
+        margin-top: 0.875rem;
+    }
+
+    @media (max-width: 768px) {
+        .pricing-grid { grid-template-columns: 1fr; }
+        .plan-selector { grid-template-columns: 1fr; }
+        .field-row { grid-template-columns: 1fr; }
+        .form-body, .form-card-header { padding: 1.75rem; }
+        .terms-body, .terms-header { padding: 1.75rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ── HERO ── -->
+<section class="reg-hero">
+    <div class="reg-hero-content">
+        <div class="reg-hero-badge">✦ Partner Program</div>
+        <h1>Grow your agency with<br><em>Trivasta</em></h1>
+        <p>Join India's fastest-growing AI travel marketplace. Connect with thousands of qualified travelers ready to book their next adventure.</p>
+    </div>
+</section>
+
+
+<!-- ── PRICING ── -->
+<section class="pricing-section">
+    <div class="pricing-header">
+        <div class="section-eyebrow">Simple Pricing</div>
+        <h2>Choose a plan that <em>works for you</em></h2>
+    </div>
+
+    <div class="pricing-grid">
+
+        <!-- Starter -->
+        <div class="plan-card">
+            <div class="plan-name">Starter</div>
+            <div class="plan-price">₹4,999 <span>/ year</span></div>
+            <div class="plan-billing">~₹417/month · billed annually</div>
+            <div class="plan-features">
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> Up to 5 active packages</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> Respond to trip requests</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> Basic analytics dashboard</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> 10% platform fee per booking</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> Standard listing placement</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> Email support</div>
+            </div>
+            <button onclick="document.getElementById('plan-starter').checked=true; document.getElementById('reg-form').scrollIntoView({behavior:'smooth'})" class="plan-cta">
+                Get Started →
+            </button>
+        </div>
+
+        <!-- Professional (Featured) -->
+        <div class="plan-card featured">
+            <div class="plan-badge">Most Popular</div>
+            <div class="plan-name">Professional</div>
+            <div class="plan-price">₹9,999 <span>/ year</span></div>
+            <div class="plan-billing">~₹833/month · billed annually · save 20%</div>
+            <div class="plan-features">
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> Unlimited active packages</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> Priority trip request access</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> Advanced revenue analytics</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> 8% platform fee per booking</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> Featured listing on homepage</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> Priority customer support</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> Agency profile badge</div>
+            </div>
+            <button onclick="document.getElementById('plan-professional').checked=true; document.getElementById('reg-form').scrollIntoView({behavior:'smooth'})" class="plan-cta">
+                Choose Professional →
+            </button>
+        </div>
+
+        <!-- Enterprise -->
+        <div class="plan-card">
+            <div class="plan-name">Enterprise</div>
+            <div class="plan-price">₹19,999 <span>/ year</span></div>
+            <div class="plan-billing">~₹1,667/month · billed annually · save 33%</div>
+            <div class="plan-features">
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> Everything in Professional</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> Dedicated account manager</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> 5% platform fee per booking</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> Top homepage placement</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> Custom agency landing page</div>
+                <div class="plan-feature"><span class="plan-feature-icon">✦</span> 24/7 phone support</div>
+            </div>
+            <button onclick="document.getElementById('plan-enterprise').checked=true; document.getElementById('reg-form').scrollIntoView({behavior:'smooth'})" class="plan-cta">
+                Contact Us →
+            </button>
+        </div>
+    </div>
+    <p class="pricing-note">💡 All plans include a 14-day free trial. No payment required until your application is approved.</p>
+</section>
+
+
+<!-- ── HOW IT WORKS ── -->
+<section class="how-section">
+    <div class="how-inner">
+        <div class="section-eyebrow">The Process</div>
+        <h2 style="font-family:'Cormorant Garamond',serif; font-size:2.5rem; font-weight:300; color:var(--ink);">
+            How Trivasta works <em style="font-style:italic; color:var(--sea);">for agencies</em>
+        </h2>
+
+        <div class="how-steps">
+            <div class="how-step">
+                <div class="how-step-num">1️⃣</div>
+                <div>
+                    <div class="how-step-title">Apply & get approved</div>
+                    <div class="how-step-desc">Submit your agency details. Our team reviews applications within 24–48 hours. Once approved, you get instant access to your dashboard and can start listing packages immediately.</div>
+                </div>
+            </div>
+            <div class="how-step">
+                <div class="how-step-num">2️⃣</div>
+                <div>
+                    <div class="how-step-title">List your packages</div>
+                    <div class="how-step-desc">Create detailed travel packages with descriptions, images, pricing and inclusions. Your packages appear on Trivasta's homepage and are shown to relevant travelers based on their trip type and destination.</div>
+                </div>
+            </div>
+            <div class="how-step">
+                <div class="how-step-num">3️⃣</div>
+                <div>
+                    <div class="how-step-title">Respond to trip requests</div>
+                    <div class="how-step-desc">Travelers use our AI to plan trips and then look for agencies to execute them. You can see all live trip requests and send custom offers with your own pricing and message — creating a competitive marketplace that benefits travelers and agencies alike.</div>
+                </div>
+            </div>
+            <div class="how-step">
+                <div class="how-step-num">4️⃣</div>
+                <div>
+                    <div class="how-step-title">Receive secure payments</div>
+                    <div class="how-step-desc">When a traveler books your offer, payment is processed securely via Razorpay. Trivasta collects a platform fee (5–10% depending on your plan) and the rest is settled directly to your account within 3–5 business days.</div>
+                </div>
+            </div>
+            <div class="how-step">
+                <div class="how-step-num">5️⃣</div>
+                <div>
+                    <div class="how-step-title">Build your reputation</div>
+                    <div class="how-step-desc">After each trip, travelers rate your agency. Higher ratings mean better placement on the homepage, more visibility, and ultimately more bookings. Consistent quality is rewarded on Trivasta.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- ── TERMS & CONDITIONS ── -->
+<div class="terms-section">
+    <div class="terms-card">
+        <div class="terms-header">
+            <h2>📋 Agency Terms & Conditions</h2>
+            <p>Last updated: February 2026 · Please read carefully before registering</p>
+        </div>
+        <div class="terms-body">
+
+            <div class="terms-section-title">1. Eligibility & Registration</div>
+            <p>To register as a travel agency on Trivasta, you must be a legally registered travel business with a valid GST number (where applicable) operating in India. By registering, you confirm that your agency holds all necessary licenses and permits required under applicable Indian law to offer travel services.</p>
+            <ul>
+                <li>You must provide accurate and complete information during registration</li>
+                <li>One agency account per registered business entity</li>
+                <li>Trivasta reserves the right to reject any application without giving reasons</li>
+                <li>Misrepresentation of agency information will result in immediate account termination</li>
+            </ul>
+
+            <div class="terms-section-title">2. Subscription Plans & Billing</div>
+            <p>Agency access is offered through annual subscription plans (Starter, Professional, Enterprise). All plans are billed annually and include a 14-day free trial. No charges are applied during the trial period.</p>
+            <ul>
+                <li>Subscriptions auto-renew annually unless cancelled 30 days before renewal</li>
+                <li>Annual fees are non-refundable after the 14-day trial period</li>
+                <li>Plan downgrades take effect at the next renewal date</li>
+                <li>Trivasta reserves the right to change pricing with 60 days' notice</li>
+            </ul>
+
+            <div class="terms-section-title">3. Platform Commission</div>
+            <p>In addition to the annual subscription, Trivasta charges a platform fee on each completed booking. This fee varies by plan: 10% for Starter, 8% for Professional, and 5% for Enterprise. The platform fee is automatically deducted before payment settlement.</p>
+            <ul>
+                <li>Fees are calculated on the total booking value including taxes</li>
+                <li>Payment settlements occur within 3–5 business days of trip confirmation</li>
+                <li>Disputed bookings are held until resolution</li>
+            </ul>
+
+            <div class="terms-section-title">4. Package Listings & Content</div>
+            <p>Agencies are solely responsible for the accuracy and legality of all content they publish, including package descriptions, pricing, inclusions and images.</p>
+            <ul>
+                <li>All pricing must be in Indian Rupees (INR) and inclusive of applicable taxes</li>
+                <li>Package images must be original or properly licensed — no copyright infringement</li>
+                <li>Misleading or false package descriptions are grounds for immediate suspension</li>
+                <li>Trivasta may remove any listing that violates these terms without notice</li>
+            </ul>
+
+            <div class="terms-section-title">5. Conduct & Quality Standards</div>
+            <ul>
+                <li>Agencies must honour confirmed bookings — cancellations harm traveler trust and your rating</li>
+                <li>Response to trip requests should be made within 48 hours</li>
+                <li>Agencies must maintain a minimum rating of 3.5★ to remain listed</li>
+                <li>Any attempt to contact travelers outside the Trivasta platform is prohibited</li>
+                <li>Offering kickbacks, fake reviews or manipulating ratings will result in permanent ban</li>
+            </ul>
+
+            <div class="terms-section-title">6. Liability & Disputes</div>
+            <p>Trivasta acts solely as a marketplace connecting travelers with agencies. We are not responsible for the quality, safety or delivery of travel services. All disputes between agencies and travelers must be resolved between the parties, with Trivasta acting as a neutral mediator where necessary.</p>
+
+            <div class="terms-section-title">7. Account Termination</div>
+            <p>Trivasta reserves the right to suspend or terminate agency accounts for violations of these terms, repeated traveler complaints, fraudulent activity or breach of applicable law. Terminated agencies forfeit their annual subscription fee and any pending settlements may be withheld pending investigation.</p>
+
+            <div class="terms-section-title">8. Governing Law</div>
+            <p>These terms are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of the courts of Mumbai, Maharashtra.</p>
+
+        </div>
+    </div>
+</div>
+
+
+<!-- ── REGISTRATION FORM ── -->
+<div class="form-section" id="reg-form">
+    <div class="form-card">
+        <div class="form-card-header">
+            <h2>Apply to Join Trivasta</h2>
+            <p>Already registered? <a href="{% url 'agency_login' %}">Sign in to your dashboard →</a></p>
+        </div>
+
+        <div class="form-body">
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="form-divider">Account Credentials</div>
+
+                <div class="field-row">
+                    <div class="field">
+                        <label>Username</label>
+                        <input type="text" name="username" placeholder="agency_username" required>
+                    </div>
+                    <div class="field">
+                        <label>Password</label>
+                        <input type="password" name="password" placeholder="Strong password" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Email Address</label>
+                    <input type="email" name="email" placeholder="agency@yourbusiness.com" required>
+                </div>
+
+                <div class="form-divider">Agency Information</div>
+
+                <div class="field">
+                    <label>Agency Name</label>
+                    <input type="text" name="name" placeholder="e.g. Wanderlust India Tours" required>
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label>Phone Number</label>
+                        <input type="text" name="phone" placeholder="+91 98765 43210" required>
+                    </div>
+                    <div class="field">
+                        <label>Location / City</label>
+                        <input type="text" name="location" placeholder="Mumbai, India" required>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Website (Optional)</label>
+                    <input type="url" name="website" placeholder="https://youragency.com">
+                </div>
+                <div class="field">
+                    <label>About Your Agency</label>
+                    <textarea name="description" rows="4" placeholder="Tell travelers about your speciality, years of experience, destinations you cover and what makes you unique..." required></textarea>
+                    <span class="field-hint">This appears on your agency profile. Make it compelling!</span>
+                </div>
+
+                <div class="form-divider">Choose Your Plan</div>
+
+                <div class="plan-selector">
+                    <div>
+                        <input type="radio" name="plan" id="plan-starter" value="starter" class="plan-option">
+                        <label for="plan-starter" class="plan-option-label">
+                            <span class="plan-option-name">Starter</span>
+                            <span class="plan-option-price">₹4,999</span>
+                            <span class="plan-option-period">per year</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="radio" name="plan" id="plan-professional" value="professional" class="plan-option" checked>
+                        <label for="plan-professional" class="plan-option-label">
+                            <span class="plan-option-name">Professional</span>
+                            <span class="plan-option-price">₹9,999</span>
+                            <span class="plan-option-period">per year</span>
+                            <span class="plan-option-save">POPULAR</span>
+                        </label>
+                    </div>
+                    <div>
+                        <input type="radio" name="plan" id="plan-enterprise" value="enterprise" class="plan-option">
+                        <label for="plan-enterprise" class="plan-option-label">
+                            <span class="plan-option-name">Enterprise</span>
+                            <span class="plan-option-price">₹19,999</span>
+                            <span class="plan-option-period">per year</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-divider">Agreement</div>
+
+                <div class="agree-box">
+                    <input type="checkbox" id="agree-terms" name="agree_terms" required>
+                    <label for="agree-terms">
+                        I have read and agree to the <a href="#terms">Terms & Conditions</a> above. I understand how the platform works, including pricing, commission structure, and conduct requirements. I confirm that all information provided is accurate and my agency is legally registered.
+                    </label>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    ✦ Submit Application →
+                </button>
+                <p class="submit-note">🔒 Your information is secure · 14-day free trial · No payment until approved</p>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Smooth scroll to form when plan buttons clicked
+    document.querySelectorAll('.plan-cta').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById('reg-form').scrollIntoView({ behavior: 'smooth' });
+        });
+    });
+</script>
+{% endblock %}

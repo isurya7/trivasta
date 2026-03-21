@@ -1,0 +1,892 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Package — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Outfit', sans-serif; }
+
+    .form-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        padding: 3rem 1rem 5rem;
+    }
+
+    .form-container { max-width: 800px; margin: 0 auto; }
+
+    .form-header {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 16px;
+        padding: 2.25rem 2.75rem;
+        margin-bottom: 1.75rem;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+    }
+
+    .form-header::before {
+        content: '';
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.07) 1px, transparent 1px);
+        background-size: 28px 28px;
+    }
+
+    .form-header-left { position: relative; z-index: 1; }
+    .form-eyebrow { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #e8c97a; margin-bottom: 0.4rem; }
+
+    .form-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.875rem; font-weight: 300; color: white; line-height: 1.2;
+    }
+
+    .form-title em { font-style: italic; color: #e8c97a; }
+    .form-sub { font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-top: 0.3rem; }
+    .form-header-icon { position: relative; z-index: 1; font-size: 3rem; flex-shrink: 0; opacity: 0.8; }
+
+    .form-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        margin-bottom: 1.25rem;
+    }
+
+    .form-card-header {
+        background: var(--cream);
+        padding: 1rem 1.75rem;
+        border-bottom: 1px solid var(--cream-dark);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+    }
+
+    .form-card-header-left { display: flex; align-items: center; gap: 0.5rem; }
+
+    .form-card-header-left::before {
+        content: '';
+        width: 3px; height: 14px;
+        background: var(--gold);
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+
+    .form-card-body { padding: 1.75rem; }
+
+    .field-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
+    .field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; }
+
+    .field-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.25rem; }
+    .field-group:last-child { margin-bottom: 0; }
+
+    .field-label {
+        font-size: 0.68rem; font-weight: 700;
+        letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+    }
+
+    .field-label span { color: #e74c3c; margin-left: 0.2rem; }
+
+    .field-input,
+    .field-select,
+    .field-textarea {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        border: 1.5px solid var(--cream-dark);
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9375rem;
+        color: var(--ink);
+        background: var(--cream);
+        outline: none;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+    .field-input:focus, .field-select:focus, .field-textarea:focus {
+        border-color: var(--sea);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(15,52,96,0.08);
+    }
+
+    .field-input::placeholder, .field-textarea::placeholder { color: #b0b8c1; }
+    .field-textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
+    .field-hint { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+    .field-error { font-size: 0.75rem; color: #e74c3c; font-weight: 500; }
+
+    /* ── CATEGORY PICKER ── */
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.6rem;
+    }
+
+    .cat-option { position: relative; }
+    .cat-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
+
+    .cat-option label {
+        display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
+        padding: 0.875rem 0.5rem;
+        background: var(--cream); border: 2px solid var(--cream-dark); border-radius: 10px;
+        cursor: pointer; transition: all 0.2s; text-align: center;
+    }
+
+    .cat-option label:hover { border-color: rgba(15,52,96,0.3); background: white; }
+
+    .cat-option input:checked + label {
+        border-color: var(--sea);
+        background: rgba(15,52,96,0.05);
+        box-shadow: 0 0 0 3px rgba(15,52,96,0.1);
+    }
+
+    .cat-emoji { font-size: 1.375rem; }
+    .cat-name  { font-size: 0.68rem; font-weight: 600; color: var(--ink); line-height: 1.2; }
+
+    /* ── PRICE PREVIEW ── */
+    .price-preview {
+        background: var(--cream); border: 1px solid var(--cream-dark);
+        border-radius: var(--radius); padding: 0.875rem 1rem;
+        display: grid; grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem; margin-top: 0.5rem;
+    }
+
+    .price-preview-item { text-align: center; }
+
+    .price-preview-num {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.25rem; font-weight: 600; color: var(--sea); line-height: 1;
+    }
+
+    .price-preview-num.gold  { color: var(--gold); }
+    .price-preview-num.green { color: #27ae60; }
+    .price-preview-lbl { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 0.2rem; }
+
+    /* ── IMAGES SECTION ── */
+    .image-tabs {
+        display: flex; gap: 0.25rem; background: var(--cream);
+        border-radius: 6px; padding: 0.25rem; margin-bottom: 1.25rem;
+        border: 1px solid var(--cream-dark);
+    }
+
+    .img-tab {
+        flex: 1; padding: 0.5rem 1rem; border-radius: 4px; border: none;
+        background: none; font-family: 'Outfit', sans-serif; font-size: 0.8rem;
+        font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.2s;
+        text-align: center;
+    }
+
+    .img-tab.active { background: white; color: var(--sea); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+
+    .img-tab-panel { display: none; }
+    .img-tab-panel.active { display: block; }
+
+    /* Image slots grid */
+    .image-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.875rem; }
+
+    .image-slot {
+        border: 1.5px dashed var(--cream-dark);
+        border-radius: 10px; overflow: hidden;
+        transition: border-color 0.2s;
+        background: var(--cream);
+    }
+
+    .image-slot:hover { border-color: rgba(15,52,96,0.3); }
+    .image-slot.has-image { border-style: solid; border-color: var(--sea); }
+
+    .image-slot-preview {
+        height: 120px; display: flex; align-items: center; justify-content: center;
+        position: relative; overflow: hidden;
+        background: linear-gradient(135deg, #e8e0d4, #d8cfc4);
+    }
+
+    .image-slot-preview img {
+        width: 100%; height: 100%; object-fit: cover;
+        position: absolute; inset: 0;
+    }
+
+    .image-slot-preview-empty {
+        font-size: 2rem; opacity: 0.25;
+    }
+
+    .image-slot-del {
+        position: absolute; top: 0.4rem; right: 0.4rem; z-index: 2;
+        width: 22px; height: 22px; border-radius: 50%;
+        background: rgba(231,76,60,0.85); color: white;
+        border: none; cursor: pointer; font-size: 0.65rem;
+        display: none; align-items: center; justify-content: center;
+    }
+
+    .image-slot.has-image .image-slot-del { display: flex; }
+
+    .image-slot-body { padding: 0.625rem; display: flex; flex-direction: column; gap: 0.4rem; }
+
+    .slot-type-toggle {
+        display: flex; gap: 0.25rem; background: var(--cream-dark);
+        border-radius: 4px; padding: 0.2rem;
+    }
+
+    .slot-type-btn {
+        flex: 1; padding: 0.25rem; border: none; border-radius: 3px;
+        font-family: 'Outfit', sans-serif; font-size: 0.65rem; font-weight: 600;
+        cursor: pointer; background: none; color: var(--muted); transition: all 0.15s;
+    }
+
+    .slot-type-btn.active { background: white; color: var(--sea); }
+
+    .slot-url-input, .slot-file-input {
+        width: 100%; padding: 0.4rem 0.6rem;
+        border: 1px solid var(--cream-dark); border-radius: 4px;
+        font-family: 'Outfit', sans-serif; font-size: 0.72rem;
+        color: var(--ink); background: var(--cream); outline: none;
+        transition: border-color 0.2s;
+    }
+
+    .slot-url-input:focus, .slot-file-input:focus { border-color: var(--sea); background: white; }
+    .slot-file-input { padding: 0.3rem; }
+
+    .slot-caption { font-size: 0.68rem; color: var(--muted); }
+
+    .slot-delete-check { display: none; }
+
+    /* Unsplash search */
+    .unsplash-search-wrap {
+        display: flex; gap: 0.5rem; margin-bottom: 1rem;
+    }
+
+    .unsplash-search-input {
+        flex: 1; padding: 0.7rem 1rem;
+        border: 1.5px solid var(--cream-dark); border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif; font-size: 0.875rem;
+        color: var(--ink); background: var(--cream); outline: none;
+        transition: all 0.2s;
+    }
+
+    .unsplash-search-input:focus { border-color: var(--sea); background: white; box-shadow: 0 0 0 3px rgba(15,52,96,0.08); }
+
+    .unsplash-search-btn {
+        padding: 0.7rem 1.25rem; background: var(--sea); color: white;
+        border: none; border-radius: var(--radius); font-family: 'Outfit', sans-serif;
+        font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .unsplash-search-btn:hover { background: #0a2240; }
+
+    .unsplash-results {
+        display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;
+        max-height: 300px; overflow-y: auto; margin-bottom: 0.5rem;
+    }
+
+    .unsplash-thumb {
+        height: 80px; border-radius: 6px; overflow: hidden;
+        cursor: pointer; border: 2px solid transparent;
+        transition: all 0.2s; position: relative;
+    }
+
+    .unsplash-thumb:hover { border-color: var(--sea); transform: scale(1.02); }
+    .unsplash-thumb.selected { border-color: var(--gold); }
+
+    .unsplash-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    .unsplash-selected-wrap { margin-top: 0.75rem; }
+
+    .unsplash-selected-list { display: flex; flex-direction: column; gap: 0.5rem; }
+
+    .unsplash-selected-item {
+        display: flex; align-items: center; gap: 0.75rem;
+        background: var(--cream); border: 1px solid var(--cream-dark);
+        border-radius: 8px; padding: 0.5rem;
+    }
+
+    .unsplash-selected-item img {
+        width: 48px; height: 40px; object-fit: cover; border-radius: 4px; flex-shrink: 0;
+    }
+
+    .unsplash-selected-url {
+        flex: 1; font-size: 0.72rem; color: var(--muted);
+        word-break: break-all; line-height: 1.4;
+    }
+
+    .unsplash-remove-btn {
+        width: 22px; height: 22px; border-radius: 50%;
+        background: rgba(231,76,60,0.1); color: #e74c3c; border: none;
+        cursor: pointer; font-size: 0.75rem; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center;
+    }
+
+    .unsplash-status { font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; text-align: center; }
+
+    /* ── TOGGLE ── */
+    .toggle-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 1rem 0;
+    }
+
+    .toggle-label-text strong { display: block; font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-bottom: 0.15rem; }
+    .toggle-label-text span   { font-size: 0.8rem; color: var(--muted); }
+
+    .toggle-switch { position: relative; width: 48px; height: 26px; flex-shrink: 0; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+    .toggle-slider {
+        position: absolute; inset: 0; background: var(--cream-dark);
+        border-radius: 26px; cursor: pointer; transition: 0.3s;
+        border: 1.5px solid #d0c8b8;
+    }
+
+    .toggle-slider::before {
+        content: ''; position: absolute;
+        width: 18px; height: 18px; left: 3px; top: 50%;
+        transform: translateY(-50%); background: white; border-radius: 50%;
+        transition: 0.3s; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+
+    .toggle-switch input:checked + .toggle-slider { background: var(--sea); border-color: var(--sea); }
+    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px) translateY(-50%); }
+
+    /* ── FORM ACTIONS ── */
+    .form-actions {
+        display: flex; gap: 1rem; justify-content: flex-end; align-items: center;
+        padding: 1.5rem 1.75rem; background: var(--cream); border-top: 1px solid var(--cream-dark);
+    }
+
+    .form-actions-left { margin-right: auto; font-size: 0.8125rem; color: var(--muted); }
+
+    /* ── DANGER ZONE ── */
+    .danger-zone {
+        background: white; border-radius: 12px; box-shadow: var(--shadow);
+        overflow: hidden; border: 1px solid rgba(231,76,60,0.15);
+    }
+
+    .danger-zone-header {
+        background: rgba(231,76,60,0.04); padding: 1rem 1.75rem;
+        border-bottom: 1px solid rgba(231,76,60,0.12);
+        font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em;
+        text-transform: uppercase; color: #c0392b;
+        display: flex; align-items: center; gap: 0.5rem;
+    }
+
+    .danger-zone-header::before { content: ''; width: 3px; height: 14px; background: #e74c3c; border-radius: 2px; }
+
+    .danger-zone-body {
+        padding: 1.25rem 1.75rem; display: flex;
+        align-items: center; justify-content: space-between; gap: 1.5rem;
+    }
+
+    .danger-zone-text strong { display: block; font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-bottom: 0.2rem; }
+    .danger-zone-text span   { font-size: 0.8rem; color: var(--muted); }
+
+    /* hidden formset rows */
+    .formset-hidden { display: none; }
+
+    @media (max-width: 640px) {
+        .field-row, .field-row-3 { grid-template-columns: 1fr; }
+        .category-grid { grid-template-columns: repeat(2, 1fr); }
+        .image-slots { grid-template-columns: 1fr 1fr; }
+        .unsplash-results { grid-template-columns: repeat(3, 1fr); }
+        .form-header { flex-direction: column; }
+        .form-header-icon { display: none; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-container">
+
+        <!-- HEADER -->
+        <div class="form-header">
+            <div class="form-header-left">
+                <div class="form-eyebrow">📦 Package Management</div>
+                <div class="form-title">
+                    {% if action == 'Edit' %}
+                        Edit <em>{{ form.instance.title|default:"Package" }}</em>
+                    {% else %}
+                        Create a <em>New Package</em>
+                    {% endif %}
+                </div>
+                <div class="form-sub">
+                    {% if action == 'Edit' %}Update your package details, images and pricing.
+                    {% else %}Fill in the details to list your package on Trivasta.{% endif %}
+                </div>
+            </div>
+            <div class="form-header-icon">{% if action == 'Edit' %}✏️{% else %}📦{% endif %}</div>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" id="packageForm">
+            {% csrf_token %}
+
+            <!-- ── BASIC DETAILS ── -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <span class="form-card-header-left">Basic Details</span>
+                </div>
+                <div class="form-card-body">
+
+                    <div class="field-group">
+                        <label class="field-label">Package Title <span>*</span></label>
+                        <input type="text" name="title" value="{{ form.title.value|default:'' }}"
+                               placeholder="e.g. Himalayan Adventure — 7 Days Trek"
+                               class="field-input" required>
+                        {% if form.title.errors %}<span class="field-error">{{ form.title.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="field-row">
+                        <div class="field-group">
+                            <label class="field-label">Destination <span>*</span></label>
+                            <input type="text" name="destination" value="{{ form.destination.value|default:'' }}"
+                                   placeholder="e.g. Manali, Himachal Pradesh"
+                                   class="field-input" required>
+                            {% if form.destination.errors %}<span class="field-error">{{ form.destination.errors.0 }}</span>{% endif %}
+                        </div>
+                        <div class="field-group">
+                            <label class="field-label">Duration (days) <span>*</span></label>
+                            <input type="number" name="duration" value="{{ form.duration.value|default:'' }}"
+                                   placeholder="e.g. 7" min="1" class="field-input" required>
+                            {% if form.duration.errors %}<span class="field-error">{{ form.duration.errors.0 }}</span>{% endif %}
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label">Description <span>*</span></label>
+                        <textarea name="description" placeholder="Describe what makes this package special..."
+                                  class="field-textarea" rows="4" required>{{ form.description.value|default:'' }}</textarea>
+                        {% if form.description.errors %}<span class="field-error">{{ form.description.errors.0 }}</span>{% endif %}
+                    </div>
+
+                    <div class="field-group" style="margin-bottom:0;">
+                        <label class="field-label">What's Included</label>
+                        <textarea name="inclusions" placeholder="e.g. Accommodation, meals, guide, permits, transfers..."
+                                  class="field-textarea" rows="3">{{ form.inclusions.value|default:'' }}</textarea>
+                        <span class="field-hint">List inclusions separated by commas or one per line.</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ── CATEGORY ── -->
+            <div class="form-card">
+                <div class="form-card-header"><span class="form-card-header-left">Travel Category</span></div>
+                <div class="form-card-body">
+                    <div class="category-grid">
+                        {% for val, label in form.fields.category.choices %}
+                        <div class="cat-option">
+                            <input type="radio" name="category" id="cat_{{ val }}" value="{{ val }}"
+                                   {% if form.category.value == val %}checked{% endif %} required>
+                            <label for="cat_{{ val }}">
+                                <span class="cat-emoji">
+                                    {% if val == 'adventure' %}🏔️{% elif val == 'cultural' %}🏛️
+                                    {% elif val == 'leisure' %}🌴{% elif val == 'romantic' %}💑
+                                    {% elif val == 'family' %}👨‍👩‍👧{% elif val == 'luxury' %}✨
+                                    {% elif val == 'solo' %}🎒{% else %}✈️{% endif %}
+                                </span>
+                                <span class="cat-name">{{ label|slice:"3:" }}</span>
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── PRICING ── -->
+            <div class="form-card">
+                <div class="form-card-header"><span class="form-card-header-left">Pricing</span></div>
+                <div class="form-card-body">
+                    <div class="field-group">
+                        <label class="field-label">Base Price (₹) <span>*</span></label>
+                        <input type="number" name="price" id="priceInput"
+                               value="{{ form.price.value|default:'' }}"
+                               placeholder="e.g. 25000" min="1" class="field-input"
+                               oninput="updatePricePreview(this.value)" required>
+                        <span class="field-hint">Trivasta adds 5% GST. You receive 90% of the base price.</span>
+                    </div>
+                    <div class="price-preview">
+                        <div class="price-preview-item">
+                            <div class="price-preview-num" id="previewBase">₹0</div>
+                            <div class="price-preview-lbl">Base Price</div>
+                        </div>
+                        <div class="price-preview-item">
+                            <div class="price-preview-num gold" id="previewGst">+ ₹0</div>
+                            <div class="price-preview-lbl">GST (5%)</div>
+                        </div>
+                        <div class="price-preview-item">
+                            <div class="price-preview-num green" id="previewTotal">₹0</div>
+                            <div class="price-preview-lbl">Customer Pays</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── IMAGES ── -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <span class="form-card-header-left">Package Images</span>
+                    <span style="font-size:0.72rem; color:var(--muted); font-weight:400; text-transform:none; letter-spacing:0;">
+                        Up to 10 images
+                    </span>
+                </div>
+                <div class="form-card-body">
+
+                    <!-- Tab switcher -->
+                    <div class="image-tabs">
+                        <button type="button" class="img-tab active" onclick="switchImgTab('upload', this)">📁 Upload from Device</button>
+                        <button type="button" class="img-tab" onclick="switchImgTab('url', this)">🔗 Paste URL</button>
+                        <button type="button" class="img-tab" onclick="switchImgTab('unsplash', this)">🖼 Search Unsplash</button>
+                    </div>
+
+                    <!-- UPLOAD TAB -->
+                    <div class="img-tab-panel active" id="imgTab-upload">
+                        {{ formset.management_form }}
+                        <div class="image-slots" id="imageSlots">
+                            {% for img_form in formset %}
+                            <div class="image-slot {% if img_form.instance.pk %}has-image{% endif %}" data-index="{{ forloop.counter0 }}">
+                                {{ img_form.id }}
+                                <div class="image-slot-preview">
+                                    {% if img_form.instance.pk %}
+                                        <img src="{{ img_form.instance.get_url }}" alt="Image {{ forloop.counter }}"
+                                             id="slotPreview-{{ forloop.counter0 }}">
+                                    {% else %}
+                                        <span class="image-slot-preview-empty">📷</span>
+                                    {% endif %}
+                                    <button type="button" class="image-slot-del"
+                                            onclick="markDelete(this, {{ forloop.counter0 }})">✕</button>
+                                </div>
+                                <div class="image-slot-body">
+                                    <!-- Toggle: URL or File -->
+                                    <div class="slot-type-toggle">
+                                        <button type="button" class="slot-type-btn active"
+                                                onclick="slotMode(this, {{ forloop.counter0 }}, 'file')">📁 File</button>
+                                        <button type="button" class="slot-type-btn"
+                                                onclick="slotMode(this, {{ forloop.counter0 }}, 'url')">🔗 URL</button>
+                                    </div>
+                                    <div id="slotFile-{{ forloop.counter0 }}">
+                                        <input type="file" name="images-{{ forloop.counter0 }}-image_file"
+                                               accept="image/*" class="slot-file-input"
+                                               onchange="previewFile(this, {{ forloop.counter0 }})">
+                                    </div>
+                                    <div id="slotUrl-{{ forloop.counter0 }}" style="display:none;">
+                                        <input type="url"
+                                               name="images-{{ forloop.counter0 }}-image_url"
+                                               value="{{ img_form.instance.image_url|default:'' }}"
+                                               placeholder="https://..." class="slot-url-input"
+                                               oninput="previewUrl(this, {{ forloop.counter0 }})">
+                                    </div>
+                                    <input type="number" name="images-{{ forloop.counter0 }}-order"
+                                           value="{{ forloop.counter0 }}" style="display:none;">
+                                    <input type="checkbox" name="images-{{ forloop.counter0 }}-DELETE"
+                                           id="slotDel-{{ forloop.counter0 }}" class="slot-delete-check">
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <p style="font-size:0.75rem; color:var(--muted); margin-top:0.875rem;">
+                            💡 First image will be used as the cover. Accepted: JPG, PNG, WebP.
+                        </p>
+                    </div>
+
+                    <!-- URL TAB -->
+                    <div class="img-tab-panel" id="imgTab-url">
+                        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:1rem;">
+                            Paste direct image URLs below. The first slot URL is also the package cover.
+                        </p>
+                        <div style="display:flex; flex-direction:column; gap:0.6rem;" id="urlSlots">
+                            {% for img_form in formset %}
+                            <div style="display:flex; gap:0.5rem; align-items:center;">
+                                <span style="font-size:0.72rem; color:var(--muted); width:20px; text-align:center; flex-shrink:0;">{{ forloop.counter }}</span>
+                                <input type="url"
+                                       name="images-{{ forloop.counter0 }}-image_url"
+                                       value="{{ img_form.instance.image_url|default:'' }}"
+                                       placeholder="https://example.com/image.jpg"
+                                       class="slot-url-input"
+                                       style="flex:1;"
+                                       oninput="syncUrlSlot(this, {{ forloop.counter0 }})">
+                                {% if img_form.instance.image_url %}
+                                <img src="{{ img_form.instance.image_url }}"
+                                     style="width:40px; height:36px; object-fit:cover; border-radius:4px; flex-shrink:0;"
+                                     onerror="this.style.display='none'" id="urlSlotThumb-{{ forloop.counter0 }}">
+                                {% else %}
+                                <div style="width:40px; height:36px; background:var(--cream-dark); border-radius:4px; flex-shrink:0;"
+                                     id="urlSlotThumb-{{ forloop.counter0 }}"></div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- UNSPLASH TAB -->
+                    <div class="img-tab-panel" id="imgTab-unsplash">
+                        <div class="unsplash-search-wrap">
+                            <input type="text" id="unsplashQuery" class="unsplash-search-input"
+                                   placeholder="Search Unsplash — e.g. Manali mountains, Kerala backwaters..."
+                                   onkeydown="if(event.key==='Enter'){event.preventDefault(); searchUnsplash();}">
+                            <button type="button" class="unsplash-search-btn" onclick="searchUnsplash()">🔍 Search</button>
+                        </div>
+                        <div class="unsplash-results" id="unsplashResults">
+                            <div class="unsplash-status" id="unsplashStatus" style="grid-column:1/-1;">
+                                Search for destination photos above to get started.
+                            </div>
+                        </div>
+                        <div class="unsplash-selected-wrap" id="unsplashSelectedWrap" style="display:none;">
+                            <p style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:0.5rem;">
+                                Selected Images
+                            </p>
+                            <div class="unsplash-selected-list" id="unsplashSelectedList"></div>
+                        </div>
+                        <p style="font-size:0.72rem; color:var(--muted); margin-top:0.75rem;">
+                            Photos from <a href="https://unsplash.com" target="_blank" style="color:var(--sea);">Unsplash</a> are free to use.
+                            Selected images will be saved as URL references.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ── VISIBILITY ── -->
+            <div class="form-card">
+                <div class="form-card-header"><span class="form-card-header-left">Visibility</span></div>
+                <div class="form-card-body" style="padding-bottom:0.5rem;">
+                    <div class="toggle-row">
+                        <div class="toggle-label-text">
+                            <strong>List this package publicly</strong>
+                            <span>When active, travellers can find and book this package.</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" name="is_active" id="id_is_active"
+                                   {% if form.is_active.value %}checked{% endif %}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── ACTIONS ── -->
+            <div class="form-card" style="overflow:hidden;">
+                <div class="form-actions">
+                    <span class="form-actions-left">
+                        {% if action == 'Edit' %}Last saved: {{ form.instance.created_at|date:"N j, Y" }}
+                        {% else %}Fields marked <span style="color:#e74c3c;">*</span> are required.{% endif %}
+                    </span>
+                    <a href="{% url 'agency_dashboard' %}" class="btn btn-outline">← Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        {% if action == 'Edit' %}✦ Save Changes{% else %}✦ Create Package{% endif %}
+                    </button>
+                </div>
+            </div>
+
+        </form>
+
+        <!-- DANGER ZONE -->
+        {% if action == 'Edit' %}
+        <div class="danger-zone">
+            <div class="danger-zone-header">Danger Zone</div>
+            <div class="danger-zone-body">
+                <div class="danger-zone-text">
+                    <strong>Delete this package</strong>
+                    <span>Permanent and cannot be undone. All bookings and images will be removed.</span>
+                </div>
+                <a href="{% url 'package_delete' form.instance.pk %}"
+                   class="btn"
+                   style="background:rgba(231,76,60,0.08); color:#e74c3c; border:1px solid rgba(231,76,60,0.25);"
+                   onclick="return confirm('Are you sure? This cannot be undone.')">
+                    🗑️ Delete Package
+                </a>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Image tab switcher ──
+function switchImgTab(name, btn) {
+    document.querySelectorAll('.img-tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.img-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('imgTab-' + name).classList.add('active');
+    btn.classList.add('active');
+}
+
+// ── Slot: toggle between file and url input ──
+function slotMode(btn, idx, mode) {
+    btn.closest('.slot-type-toggle').querySelectorAll('.slot-type-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('slotFile-' + idx).style.display = mode === 'file' ? '' : 'none';
+    document.getElementById('slotUrl-' + idx).style.display  = mode === 'url'  ? '' : 'none';
+}
+
+// ── Slot: preview uploaded file ──
+function previewFile(input, idx) {
+    const slot = input.closest('.image-slot');
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            const preview = slot.querySelector('.image-slot-preview');
+            preview.innerHTML = `<img src="${e.target.result}" id="slotPreview-${idx}">
+                <button type="button" class="image-slot-del" onclick="markDelete(this, ${idx})">✕</button>`;
+            slot.classList.add('has-image');
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// ── Slot: preview URL ──
+function previewUrl(input, idx) {
+    const slot = input.closest('.image-slot');
+    const url  = input.value.trim();
+    if (!url) { return; }
+    const preview = slot.querySelector('.image-slot-preview');
+    const img = new Image();
+    img.onload = () => {
+        preview.innerHTML = `<img src="${url}" id="slotPreview-${idx}">
+            <button type="button" class="image-slot-del" onclick="markDelete(this, ${idx})">✕</button>`;
+        slot.classList.add('has-image');
+    };
+    img.onerror = () => { slot.classList.remove('has-image'); };
+    img.src = url;
+}
+
+// ── Sync URL tab → upload tab URL inputs ──
+function syncUrlSlot(input, idx) {
+    const url   = input.value.trim();
+    const thumb = document.getElementById('urlSlotThumb-' + idx);
+    if (url && thumb) {
+        thumb.outerHTML = `<img src="${url}" style="width:40px; height:36px; object-fit:cover; border-radius:4px; flex-shrink:0;" onerror="this.style.display='none'" id="urlSlotThumb-${idx}">`;
+    }
+    // Also update the upload-tab URL input for the same slot
+    const uploadTabUrl = document.querySelector(`#slotUrl-${idx} input`);
+    if (uploadTabUrl) uploadTabUrl.value = url;
+}
+
+// ── Mark slot for deletion ──
+function markDelete(btn, idx) {
+    document.getElementById('slotDel-' + idx).checked = true;
+    const slot = btn.closest('.image-slot');
+    slot.classList.remove('has-image');
+    slot.querySelector('.image-slot-preview').innerHTML = '<span class="image-slot-preview-empty">🗑️</span>';
+}
+
+// ── Price preview ──
+function updatePricePreview(val) {
+    const base  = parseInt(val) || 0;
+    const gst   = Math.round(base * 0.05);
+    const total = base + gst;
+    document.getElementById('previewBase').textContent  = '₹' + base.toLocaleString('en-IN');
+    document.getElementById('previewGst').textContent   = '+ ₹' + gst.toLocaleString('en-IN');
+    document.getElementById('previewTotal').textContent = '₹' + total.toLocaleString('en-IN');
+}
+
+// ── Unsplash search (uses public API — no key needed for demo) ──
+let unsplashSelected = [];
+
+async function searchUnsplash() {
+    const q      = document.getElementById('unsplashQuery').value.trim();
+    const results = document.getElementById('unsplashResults');
+    const status  = document.getElementById('unsplashStatus');
+
+    if (!q) return;
+
+    results.innerHTML = '<div class="unsplash-status" style="grid-column:1/-1;">🔍 Searching...</div>';
+
+    try {
+        // Uses Unsplash Source API (no key needed, returns random photos)
+        const photos = [];
+        const keywords = q.split(' ').join(',');
+        for (let i = 0; i < 8; i++) {
+            const seed = Math.random().toString(36).slice(2, 8);
+            photos.push({
+                url:   `https://source.unsplash.com/400x300/?${encodeURIComponent(keywords)}&sig=${seed}`,
+                thumb: `https://source.unsplash.com/200x150/?${encodeURIComponent(keywords)}&sig=${seed}`,
+                alt:   q + ' ' + (i+1),
+            });
+        }
+
+        results.innerHTML = '';
+        photos.forEach((photo, i) => {
+            const div = document.createElement('div');
+            div.className = 'unsplash-thumb';
+            div.dataset.url = photo.url;
+            div.innerHTML = `<img src="${photo.thumb}" alt="${photo.alt}" loading="lazy">`;
+            div.onclick = () => toggleUnsplashSelect(div, photo);
+            results.appendChild(div);
+        });
+    } catch (e) {
+        results.innerHTML = '<div class="unsplash-status" style="grid-column:1/-1;">❌ Search failed. Try pasting a URL instead.</div>';
+    }
+}
+
+function toggleUnsplashSelect(div, photo) {
+    const already = unsplashSelected.findIndex(p => p.url === photo.url);
+    if (already >= 0) {
+        unsplashSelected.splice(already, 1);
+        div.classList.remove('selected');
+    } else {
+        if (unsplashSelected.length >= 10) {
+            alert('Maximum 10 images allowed.');
+            return;
+        }
+        unsplashSelected.push(photo);
+        div.classList.add('selected');
+    }
+    renderUnsplashSelected();
+    injectUnsplashUrls();
+}
+
+function renderUnsplashSelected() {
+    const wrap = document.getElementById('unsplashSelectedWrap');
+    const list = document.getElementById('unsplashSelectedList');
+
+    if (unsplashSelected.length === 0) {
+        wrap.style.display = 'none';
+        return;
+    }
+
+    wrap.style.display = '';
+    list.innerHTML = unsplashSelected.map((p, i) => `
+        <div class="unsplash-selected-item">
+            <img src="${p.thumb}" alt="${p.alt}">
+            <span class="unsplash-selected-url">${p.url}</span>
+            <button type="button" class="unsplash-remove-btn"
+                    onclick="removeUnsplash(${i})">✕</button>
+        </div>
+    `).join('');
+}
+
+function removeUnsplash(i) {
+    unsplashSelected.splice(i, 1);
+    renderUnsplashSelected();
+    injectUnsplashUrls();
+    // Deselect in grid
+    document.querySelectorAll('.unsplash-thumb.selected').forEach((el, idx) => {
+        if (idx === i) el.classList.remove('selected');
+    });
+}
+
+function injectUnsplashUrls() {
+    // Write selected Unsplash URLs into the formset URL inputs
+    const urlInputs = document.querySelectorAll('[id^="slotUrl-"] input[type="url"]');
+    unsplashSelected.forEach((p, i) => {
+        if (urlInputs[i]) {
+            urlInputs[i].value = p.url;
+            previewUrl(urlInputs[i], i);
+        }
+    });
+}
+
+// ── Init ──
+document.addEventListener('DOMContentLoaded', () => {
+    const pi = document.getElementById('priceInput');
+    if (pi && pi.value) updatePricePreview(pi.value);
+});
+</script>
+{% endblock %}

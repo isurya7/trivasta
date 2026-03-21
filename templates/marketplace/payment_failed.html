@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Package — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Outfit', sans-serif; }
+
+    .form-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        padding: 3rem 1rem 5rem;
+    }
+
+    .form-container {
+        max-width: 760px;
+        margin: 0 auto;
+    }
+
+    .form-header {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 16px 16px 0 0;
+        padding: 2.5rem 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .form-header::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.07) 1px, transparent 1px);
+        background-size: 30px 30px;
+    }
+
+    .form-header-content { position: relative; z-index: 1; }
+    .form-eyebrow { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #e8c97a; margin-bottom: 0.4rem; }
+
+    .form-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.875rem;
+        font-weight: 300;
+        color: white;
+    }
+
+    .form-title em { font-style: italic; color: #e8c97a; }
+
+    .form-body {
+        background: white;
+        border-radius: 0 0 16px 16px;
+        padding: 2.5rem 3rem;
+        box-shadow: var(--shadow);
+    }
+
+    .field-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+    }
+
+    .field-group.full { grid-template-columns: 1fr; }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .field label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .field-input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 1.5px solid var(--cream-dark);
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9375rem;
+        color: var(--ink);
+        background: var(--cream);
+        outline: none;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+    .field-input:focus {
+        border-color: var(--sea);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(15,52,96,0.08);
+    }
+
+    select.field-input { cursor: pointer; }
+
+    textarea.field-input { resize: vertical; min-height: 100px; }
+
+    .field-checkbox-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1rem;
+        background: var(--cream);
+        border: 1.5px solid var(--cream-dark);
+        border-radius: var(--radius);
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .field-checkbox-wrap:hover { border-color: var(--sea); }
+    .field-checkbox { width: 18px; height: 18px; accent-color: var(--sea); cursor: pointer; }
+    .field-checkbox-label { font-size: 0.9rem; color: var(--ink); font-weight: 500; }
+
+    .field-error { font-size: 0.78rem; color: #e74c3c; margin-top: 0.2rem; }
+
+    .form-divider {
+        height: 1px;
+        background: var(--cream-dark);
+        margin: 1.75rem 0;
+    }
+
+    .form-section-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--cream-dark);
+    }
+
+    .image-preview {
+        width: 100%;
+        height: 160px;
+        border-radius: var(--radius);
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        margin-bottom: 1.25rem;
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+
+    .image-preview img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    @media (max-width: 640px) {
+        .form-body { padding: 1.5rem; }
+        .form-header { padding: 1.75rem 1.5rem; }
+        .field-group { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-container">
+
+        <div class="form-header">
+            <div class="form-header-content">
+                <div class="form-eyebrow">📦 Package Management</div>
+                <div class="form-title">{{ action }} <em>Package</em></div>
+            </div>
+        </div>
+
+        <div class="form-body">
+            <form method="post" id="packageForm">
+                {% csrf_token %}
+
+                <!-- Image preview -->
+                <div class="image-preview" id="imgPreview">
+                    {% if form.instance.image_url.value %}
+                        <img src="{{ form.instance.image_url.value }}" id="previewImg" alt="Preview">
+                    {% else %}
+                        <span id="previewEmoji">✈️</span>
+                    {% endif %}
+                </div>
+
+                <!-- Basic info -->
+                <div class="form-section-title">✦ Basic Information</div>
+
+                <div class="field-group">
+                    <div class="field">
+                        <label for="{{ form.title.id_for_label }}">Package Title *</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}<div class="field-error">{{ form.title.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="field">
+                        <label for="{{ form.destination.id_for_label }}">Destination *</label>
+                        {{ form.destination }}
+                        {% if form.destination.errors %}<div class="field-error">{{ form.destination.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="field-group full">
+                    <div class="field">
+                        <label for="{{ form.description.id_for_label }}">Description *</label>
+                        {{ form.description }}
+                        {% if form.description.errors %}<div class="field-error">{{ form.description.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-divider"></div>
+                <div class="form-section-title">💰 Pricing & Duration</div>
+
+                <div class="field-group">
+                    <div class="field">
+                        <label for="{{ form.price.id_for_label }}">Price per person (₹) *</label>
+                        {{ form.price }}
+                        {% if form.price.errors %}<div class="field-error">{{ form.price.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="field">
+                        <label for="{{ form.duration.id_for_label }}">Duration (days) *</label>
+                        {{ form.duration }}
+                        {% if form.duration.errors %}<div class="field-error">{{ form.duration.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <div class="field">
+                        <label for="{{ form.category.id_for_label }}">Category *</label>
+                        {{ form.category }}
+                        {% if form.category.errors %}<div class="field-error">{{ form.category.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="field">
+                        <label>Status</label>
+                        <div class="field-checkbox-wrap" onclick="document.getElementById('{{ form.is_active.id_for_label }}').click()">
+                            {{ form.is_active }}
+                            <span class="field-checkbox-label">Active (visible to travelers)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-divider"></div>
+                <div class="form-section-title">📋 Details</div>
+
+                <div class="field-group full">
+                    <div class="field">
+                        <label for="{{ form.inclusions.id_for_label }}">What's Included</label>
+                        {{ form.inclusions }}
+                        {% if form.inclusions.errors %}<div class="field-error">{{ form.inclusions.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="field-group full">
+                    <div class="field">
+                        <label for="{{ form.image_url.id_for_label }}">Image URL (optional)</label>
+                        {{ form.image_url }}
+                        {% if form.image_url.errors %}<div class="field-error">{{ form.image_url.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'agency_dashboard' %}" class="btn btn-outline">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        {% if action == 'Create' %}✦ Create Package{% else %}✦ Save Changes{% endif %}
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Live image preview
+    const urlInput  = document.getElementById('{{ form.image_url.id_for_label }}');
+    const preview   = document.getElementById('imgPreview');
+
+    if (urlInput) {
+        urlInput.addEventListener('input', () => {
+            const url = urlInput.value.trim();
+            if (url) {
+                preview.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;" onerror="this.parentElement.innerHTML='<span>✈️</span>'">`;
+            } else {
+                preview.innerHTML = '<span>✈️</span>';
+            }
+        });
+    }
+
+    // Emoji preview based on category
+    const catSelect = document.getElementById('{{ form.category.id_for_label }}');
+    const emojiMap  = {
+        adventure: '🏔️', cultural: '🏛️', leisure: '🌴',
+        romantic: '💑', family: '👨‍👩‍👧', luxury: '✨', solo: '🎒'
+    };
+
+    if (catSelect) {
+        catSelect.addEventListener('change', () => {
+            const urlVal = urlInput ? urlInput.value.trim() : '';
+            if (!urlVal) {
+                preview.innerHTML = `<span>${emojiMap[catSelect.value] || '✈️'}</span>`;
+            }
+        });
+    }
+</script>
+{% endblock %}

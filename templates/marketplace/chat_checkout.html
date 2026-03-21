@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}Confirm Payment — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    .chat-checkout-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 2rem;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .chat-checkout-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow-deep);
+        width: 100%;
+        max-width: 480px;
+        overflow: hidden;
+        animation: fadeUp 0.5s ease both;
+    }
+
+    .ccc-header {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .ccc-header::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.06) 1px, transparent 1px);
+        background-size: 30px 30px;
+    }
+
+    .ccc-header-content { position: relative; z-index: 1; }
+
+    .ccc-badge {
+        display: inline-block;
+        background: rgba(201,168,76,0.15);
+        border: 1px solid rgba(201,168,76,0.3);
+        color: #e8c97a;
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 0.3rem 0.75rem;
+        border-radius: 2px;
+        margin-bottom: 0.875rem;
+    }
+
+    .ccc-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 300;
+        color: white;
+        line-height: 1.1;
+        margin-bottom: 0.25rem;
+    }
+
+    .ccc-title em { font-style: italic; color: #e8c97a; }
+    .ccc-sub { font-size: 0.875rem; color: rgba(255,255,255,0.5); }
+
+    .ccc-body { padding: 2rem; }
+
+    .negotiated-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        background: rgba(39,174,96,0.08);
+        border: 1px solid rgba(39,174,96,0.2);
+        border-radius: 100px;
+        padding: 0.35rem 0.875rem;
+        font-size: 0.775rem;
+        color: #27ae60;
+        font-weight: 600;
+        margin-bottom: 1.25rem;
+    }
+
+    .price-breakdown { margin-bottom: 1.5rem; }
+
+    .pb-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        font-size: 0.9rem;
+        border-bottom: 1px solid var(--cream-dark);
+    }
+
+    .pb-row:last-child { border-bottom: none; }
+    .pb-row .pb-label { color: var(--muted); }
+    .pb-row .pb-val   { font-weight: 500; }
+    .pb-row.pb-total  { border-top: 2px solid var(--cream-dark); margin-top: 0.5rem; padding-top: 1rem; }
+    .pb-row.pb-total .pb-label { font-weight: 700; color: var(--ink); }
+    .pb-row.pb-total .pb-val {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--sea);
+    }
+
+    .pay-btn {
+        width: 100%;
+        padding: 1.1rem;
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .pay-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(15,52,96,0.3); }
+    .pay-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    .back-link {
+        display: block;
+        text-align: center;
+        margin-top: 1rem;
+        font-size: 0.8125rem;
+        color: var(--muted);
+        text-decoration: none;
+    }
+
+    .back-link:hover { color: var(--sea); }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="chat-checkout-page">
+    <div class="chat-checkout-card">
+
+        <div class="ccc-header">
+            <div class="ccc-header-content">
+                <div class="ccc-badge">✦ Negotiated Price</div>
+                <h1 class="ccc-title">Confirm your <em>payment</em></h1>
+                <p class="ccc-sub">{{ room.agency.name }} · {{ room.offer.trip.destination }}</p>
+            </div>
+        </div>
+
+        <div class="ccc-body">
+            <div class="negotiated-tag">🤝 Negotiated Price Applied</div>
+
+            <div class="price-breakdown">
+                <div class="pb-row">
+                    <span class="pb-label">Negotiated Amount</span>
+                    <span class="pb-val">₹{{ pr.amount }}</span>
+                </div>
+                <div class="pb-row">
+                    <span class="pb-label">Platform Fee</span>
+                    <span class="pb-val" style="color:#27ae60;">FREE 🎉</span>
+                </div>
+                <div class="pb-row">
+                    <span class="pb-label">GST (18%)</span>
+                    <span class="pb-val">₹{{ gst_amount }}</span>
+                </div>
+                <div class="pb-row pb-total">
+                    <span class="pb-label">Total Payable</span>
+                    <span class="pb-val">₹{{ total }}</span>
+                </div>
+            </div>
+
+            <div style="background:rgba(39,174,96,0.06); border:1px solid rgba(39,174,96,0.15); border-radius:10px; padding:0.875rem 1rem; margin-bottom:1.5rem; font-size:0.8rem; color:#27ae60; line-height:1.6;">
+                ✅ After payment, {{ room.agency.name }}'s real contact details will be revealed to you inside the chat.
+            </div>
+
+            <button class="pay-btn" id="payBtn">
+                🔒 Pay ₹{{ total }} to Confirm
+            </button>
+
+            <a href="{% url 'chat_room' room.id %}" class="back-link">← Back to chat</a>
+        </div>
+    </div>
+</div>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    document.getElementById('payBtn').addEventListener('click', function () {
+        const btn = this;
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Opening payment...';
+
+        var options = {
+            key:         "{{ razorpay_key }}",
+            amount:      {{ total }} * 100,
+            currency:    "INR",
+            name:        "Trivasta",
+            description: "Negotiated Trip Payment — {{ room.offer.trip.destination }}",
+            order_id:    "{{ razorpay_order_id }}",
+            prefill: {
+                name:    "{{ user.username }}",
+                email:   "{{ user.email|default:'' }}",
+                contact: ""
+            },
+            theme: { color: "#0f3460" },
+            modal: {
+                ondismiss: function () {
+                    btn.disabled = false;
+                    btn.innerHTML = '🔒 Pay ₹{{ total }} to Confirm';
+                }
+            },
+            handler: function (response) {
+                btn.innerHTML = '✅ Confirming...';
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = "{% url 'chat_payment_success' %}";
+                var fields = {
+                    'razorpay_order_id':   response.razorpay_order_id,
+                    'razorpay_payment_id': response.razorpay_payment_id,
+                    'razorpay_signature':  response.razorpay_signature,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                };
+                Object.entries(fields).forEach(([k, v]) => {
+                    var i = document.createElement('input');
+                    i.type='hidden'; i.name=k; i.value=v;
+                    form.appendChild(i);
+                });
+                document.body.appendChild(form);
+                form.submit();
+            }
+        };
+        new Razorpay(options).open();
+    });
+</script>
+{% endblock %}

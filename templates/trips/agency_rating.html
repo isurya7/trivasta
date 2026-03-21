@@ -1,0 +1,40 @@
+{% comment %}
+Include in compare_offers.html and any agency card:
+  {% include "partials/agency_rating.html" with agency=agency %}
+{% endcomment %}
+
+{% if agency.total_review_count > 0 %}
+<div class="agency-rating-row">
+  <span class="rating-stars">
+    {% with full=agency.avg_overall_rating|floatformat:"0" %}
+      {% for i in "12345" %}
+        {% if forloop.counter <= full|add:"0" %}
+          <span class="star filled">★</span>
+        {% else %}
+          <span class="star empty">★</span>
+        {% endif %}
+      {% endfor %}
+    {% endwith %}
+  </span>
+  <span class="rating-score">{{ agency.avg_overall_rating }}</span>
+  <a href="{% url 'trips:agency_reviews' agency.pk %}" class="rating-count">
+    ({{ agency.total_review_count }} review{{ agency.total_review_count|pluralize }})
+  </a>
+</div>
+{% else %}
+<div class="agency-rating-row">
+  <span class="rating-stars">
+    {% for i in "12345" %}<span class="star empty">★</span>{% endfor %}
+  </span>
+  <span class="rating-score" style="color:#bbb;">No reviews yet</span>
+</div>
+{% endif %}
+
+<style>
+  .agency-rating-row { display: inline-flex; align-items: center; gap: 6px; font-family: 'DM Sans', sans-serif; }
+  .rating-stars .star.filled { color: #D4762A; }
+  .rating-stars .star.empty  { color: #D9D0C4; }
+  .rating-score  { font-weight: 600; font-size: 14px; color: #1A1714; }
+  .rating-count  { font-size: 13px; color: #888; text-decoration: none; }
+  .rating-count:hover { text-decoration: underline; color: #D4762A; }
+</style>

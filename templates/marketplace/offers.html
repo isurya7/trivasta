@@ -1,0 +1,737 @@
+{% extends "base.html" %}
+{% block title %}Offers for {{ trip.destination }} — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    .offers-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        font-family: 'Outfit', sans-serif;
+        padding: 3rem 2rem;
+    }
+
+    .offers-inner {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    /* ── HEADER ── */
+    .offers-eyebrow {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .offers-eyebrow::before {
+        content: '';
+        width: 20px; height: 1px;
+        background: var(--gold);
+    }
+
+    .offers-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2rem, 4vw, 2.75rem);
+        font-weight: 300;
+        color: var(--ink);
+        line-height: 1.1;
+        margin-bottom: 0.5rem;
+    }
+
+    .offers-title em { font-style: italic; color: var(--sea); }
+
+    .offers-subtitle {
+        font-size: 0.9375rem;
+        color: var(--muted);
+        margin-bottom: 2rem;
+    }
+
+    /* Trip summary pill */
+    .trip-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 1.25rem;
+        background: white;
+        border: 1px solid var(--cream-dark);
+        border-radius: 100px;
+        padding: 0.75rem 1.5rem;
+        box-shadow: var(--shadow);
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .pill-item {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.8125rem;
+        color: var(--muted);
+    }
+
+    .pill-item strong { color: var(--ink); }
+
+    /* ── COMPARE BANNER ── */
+    .compare-banner {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 12px;
+        padding: 1.25rem 1.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .compare-banner::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.06) 1px, transparent 1px);
+        background-size: 30px 30px;
+    }
+
+    .compare-banner-text { position: relative; z-index: 1; }
+
+    .compare-banner-text strong {
+        display: block;
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 0.2rem;
+    }
+
+    .compare-banner-text span {
+        font-size: 0.8rem;
+        color: rgba(255,255,255,0.5);
+    }
+
+    .compare-banner-btn {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1.5rem;
+        background: var(--gold);
+        color: var(--ink);
+        border-radius: var(--radius);
+        font-weight: 700;
+        font-size: 0.875rem;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+
+    .compare-banner-btn:hover {
+        background: #e8c97a;
+        transform: translateY(-1px);
+    }
+
+    /* ── OFFER CARDS ── */
+    .offers-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .offer-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        border: 2px solid transparent;
+        transition: all 0.3s;
+        animation: fadeUp 0.5s ease both;
+    }
+
+    .offer-card:nth-child(1) { animation-delay: 0.05s; }
+    .offer-card:nth-child(2) { animation-delay: 0.10s; }
+    .offer-card:nth-child(3) { animation-delay: 0.15s; }
+    .offer-card:nth-child(4) { animation-delay: 0.20s; }
+
+    .offer-card:hover {
+        border-color: rgba(15,52,96,0.15);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-deep);
+    }
+
+    .offer-card.best-offer {
+        border-color: var(--gold);
+    }
+
+    /* Card header */
+    .offer-card-header {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        padding: 1.5rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .offer-card-header::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.06) 1px, transparent 1px);
+        background-size: 30px 30px;
+    }
+
+    .offer-card-header-left { position: relative; z-index: 1; }
+
+    .best-badge {
+        display: inline-block;
+        background: var(--gold);
+        color: var(--ink);
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 0.2rem 0.75rem;
+        border-radius: 2px;
+        margin-bottom: 0.625rem;
+    }
+
+    .offer-agency-name {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.625rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 0.2rem;
+    }
+
+    .offer-agency-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .offer-agency-meta span {
+        font-size: 0.775rem;
+        color: rgba(255,255,255,0.5);
+        display: flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .offer-agency-meta .rating {
+        color: #e8c97a;
+        font-weight: 600;
+    }
+
+    .plan-badge {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.2rem 0.6rem;
+        border-radius: 2px;
+    }
+
+    .plan-enterprise   { background: rgba(201,168,76,0.2); color: #e8c97a; }
+    .plan-professional { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+    .plan-starter      { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.45); }
+
+    /* Price block */
+    .offer-price-block {
+        position: relative;
+        z-index: 1;
+        text-align: right;
+        flex-shrink: 0;
+    }
+
+    .offer-price-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.45);
+        margin-bottom: 0.2rem;
+    }
+
+    .offer-price {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: white;
+        line-height: 1;
+    }
+
+    .offer-price-note {
+        font-size: 0.775rem;
+        color: rgba(255,255,255,0.4);
+        margin-top: 0.2rem;
+    }
+
+    .offer-total {
+        font-size: 0.8rem;
+        color: #e8c97a;
+        margin-top: 0.2rem;
+        font-weight: 600;
+    }
+
+    /* Card body */
+    .offer-card-body {
+        padding: 1.5rem 2rem;
+    }
+
+    /* Agency safe info — what user sees before payment */
+    .agency-safe-info {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1rem 1.25rem;
+        background: var(--cream);
+        border-radius: 10px;
+        margin-bottom: 1.25rem;
+        border: 1px solid var(--cream-dark);
+        flex-wrap: wrap;
+    }
+
+    .safe-info-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.8125rem;
+        color: var(--muted);
+    }
+
+    .safe-info-item strong { color: var(--ink); }
+
+    .privacy-note {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.72rem;
+        color: var(--muted);
+        background: rgba(15,52,96,0.04);
+        border: 1px solid rgba(15,52,96,0.1);
+        border-radius: 6px;
+        padding: 0.4rem 0.75rem;
+        margin-left: auto;
+    }
+
+    /* Message */
+    .offer-message {
+        background: var(--cream);
+        border-left: 3px solid var(--gold);
+        border-radius: 0 8px 8px 0;
+        padding: 1rem 1.25rem;
+        font-size: 0.9rem;
+        color: var(--muted);
+        line-height: 1.7;
+        margin-bottom: 1.5rem;
+        font-style: italic;
+        position: relative;
+    }
+
+    .offer-message::before {
+        content: '"';
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        color: var(--gold);
+        line-height: 0;
+        vertical-align: -0.5rem;
+        margin-right: 0.25rem;
+    }
+
+    .offer-message-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.5rem;
+        font-style: normal;
+    }
+
+    /* Pricing breakdown */
+    .price-breakdown {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+
+    .price-chip {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        font-size: 0.775rem;
+        padding: 0.35rem 0.875rem;
+        border-radius: 100px;
+        border: 1px solid var(--cream-dark);
+        background: white;
+        color: var(--muted);
+    }
+
+    .price-chip.highlight {
+        background: rgba(15,52,96,0.06);
+        border-color: rgba(15,52,96,0.15);
+        color: var(--sea);
+        font-weight: 600;
+    }
+
+    .price-chip.free-chip {
+        background: rgba(39,174,96,0.08);
+        border-color: rgba(39,174,96,0.2);
+        color: #27ae60;
+        font-weight: 600;
+    }
+
+    /* Action buttons */
+    .offer-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    .action-btn {
+        padding: 0.875rem 1rem;
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition: all 0.25s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-chat {
+        background: rgba(39,174,96,0.08);
+        color: #27ae60;
+        border: 1.5px solid rgba(39,174,96,0.25);
+    }
+
+    .btn-chat:hover {
+        background: rgba(39,174,96,0.15);
+        border-color: rgba(39,174,96,0.4);
+        transform: translateY(-1px);
+    }
+
+    .btn-book {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        color: white;
+    }
+
+    .btn-book:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(15,52,96,0.3);
+    }
+
+    .btn-book.best-btn {
+        background: linear-gradient(135deg, var(--gold), #b8860b);
+        color: var(--ink);
+    }
+
+    .btn-book.best-btn:hover {
+        box-shadow: 0 8px 24px rgba(201,168,76,0.4);
+    }
+
+    /* Chat note */
+    .chat-note {
+        font-size: 0.75rem;
+        color: var(--muted);
+        text-align: center;
+        margin-top: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        line-height: 1.5;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-offers {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+    }
+
+    .empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+
+    .empty-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 300;
+        color: var(--ink);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-desc {
+        font-size: 0.9rem;
+        color: var(--muted);
+        line-height: 1.65;
+        max-width: 420px;
+        margin: 0 auto 1.5rem;
+    }
+
+    .waiting-steps {
+        display: flex;
+        gap: 1.5rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 2rem;
+    }
+
+    .waiting-step {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        max-width: 140px;
+    }
+
+    .waiting-step-num {
+        width: 36px; height: 36px;
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    .waiting-step-text {
+        font-size: 0.8rem;
+        color: var(--muted);
+        text-align: center;
+        line-height: 1.5;
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 640px) {
+        .offer-card-header { flex-direction: column; align-items: flex-start; gap: 1rem; }
+        .offer-price-block { text-align: left; }
+        .offer-actions { grid-template-columns: 1fr; }
+        .agency-safe-info { flex-direction: column; gap: 0.75rem; }
+        .trip-pill { gap: 0.75rem; }
+        .compare-banner { flex-direction: column; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="offers-page">
+    <div class="offers-inner">
+
+        <!-- HEADER -->
+        <div class="offers-eyebrow">Agency Offers</div>
+        <h1 class="offers-title">Offers for <em>{{ trip.destination }}</em></h1>
+        <p class="offers-subtitle">
+            {{ offers.count }} agenc{{ offers.count|pluralize:"y,ies" }} responded to your trip request.
+            Chat freely to negotiate — pay only when you're ready.
+        </p>
+
+        <!-- TRIP PILL -->
+        <div class="trip-pill">
+            <div class="pill-item">📍 <strong>{{ trip.destination }}</strong></div>
+            <div class="pill-item">📅 <strong>{{ trip.days }} days</strong></div>
+            <div class="pill-item">👥 <strong>{{ trip.num_people|default:1 }} traveller{{ trip.num_people|default:1|pluralize }}</strong></div>
+            <div class="pill-item">🎒 <strong>{{ trip.travel_type|capfirst }}</strong></div>
+            <div class="pill-item">💰 Budget: <strong>₹{{ trip.budget }}</strong></div>
+            {% if trip.travel_mode and trip.travel_mode != 'any' %}
+            <div class="pill-item">
+                {% if trip.travel_mode == 'flight' %}✈️
+                {% elif trip.travel_mode == 'train' %}🚂
+                {% elif trip.travel_mode == 'bus' %}🚌
+                {% elif trip.travel_mode == 'car' %}🚗
+                {% elif trip.travel_mode == 'cruise' %}🚢
+                {% endif %}
+                <strong>{{ trip.get_travel_mode_display }}</strong>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if offers %}
+
+        <!-- COMPARE BANNER (show if 2+ offers) -->
+        {% if offers.count > 1 %}
+        <div class="compare-banner">
+            <div class="compare-banner-text">
+                <strong>📊 Compare all {{ offers.count }} offers side by side</strong>
+                <span>See price, rating, plan tier and inclusions in one table</span>
+            </div>
+            <a href="{% url 'compare_offers' trip.id %}" class="compare-banner-btn">
+                Compare Offers →
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- OFFERS LIST -->
+        <div class="offers-list">
+            {% for offer in offers %}
+            <div class="offer-card {% if forloop.first %}best-offer{% endif %}">
+
+                <!-- HEADER -->
+                <div class="offer-card-header">
+                    <div class="offer-card-header-left">
+                        {% if forloop.first %}
+                        <div class="best-badge">⭐ Best Value</div>
+                        {% endif %}
+                        <div class="offer-agency-name">{{ offer.agency.name }}</div>
+                        <div class="offer-agency-meta">
+                            {% if offer.agency.rating %}
+                            <span class="rating">⭐ {{ offer.agency.rating }}</span>
+                            {% endif %}
+                            <span>📍 {{ offer.agency.location|default:"India" }}</span>
+                            <span class="plan-badge plan-{{ offer.agency.plan }}">
+                                {% if offer.agency.plan == 'enterprise' %}🏆 Enterprise
+                                {% elif offer.agency.plan == 'professional' %}💼 Professional
+                                {% else %}🌱 Starter{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="offer-price-block">
+                        <div class="offer-price-label">Offer Price</div>
+                        <div class="offer-price">₹{{ offer.price }}</div>
+                        <div class="offer-price-note">per person</div>
+                        {% if trip.num_people > 1 %}
+                        <div class="offer-total">
+                            Total: ₹{% widthratio offer.price 1 trip.num_people %} + 18% GST
+                        </div>
+                        {% else %}
+                        <div class="offer-total">+ 18% GST at checkout</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- BODY -->
+                <div class="offer-card-body">
+
+                    <!-- What user can see (safe info — no contacts) -->
+                    <div class="agency-safe-info">
+                        <div class="safe-info-item">
+                            👤 <strong>{{ offer.agency.name }}</strong>
+                        </div>
+                        {% if offer.agency.rating %}
+                        <div class="safe-info-item">
+                            ⭐ <strong>{{ offer.agency.rating }}</strong> / 5.0 rating
+                        </div>
+                        {% endif %}
+                        <div class="safe-info-item">
+                            ✅ <strong>
+                                {% with count=offer.agency.bookings_count|default:0 %}
+                                    {{ count }} completed trip{{ count|pluralize }}
+                                {% endwith %}
+                            </strong>
+                        </div>
+                        <div class="safe-info-item">
+                            🏷️ {{ offer.agency.plan|capfirst }} plan
+                        </div>
+                        <div class="privacy-note">
+                            🔒 Contact details hidden until payment
+                        </div>
+                    </div>
+
+                    <!-- Agency message -->
+                    <div class="offer-message">
+                        <div class="offer-message-label">Message from agency</div>
+                        {{ offer.message|default:"We'd love to plan this trip for you! Chat with us to discuss your requirements and we can customise the itinerary to suit your needs." }}
+                    </div>
+
+                    <!-- Price chips -->
+                    <div class="price-breakdown">
+                        <div class="price-chip highlight">
+                            💰 ₹{{ offer.price }} base
+                        </div>
+                        <div class="price-chip free-chip">
+                            🎉 Platform fee FREE
+                        </div>
+                        <div class="price-chip">
+                            📋 +18% GST at checkout
+                        </div>
+                        {% if trip.num_people > 1 %}
+                        <div class="price-chip highlight">
+                            👥 ×{{ trip.num_people }} = ₹{% widthratio offer.price 1 trip.num_people %}
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- ACTION BUTTONS -->
+                    <div class="offer-actions">
+                        <a href="{% url 'open_chat' offer.id %}" class="action-btn btn-chat">
+                            💬 Chat & Negotiate
+                        </a>
+                        <a href="{% url 'checkout' offer.id %}" class="action-btn btn-book {% if forloop.first %}best-btn{% endif %}">
+                            {% if forloop.first %}⭐ Book Best Offer{% else %}💳 Book Now{% endif %}
+                        </a>
+                    </div>
+
+                    <div class="chat-note">
+                        🔒 Chat is free — no payment needed to start a conversation.
+                        Contact details revealed only after you pay.
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% else %}
+
+        <!-- EMPTY STATE -->
+        <div class="empty-offers">
+            <div class="empty-icon">📭</div>
+            <h2 class="empty-title">No offers yet</h2>
+            <p class="empty-desc">
+                Agencies haven't submitted offers for this trip yet.
+                They usually respond within 24 hours of you posting a trip request.
+            </p>
+
+            <div class="waiting-steps">
+                <div class="waiting-step">
+                    <div class="waiting-step-num">1</div>
+                    <div class="waiting-step-text">Your trip request is live and visible to agencies</div>
+                </div>
+                <div class="waiting-step">
+                    <div class="waiting-step-num">2</div>
+                    <div class="waiting-step-text">Agencies review and prepare custom offers</div>
+                </div>
+                <div class="waiting-step">
+                    <div class="waiting-step-num">3</div>
+                    <div class="waiting-step-text">You'll see offers here once they respond</div>
+                </div>
+            </div>
+
+            <div style="margin-top:2.5rem; display:flex; gap:1rem; justify-content:center; flex-wrap:wrap;">
+                <a href="{% url 'dashboard' %}" class="btn btn-primary">← Back to Dashboard</a>
+                <a href="{% url 'planner' %}" class="btn btn-outline">Plan Another Trip</a>
+            </div>
+        </div>
+
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

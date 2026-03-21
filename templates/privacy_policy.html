@@ -1,0 +1,338 @@
+{% extends "base.html" %}
+{% block title %}Privacy Policy — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600&display=swap');
+
+    .policy-page { font-family: 'Outfit', sans-serif; background: var(--cream); }
+
+    .policy-hero {
+        background: linear-gradient(135deg, #0f3460, #0a2240);
+        padding: 5rem 2rem;
+        text-align: center;
+    }
+
+    .policy-hero h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3.5rem;
+        font-weight: 300;
+        color: white;
+        margin-bottom: 0.75rem;
+    }
+
+    .policy-hero h1 em { font-style: italic; color: #e8c97a; }
+    .policy-hero p { color: rgba(255,255,255,0.5); font-size: 0.875rem; }
+
+    .policy-wrap {
+        max-width: 820px;
+        margin: 0 auto;
+        padding: 4rem 2rem 6rem;
+    }
+
+    .policy-card {
+        background: var(--white);
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .policy-toc {
+        background: var(--cream);
+        border-bottom: 1px solid var(--cream-dark);
+        padding: 1.75rem 2.5rem;
+    }
+
+    .policy-toc h3 {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 1rem;
+    }
+
+    .policy-toc ol {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.4rem 2rem;
+        padding: 0;
+        list-style: none;
+        counter-reset: toc;
+    }
+
+    .policy-toc ol li {
+        counter-increment: toc;
+        font-size: 0.875rem;
+        color: var(--muted);
+    }
+
+    .policy-toc ol li::before {
+        content: counter(toc) ". ";
+        color: var(--gold);
+        font-weight: 600;
+    }
+
+    .policy-toc ol li a {
+        color: var(--sea);
+        text-decoration: none;
+        font-size: 0.875rem;
+    }
+
+    .policy-toc ol li a:hover { text-decoration: underline; }
+
+    .policy-body { padding: 2.5rem; }
+
+    .policy-section { margin-bottom: 2.5rem; }
+
+    .policy-section-title {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--cream-dark);
+    }
+
+    .policy-section:first-child .policy-section-title { border-top: none; padding-top: 0; }
+
+    .policy-section-title::before { content: ''; width: 16px; height: 1px; background: var(--gold); }
+
+    .policy-section h2 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 1rem;
+    }
+
+    .policy-section p {
+        font-size: 0.9rem;
+        color: var(--muted);
+        line-height: 1.8;
+        margin-bottom: 0.875rem;
+    }
+
+    .policy-section ul {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 0.875rem;
+    }
+
+    .policy-section ul li {
+        font-size: 0.9rem;
+        color: var(--muted);
+        line-height: 1.6;
+        display: flex;
+        gap: 0.625rem;
+        align-items: flex-start;
+    }
+
+    .policy-section ul li::before { content: '→'; color: var(--gold); flex-shrink: 0; }
+
+    .highlight-box {
+        background: rgba(15,52,96,0.05);
+        border: 1px solid rgba(15,52,96,0.12);
+        border-left: 3px solid var(--sea);
+        border-radius: 6px;
+        padding: 1rem 1.25rem;
+        font-size: 0.875rem;
+        color: var(--sea);
+        margin: 1rem 0;
+        line-height: 1.6;
+    }
+
+    .policy-footer {
+        background: var(--cream);
+        border-top: 1px solid var(--cream-dark);
+        padding: 1.5rem 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .policy-footer p { font-size: 0.8125rem; color: var(--muted); }
+
+    .policy-footer a { color: var(--sea); text-decoration: none; font-weight: 500; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="policy-page">
+
+    <div class="policy-hero">
+        <h1>Privacy <em>Policy</em></h1>
+        <p>Last updated: February 2026 · Effective immediately upon registration</p>
+    </div>
+
+    <div class="policy-wrap">
+        <div class="policy-card">
+
+            <div class="policy-toc">
+                <h3>Table of Contents</h3>
+                <ol>
+                    <li><a href="#info-collect">Information We Collect</a></li>
+                    <li><a href="#how-use">How We Use Your Information</a></li>
+                    <li><a href="#sharing">Information Sharing</a></li>
+                    <li><a href="#cookies">Cookies & Tracking</a></li>
+                    <li><a href="#security">Data Security</a></li>
+                    <li><a href="#rights">Your Rights</a></li>
+                    <li><a href="#retention">Data Retention</a></li>
+                    <li><a href="#children">Children's Privacy</a></li>
+                    <li><a href="#changes">Changes to Policy</a></li>
+                    <li><a href="#contact-privacy">Contact Us</a></li>
+                </ol>
+            </div>
+
+            <div class="policy-body">
+
+                <div class="highlight-box">
+                    🔒 Your privacy matters deeply to us. Trivasta collects only what's necessary to deliver an exceptional travel planning experience. We never sell your personal data to third parties.
+                </div>
+
+                <div class="policy-section" id="info-collect">
+                    <div class="policy-section-title">Section 1</div>
+                    <h2>Information We Collect</h2>
+                    <p>We collect information you provide directly when using Trivasta, as well as data generated automatically through your use of our platform.</p>
+                    <p><strong>Information you provide:</strong></p>
+                    <ul>
+                        <li>Account details: name, email address, username and password</li>
+                        <li>Trip planning data: destinations, dates, budget preferences and travel style</li>
+                        <li>Payment information: processed securely by Razorpay — we never store card details</li>
+                        <li>Agency information: business name, location, description and contact details</li>
+                        <li>Communications: messages sent through our platform between users and agencies</li>
+                    </ul>
+                    <p><strong>Information collected automatically:</strong></p>
+                    <ul>
+                        <li>Device information: browser type, operating system, IP address</li>
+                        <li>Usage data: pages visited, features used, time spent on platform</li>
+                        <li>Cookies and similar tracking technologies (see Section 4)</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section" id="how-use">
+                    <div class="policy-section-title">Section 2</div>
+                    <h2>How We Use Your Information</h2>
+                    <ul>
+                        <li>To generate personalized AI travel itineraries based on your preferences</li>
+                        <li>To connect you with relevant travel agencies and facilitate bookings</li>
+                        <li>To process payments and send booking confirmations</li>
+                        <li>To send service-related communications (booking updates, receipts)</li>
+                        <li>To improve our AI models and platform features</li>
+                        <li>To prevent fraud and ensure platform security</li>
+                        <li>To comply with legal obligations</li>
+                    </ul>
+                    <p>We do not use your data for targeted advertising and we never sell your personal information.</p>
+                </div>
+
+                <div class="policy-section" id="sharing">
+                    <div class="policy-section-title">Section 3</div>
+                    <h2>Information Sharing</h2>
+                    <p>We share your information only in the following limited circumstances:</p>
+                    <ul>
+                        <li><strong>With travel agencies:</strong> When you request offers, agencies see your trip requirements (destination, duration, budget, travel type) but not your personal contact details until you confirm a booking</li>
+                        <li><strong>Payment processors:</strong> Razorpay receives payment data necessary to process transactions</li>
+                        <li><strong>AI service providers:</strong> Trip planning data is sent to Groq/Google Gemini APIs to generate itineraries — no personal identifiers are included</li>
+                        <li><strong>Legal requirements:</strong> When required by law, court order or government authority</li>
+                        <li><strong>Business transfers:</strong> In the event of a merger or acquisition, with appropriate privacy protections</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section" id="cookies">
+                    <div class="policy-section-title">Section 4</div>
+                    <h2>Cookies & Tracking</h2>
+                    <p>Trivasta uses cookies to maintain your login session, remember preferences and analyse platform usage. We use:</p>
+                    <ul>
+                        <li><strong>Essential cookies:</strong> Required for login sessions and CSRF security — cannot be disabled</li>
+                        <li><strong>Analytics cookies:</strong> Help us understand how users navigate the platform (anonymised)</li>
+                        <li><strong>Preference cookies:</strong> Remember your settings and preferences</li>
+                    </ul>
+                    <p>You can control cookie settings through your browser. Disabling essential cookies will prevent you from logging in.</p>
+                </div>
+
+                <div class="policy-section" id="security">
+                    <div class="policy-section-title">Section 5</div>
+                    <h2>Data Security</h2>
+                    <p>We implement industry-standard security measures to protect your information:</p>
+                    <ul>
+                        <li>All data transmitted via 256-bit SSL/TLS encryption</li>
+                        <li>Passwords hashed using Django's PBKDF2 algorithm with SHA256</li>
+                        <li>Payment data handled exclusively by PCI-DSS compliant Razorpay</li>
+                        <li>Regular security audits and vulnerability assessments</li>
+                        <li>Access to personal data restricted to authorised team members only</li>
+                    </ul>
+                    <p>No system is perfectly secure. In the event of a data breach affecting your rights, we will notify you within 72 hours.</p>
+                </div>
+
+                <div class="policy-section" id="rights">
+                    <div class="policy-section-title">Section 6</div>
+                    <h2>Your Rights</h2>
+                    <p>Under applicable Indian data protection law, you have the right to:</p>
+                    <ul>
+                        <li><strong>Access:</strong> Request a copy of all personal data we hold about you</li>
+                        <li><strong>Correction:</strong> Request correction of inaccurate or incomplete data</li>
+                        <li><strong>Deletion:</strong> Request deletion of your account and associated data</li>
+                        <li><strong>Portability:</strong> Request your data in a machine-readable format</li>
+                        <li><strong>Objection:</strong> Object to processing of your data for marketing purposes</li>
+                    </ul>
+                    <p>To exercise any of these rights, email us at <a href="mailto:privacy@trivasta.com" style="color:var(--sea);">privacy@trivasta.com</a>. We respond within 30 days.</p>
+                </div>
+
+                <div class="policy-section" id="retention">
+                    <div class="policy-section-title">Section 7</div>
+                    <h2>Data Retention</h2>
+                    <p>We retain your personal data for as long as your account is active. After account deletion:</p>
+                    <ul>
+                        <li>Profile data deleted within 30 days</li>
+                        <li>Booking and payment records retained for 7 years (legal requirement)</li>
+                        <li>AI-generated itineraries anonymised and may be retained for model improvement</li>
+                        <li>Backup copies purged within 90 days</li>
+                    </ul>
+                </div>
+
+                <div class="policy-section" id="children">
+                    <div class="policy-section-title">Section 8</div>
+                    <h2>Children's Privacy</h2>
+                    <p>Trivasta is not intended for users under 18 years of age. We do not knowingly collect personal information from minors. If you believe a minor has created an account, please contact us immediately at <a href="mailto:privacy@trivasta.com" style="color:var(--sea);">privacy@trivasta.com</a>.</p>
+                </div>
+
+                <div class="policy-section" id="changes">
+                    <div class="policy-section-title">Section 9</div>
+                    <h2>Changes to This Policy</h2>
+                    <p>We may update this Privacy Policy from time to time. We will notify registered users of material changes via email at least 14 days before they take effect. Continued use of Trivasta after changes constitutes acceptance of the updated policy.</p>
+                </div>
+
+                <div class="policy-section" id="contact-privacy">
+                    <div class="policy-section-title">Section 10</div>
+                    <h2>Contact Us</h2>
+                    <p>For any privacy-related questions or to exercise your data rights:</p>
+                    <ul>
+                        <li>Email: <a href="mailto:privacy@trivasta.com" style="color:var(--sea);">privacy@trivasta.com</a></li>
+                        <li>Founder: Surya Pramanik — <a href="mailto:surya@trivasta.com" style="color:var(--sea);">surya@trivasta.com</a></li>
+                        <li>Response time: within 30 business days</li>
+                    </ul>
+                </div>
+
+            </div>
+
+            <div class="policy-footer">
+                <p>© 2026 Trivasta. All rights reserved.</p>
+                <div style="display:flex; gap:1.5rem;">
+                    <a href="{% url 'terms' %}">Terms & Conditions</a>
+                    <a href="{% url 'contact' %}">Contact Us</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+{% block title %}Agency Profile — {{ agency.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Outfit', sans-serif; }
+
+    .profile-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        padding: 3rem 1rem 5rem;
+    }
+
+    .profile-container { max-width: 860px; margin: 0 auto; }
+
+    .profile-hero {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 16px;
+        padding: 3rem;
+        margin-bottom: 1.5rem;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+    }
+
+    .profile-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.07) 1px, transparent 1px);
+        background-size: 30px 30px;
+    }
+
+    .profile-hero-left { position: relative; z-index: 1; }
+
+    .profile-avatar {
+        width: 72px; height: 72px;
+        background: rgba(201,168,76,0.2);
+        border: 2px solid rgba(201,168,76,0.4);
+        border-radius: 16px;
+        display: grid;
+        place-items: center;
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .profile-hero-name {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 300;
+        color: white;
+        margin-bottom: 0.35rem;
+    }
+
+    .profile-hero-name em { font-style: italic; color: #e8c97a; }
+    .profile-hero-sub { font-size: 0.875rem; color: rgba(255,255,255,0.5); }
+
+    .profile-hero-right { position: relative; z-index: 1; flex-shrink: 0; }
+
+    .plan-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: rgba(201,168,76,0.15);
+        border: 1px solid rgba(201,168,76,0.35);
+        border-radius: var(--radius);
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #e8c97a;
+        margin-bottom: 0.75rem;
+        display: block;
+        text-align: center;
+    }
+
+    .profile-cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .profile-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.75rem;
+        box-shadow: var(--shadow);
+    }
+
+    .profile-card-label {
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .profile-card-label::before {
+        content: '';
+        width: 3px; height: 14px;
+        background: var(--gold);
+        border-radius: 2px;
+    }
+
+    .profile-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.625rem 0;
+        border-bottom: 1px solid var(--cream-dark);
+        font-size: 0.875rem;
+    }
+
+    .profile-row:last-child { border-bottom: none; }
+    .profile-row-icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem; }
+    .profile-row-label { color: var(--muted); font-size: 0.78rem; min-width: 80px; }
+    .profile-row-val { color: var(--ink); font-weight: 500; word-break: break-word; }
+    .profile-row-val a { color: var(--sea); text-decoration: none; }
+    .profile-row-val a:hover { text-decoration: underline; }
+
+    .profile-desc-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.75rem;
+        box-shadow: var(--shadow);
+        margin-bottom: 1.25rem;
+    }
+
+    .profile-desc-text {
+        font-size: 0.9375rem;
+        color: var(--ink);
+        line-height: 1.75;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .status-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .status-approved { background: rgba(39,174,96,0.1);  color: #27ae60; border: 1px solid rgba(39,174,96,0.2); }
+    .status-pending  { background: rgba(243,156,18,0.1); color: #e67e22; border: 1px solid rgba(243,156,18,0.2); }
+    .status-rejected { background: rgba(231,76,60,0.08); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
+
+    @media (max-width: 640px) {
+        .profile-cards { grid-template-columns: 1fr; }
+        .profile-hero  { flex-direction: column; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page">
+    <div class="profile-container">
+
+        <!-- Hero -->
+        <div class="profile-hero">
+            <div class="profile-hero-left">
+                <div class="profile-avatar">🏢</div>
+                <div class="profile-hero-name"><em>{{ agency.name }}</em></div>
+                <div class="profile-hero-sub">
+                    📍 {{ agency.location|default:"Location not set" }} &nbsp;·&nbsp;
+                    Member since {{ agency.created_at|date:"F Y"|default:"—" }}
+                </div>
+            </div>
+            <div class="profile-hero-right">
+                <div class="plan-badge">
+                    {% if agency.plan == 'enterprise' %}🏆 Enterprise Plan
+                    {% elif agency.plan == 'professional' %}💼 Professional Plan
+                    {% else %}🌱 Starter Plan{% endif %}
+                </div>
+                <div class="profile-actions">
+                    <a href="{% url 'agency_profile_edit' %}" class="btn btn-gold" style="width:100%; text-align:center;">
+                        ✏️ Edit Profile
+                    </a>
+                    <a href="{% url 'agency_dashboard' %}" class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.3);">
+                        ← Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Description -->
+        {% if agency.description %}
+        <div class="profile-desc-card">
+            <div class="profile-card-label">About</div>
+            <div class="profile-desc-text">{{ agency.description }}</div>
+        </div>
+        {% endif %}
+
+        <!-- Info cards -->
+        <div class="profile-cards">
+
+            <div class="profile-card">
+                <div class="profile-card-label">Contact Details</div>
+                <div class="profile-row">
+                    <span class="profile-row-icon">📧</span>
+                    <div>
+                        <div class="profile-row-label">Email</div>
+                        <div class="profile-row-val">
+                            <a href="mailto:{{ agency.email }}">{{ agency.email }}</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-row-icon">📞</span>
+                    <div>
+                        <div class="profile-row-label">Phone</div>
+                        <div class="profile-row-val">
+                            {% if agency.phone %}
+                                <a href="tel:{{ agency.phone }}">{{ agency.phone }}</a>
+                            {% else %}
+                                <span style="color:var(--muted);">Not set</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-row-icon">🌐</span>
+                    <div>
+                        <div class="profile-row-label">Website</div>
+                        <div class="profile-row-val">
+                            {% if agency.website %}
+                                <a href="{{ agency.website }}" target="_blank">{{ agency.website }}</a>
+                            {% else %}
+                                <span style="color:var(--muted);">Not set</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-card">
+                <div class="profile-card-label">Account Status</div>
+                <div class="profile-row">
+                    <span class="profile-row-icon">✅</span>
+                    <div>
+                        <div class="profile-row-label">Status</div>
+                        <div class="profile-row-val">
+                            <span class="status-chip status-{{ agency.status }}">
+                                {% if agency.status == 'approved' %}✅ Approved
+                                {% elif agency.status == 'pending' %}⏳ Pending
+                                {% else %}❌ Rejected{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-row-icon">⭐</span>
+                    <div>
+                        <div class="profile-row-label">Rating</div>
+                        <div class="profile-row-val">{{ agency.rating }} / 5.0</div>
+                    </div>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-row-icon">🔄</span>
+                    <div>
+                        <div class="profile-row-label">Subscription</div>
+                        <div class="profile-row-val">
+                            {% if agency.subscription_expires_at %}
+                                Expires {{ agency.subscription_expires_at|date:"N j, Y" }}
+                            {% else %}
+                                <span style="color:var(--muted);">—</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="profile-row">
+                    <span class="profile-row-icon">⚠️</span>
+                    <div>
+                        <div class="profile-row-label">Warnings</div>
+                        <div class="profile-row-val">
+                            {% with wc=agency.warnings.count %}
+                            {{ wc }}/3
+                            {% if wc >= 3 %}
+                                <span style="color:#e74c3c; font-size:0.78rem; margin-left:0.35rem;">Plan downgraded</span>
+                            {% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,665 @@
+{% extends "base.html" %}
+{% block title %}{{ package.title }} — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Outfit', sans-serif; }
+
+    .detail-page {
+        background: var(--cream);
+        min-height: calc(100vh - 68px);
+        padding-bottom: 5rem;
+    }
+
+    /* ── HERO ── */
+    .pkg-hero {
+        position: relative;
+        height: 480px;
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        overflow: hidden;
+    }
+
+    .pkg-hero-img {
+        width: 100%; height: 100%; object-fit: cover;
+        position: absolute; inset: 0;
+    }
+
+    .pkg-hero-overlay {
+        position: absolute; inset: 0;
+        background: linear-gradient(to bottom, rgba(13,17,23,0.15) 0%, rgba(13,17,23,0.7) 100%);
+    }
+
+    .pkg-hero-content {
+        position: absolute; bottom: 0; left: 0; right: 0;
+        padding: 2.5rem 3rem;
+        z-index: 2;
+    }
+
+    .pkg-category-badge {
+        display: inline-flex; align-items: center; gap: 0.35rem;
+        background: rgba(201,168,76,0.2); border: 1px solid rgba(201,168,76,0.4);
+        color: #e8c97a; padding: 0.3rem 0.875rem; border-radius: 100px;
+        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+        text-transform: uppercase; margin-bottom: 0.875rem;
+    }
+
+    .pkg-hero-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.75rem; font-weight: 300; color: white;
+        line-height: 1.15; margin-bottom: 0.75rem;
+    }
+
+    .pkg-hero-meta {
+        display: flex; gap: 1.25rem; flex-wrap: wrap; align-items: center;
+    }
+
+    .pkg-hero-chip {
+        display: flex; align-items: center; gap: 0.35rem;
+        font-size: 0.875rem; color: rgba(255,255,255,0.8);
+    }
+
+    /* Thumbnail gallery strip */
+    .pkg-gallery-strip {
+        display: flex; gap: 0.5rem;
+        padding: 1rem 3rem;
+        background: var(--ink);
+        overflow-x: auto;
+    }
+
+    .pkg-gallery-thumb {
+        width: 80px; height: 60px; flex-shrink: 0;
+        border-radius: 6px; overflow: hidden; cursor: pointer;
+        border: 2px solid transparent; transition: border-color 0.2s;
+    }
+
+    .pkg-gallery-thumb:hover, .pkg-gallery-thumb.active { border-color: var(--gold); }
+    .pkg-gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Lightbox */
+    .lightbox {
+        display: none; position: fixed; inset: 0; z-index: 9000;
+        background: rgba(0,0,0,0.92); align-items: center; justify-content: center;
+    }
+
+    .lightbox.open { display: flex; }
+    .lightbox-img { max-width: 90vw; max-height: 85vh; border-radius: 6px; object-fit: contain; }
+
+    .lightbox-close {
+        position: absolute; top: 1.5rem; right: 1.5rem;
+        width: 40px; height: 40px; border-radius: 50%;
+        background: rgba(255,255,255,0.1); color: white; border: none;
+        font-size: 1.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+
+    .lightbox-nav {
+        position: absolute; top: 50%; transform: translateY(-50%);
+        width: 44px; height: 44px; border-radius: 50%;
+        background: rgba(255,255,255,0.1); color: white; border: none;
+        font-size: 1.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        transition: background 0.2s;
+    }
+
+    .lightbox-nav:hover { background: rgba(255,255,255,0.2); }
+    .lightbox-prev { left: 1.5rem; }
+    .lightbox-next { right: 1.5rem; }
+
+    /* ── BODY LAYOUT ── */
+    .detail-body {
+        max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 0;
+        display: grid; grid-template-columns: 1fr 360px; gap: 2rem; align-items: start;
+    }
+
+    /* ── LEFT CONTENT ── */
+    .detail-section {
+        background: white; border-radius: 12px;
+        box-shadow: var(--shadow); overflow: hidden; margin-bottom: 1.5rem;
+    }
+
+    .detail-section-header {
+        padding: 1.25rem 1.75rem; border-bottom: 1px solid var(--cream-dark);
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.25rem; font-weight: 600; color: var(--ink);
+        display: flex; align-items: center; gap: 0.75rem;
+    }
+
+    .detail-section-header::before {
+        content: ''; width: 4px; height: 22px; background: var(--gold);
+        border-radius: 2px; flex-shrink: 0;
+    }
+
+    .detail-section-body { padding: 1.75rem; }
+
+    .detail-desc {
+        font-size: 0.9375rem; color: var(--ink); line-height: 1.8;
+        white-space: pre-wrap;
+    }
+
+    .inclusions-list {
+        list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem;
+    }
+
+    .inclusion-chip {
+        display: flex; align-items: center; gap: 0.35rem;
+        background: rgba(39,174,96,0.08); border: 1px solid rgba(39,174,96,0.2);
+        color: #1e8449; border-radius: 100px;
+        padding: 0.3rem 0.875rem; font-size: 0.8rem; font-weight: 500;
+    }
+
+    /* ── REVIEWS ── */
+    .rating-summary {
+        display: flex; align-items: center; gap: 2rem;
+        padding: 1.5rem 1.75rem; border-bottom: 1px solid var(--cream-dark);
+    }
+
+    .rating-big {
+        text-align: center; flex-shrink: 0;
+    }
+
+    .rating-big-num {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3.5rem; font-weight: 600; color: var(--sea); line-height: 1;
+    }
+
+    .rating-stars { font-size: 1.25rem; letter-spacing: 2px; color: var(--gold); margin: 0.25rem 0; }
+    .rating-count { font-size: 0.75rem; color: var(--muted); }
+
+    .review-list { display: flex; flex-direction: column; }
+
+    .review-item {
+        padding: 1.5rem 1.75rem; border-bottom: 1px solid var(--cream-dark);
+    }
+
+    .review-item:last-child { border-bottom: none; }
+
+    .review-header {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 0.625rem;
+    }
+
+    .review-user {
+        display: flex; align-items: center; gap: 0.75rem;
+    }
+
+    .review-avatar {
+        width: 38px; height: 38px; border-radius: 50%;
+        background: linear-gradient(135deg, var(--sea), #1a4f82);
+        display: grid; place-items: center;
+        font-size: 0.875rem; font-weight: 700; color: white; flex-shrink: 0;
+    }
+
+    .review-username { font-weight: 600; font-size: 0.9rem; color: var(--ink); }
+    .review-date     { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+
+    .review-stars { font-size: 0.875rem; color: var(--gold); letter-spacing: 1px; }
+
+    .review-title { font-weight: 600; font-size: 0.9375rem; color: var(--ink); margin-bottom: 0.35rem; }
+    .review-body  { font-size: 0.875rem; color: #4a5568; line-height: 1.7; }
+
+    /* Review form */
+    .review-form-wrap { padding: 1.75rem; background: var(--cream); border-top: 1px solid var(--cream-dark); }
+
+    .review-form-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.25rem; font-weight: 600; color: var(--ink); margin-bottom: 1.25rem;
+    }
+
+    /* Star rating picker */
+    .star-picker {
+        display: flex; flex-direction: row-reverse; gap: 0.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .star-picker input { display: none; }
+
+    .star-picker label {
+        font-size: 2rem; cursor: pointer; color: var(--cream-dark);
+        transition: color 0.15s;
+    }
+
+    .star-picker input:checked ~ label,
+    .star-picker label:hover,
+    .star-picker label:hover ~ label { color: var(--gold); }
+
+    .field-input-review, .field-textarea-review {
+        width: 100%; padding: 0.75rem 1rem;
+        border: 1.5px solid var(--cream-dark); border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif; font-size: 0.9375rem;
+        color: var(--ink); background: white; outline: none;
+        transition: all 0.2s; box-sizing: border-box;
+    }
+
+    .field-input-review:focus, .field-textarea-review:focus {
+        border-color: var(--sea); box-shadow: 0 0 0 3px rgba(15,52,96,0.08);
+    }
+
+    .field-textarea-review { resize: vertical; min-height: 100px; line-height: 1.6; }
+
+    /* ── SIDEBAR BOOKING CARD ── */
+    .booking-card {
+        background: white; border-radius: 12px; box-shadow: var(--shadow);
+        overflow: hidden; position: sticky; top: 88px;
+    }
+
+    .booking-card-header {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        padding: 1.5rem 1.75rem; position: relative; overflow: hidden;
+    }
+
+    .booking-card-header::before {
+        content: ''; position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.07) 1px, transparent 1px);
+        background-size: 24px 24px;
+    }
+
+    .booking-price-label {
+        font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em;
+        text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 0.35rem;
+        position: relative; z-index: 1;
+    }
+
+    .booking-price {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem; font-weight: 600; color: white; line-height: 1;
+        position: relative; z-index: 1;
+    }
+
+    .booking-price span { font-size: 1rem; color: rgba(255,255,255,0.6); }
+
+    .booking-card-body { padding: 1.5rem 1.75rem; }
+
+    .booking-breakdown { display: flex; flex-direction: column; gap: 0.625rem; margin-bottom: 1.25rem; }
+
+    .booking-line {
+        display: flex; align-items: center; justify-content: space-between;
+        font-size: 0.875rem;
+    }
+
+    .booking-line-label { color: var(--muted); }
+    .booking-line-val   { font-weight: 600; color: var(--ink); }
+
+    .booking-total-line {
+        display: flex; align-items: center; justify-content: space-between;
+        padding-top: 0.875rem; border-top: 1.5px solid var(--cream-dark);
+        font-size: 1rem; font-weight: 700;
+    }
+
+    .booking-total-val {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem; font-weight: 600; color: var(--sea);
+    }
+
+    .booking-actions { display: flex; flex-direction: column; gap: 0.625rem; }
+
+    .booking-btn-primary {
+        width: 100%; padding: 0.9rem; background: var(--sea); color: white;
+        border: none; border-radius: var(--radius); font-family: 'Outfit', sans-serif;
+        font-size: 0.9375rem; font-weight: 700; cursor: pointer;
+        transition: all 0.2s; text-align: center; text-decoration: none;
+        display: block;
+    }
+
+    .booking-btn-primary:hover { background: #0a2240; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
+
+    .booking-btn-secondary {
+        width: 100%; padding: 0.75rem; background: transparent;
+        color: var(--sea); border: 1.5px solid var(--sea);
+        border-radius: var(--radius); font-family: 'Outfit', sans-serif;
+        font-size: 0.875rem; font-weight: 600; cursor: pointer;
+        transition: all 0.2s; text-align: center; text-decoration: none;
+        display: block;
+    }
+
+    .booking-btn-secondary:hover { background: rgba(15,52,96,0.06); }
+
+    .booking-card-footer {
+        padding: 1rem 1.75rem; background: var(--cream);
+        border-top: 1px solid var(--cream-dark);
+        font-size: 0.75rem; color: var(--muted); text-align: center;
+        line-height: 1.6;
+    }
+
+    /* Agency strip */
+    .agency-strip {
+        display: flex; align-items: center; gap: 1rem;
+        padding: 1rem 1.75rem; border-top: 1px solid var(--cream-dark);
+    }
+
+    .agency-strip-avatar {
+        width: 42px; height: 42px; border-radius: 10px;
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0;
+    }
+
+    .agency-strip-name { font-size: 0.875rem; font-weight: 600; color: var(--ink); }
+    .agency-strip-loc  { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+
+    @media (max-width: 900px) {
+        .detail-body { grid-template-columns: 1fr; }
+        .booking-card { position: static; }
+        .pkg-hero { height: 320px; }
+        .pkg-hero-content { padding: 1.5rem; }
+        .pkg-hero-title { font-size: 2rem; }
+        .pkg-gallery-strip { padding: 0.75rem 1rem; }
+        .rating-summary { flex-direction: column; align-items: flex-start; gap: 1rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-page">
+
+    <!-- HERO -->
+    <div class="pkg-hero" id="mainHero">
+        {% if package.images.first %}
+            <img src="{{ package.images.first.get_url }}" alt="{{ package.title }}"
+                 class="pkg-hero-img" id="heroImg">
+        {% elif package.image_url %}
+            <img src="{{ package.image_url }}" alt="{{ package.title }}" class="pkg-hero-img" id="heroImg">
+        {% else %}
+            <div style="position:absolute; inset:0; display:grid; place-items:center; font-size:5rem; opacity:0.3;">
+                {% if package.category == 'adventure' %}🏔️{% elif package.category == 'cultural' %}🏛️
+                {% elif package.category == 'leisure' %}🌴{% elif package.category == 'romantic' %}💑
+                {% elif package.category == 'family' %}👨‍👩‍👧{% elif package.category == 'luxury' %}✨
+                {% elif package.category == 'solo' %}🎒{% else %}✈️{% endif %}
+            </div>
+        {% endif %}
+        <div class="pkg-hero-overlay"></div>
+        <div class="pkg-hero-content">
+            <div class="pkg-category-badge">{{ package.get_category_display }}</div>
+            <h1 class="pkg-hero-title">{{ package.title }}</h1>
+            <div class="pkg-hero-meta">
+                <span class="pkg-hero-chip">📍 {{ package.destination }}</span>
+                <span class="pkg-hero-chip">📅 {{ package.duration }} days</span>
+                {% if avg_rating %}
+                <span class="pkg-hero-chip">⭐ {{ avg_rating }} ({{ review_count }} review{{ review_count|pluralize }})</span>
+                {% endif %}
+                <span class="pkg-hero-chip">🏢 {{ package.agency.name }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- GALLERY STRIP -->
+    {% if images %}
+    <div class="pkg-gallery-strip">
+        {% for img in images %}
+        <div class="pkg-gallery-thumb {% if forloop.first %}active{% endif %}"
+             onclick="setHeroImage('{{ img.get_url }}', this)"
+             data-full="{{ img.get_url }}">
+            <img src="{{ img.get_url }}" alt="{{ img.caption|default:package.title }}">
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- BODY -->
+    <div class="detail-body">
+
+        <!-- LEFT -->
+        <div>
+
+            <!-- Description -->
+            <div class="detail-section">
+                <div class="detail-section-header">About this Package</div>
+                <div class="detail-section-body">
+                    <p class="detail-desc">{{ package.description }}</p>
+                </div>
+            </div>
+
+            <!-- Inclusions -->
+            {% if package.inclusions %}
+            <div class="detail-section">
+                <div class="detail-section-header">What's Included</div>
+                <div class="detail-section-body">
+                    <ul class="inclusions-list">
+                        {% for item in package.inclusions.splitlines %}
+                            {% if item.strip %}
+                                <li class="inclusion-chip">✓ {{ item.strip }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Reviews -->
+            <div class="detail-section">
+                <div class="detail-section-header">
+                    Reviews
+                    {% if review_count %}
+                    <span style="font-family:'Outfit',sans-serif; font-size:0.8rem; font-weight:400; color:var(--muted); margin-left:auto;">{{ review_count }} review{{ review_count|pluralize }}</span>
+                    {% endif %}
+                </div>
+
+                {% if review_count %}
+                <div class="rating-summary">
+                    <div class="rating-big">
+                        <div class="rating-big-num">{{ avg_rating }}</div>
+                        <div class="rating-stars">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= avg_rating|floatformat:0|add:"0" %}⭐{% else %}☆{% endif %}
+                            {% endfor %}
+                        </div>
+                        <div class="rating-count">{{ review_count }} review{{ review_count|pluralize }}</div>
+                    </div>
+                </div>
+
+                <div class="review-list">
+                    {% for review in reviews %}
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div class="review-user">
+                                <div class="review-avatar">
+                                    {{ review.user.username|first|upper }}
+                                </div>
+                                <div>
+                                    <div class="review-username">{{ review.user.get_full_name|default:review.user.username }}</div>
+                                    <div class="review-date">{{ review.created_at|date:"N j, Y" }}</div>
+                                </div>
+                            </div>
+                            <div class="review-stars">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= review.rating %}⭐{% else %}☆{% endif %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% if review.title %}
+                        <div class="review-title">{{ review.title }}</div>
+                        {% endif %}
+                        <div class="review-body">{{ review.body }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div style="padding:2rem 1.75rem; text-align:center; color:var(--muted);">
+                    <div style="font-size:2rem; margin-bottom:0.5rem;">💬</div>
+                    <p>No reviews yet. Book this package to leave the first review!</p>
+                </div>
+                {% endif %}
+
+                <!-- Write a review -->
+                {% if can_review %}
+                <div class="review-form-wrap">
+                    <div class="review-form-title">Write a Review</div>
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <!-- Star picker -->
+                        <div style="margin-bottom:1rem;">
+                            <div style="font-size:0.68rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:0.5rem;">Your Rating</div>
+                            <div class="star-picker">
+                                {% for i in "54321" %}
+                                <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}"
+                                       {% if i == "5" %}checked{% endif %}>
+                                <label for="star{{ i }}">★</label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div style="margin-bottom:0.875rem;">
+                            <label style="font-size:0.68rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:0.4rem;">
+                                Headline
+                            </label>
+                            <input type="text" name="title"
+                                   value="{{ review_form.title.value|default:'' }}"
+                                   placeholder="Summarise your experience"
+                                   class="field-input-review">
+                        </div>
+
+                        <div style="margin-bottom:1.25rem;">
+                            <label style="font-size:0.68rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:0.4rem;">
+                                Your Review <span style="color:#e74c3c;">*</span>
+                            </label>
+                            <textarea name="body" rows="4" required
+                                      placeholder="Tell others what you loved about this experience..."
+                                      class="field-textarea-review">{{ review_form.body.value|default:'' }}</textarea>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" style="width:100%;">
+                            ✦ Submit Review
+                        </button>
+                    </form>
+                </div>
+                {% elif already_reviewed %}
+                <div style="padding:1.25rem 1.75rem; background:rgba(39,174,96,0.04); border-top:1px solid var(--cream-dark); text-align:center; font-size:0.875rem; color:#27ae60;">
+                    ✅ You've already reviewed this package. Thank you!
+                </div>
+                {% elif user.is_authenticated %}
+                <div style="padding:1.25rem 1.75rem; background:var(--cream); border-top:1px solid var(--cream-dark); text-align:center; font-size:0.875rem; color:var(--muted);">
+                    🔒 Only verified travellers who booked this package can leave a review.
+                </div>
+                {% else %}
+                <div style="padding:1.25rem 1.75rem; background:var(--cream); border-top:1px solid var(--cream-dark); text-align:center; font-size:0.875rem; color:var(--muted);">
+                    <a href="{% url 'login' %}" style="color:var(--sea); font-weight:600;">Login</a> to leave a review after booking.
+                </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <!-- SIDEBAR -->
+        <div>
+            <div class="booking-card">
+                <div class="booking-card-header">
+                    <div class="booking-price-label">Starting from</div>
+                    <div class="booking-price">
+                        ₹{{ pricing.total_amount|floatformat:0 }} <span>/ person</span>
+                    </div>
+                </div>
+
+                <div class="booking-card-body">
+                    <div class="booking-breakdown">
+                        <div class="booking-line">
+                            <span class="booking-line-label">Base price</span>
+                            <span class="booking-line-val">₹{{ pricing.base_amount }}</span>
+                        </div>
+                        <div class="booking-line">
+                            <span class="booking-line-label">GST (5%)</span>
+                            <span class="booking-line-val">₹{{ pricing.gst_amount }}</span>
+                        </div>
+                        <div class="booking-total-line">
+                            <span>Total</span>
+                            <span class="booking-total-val">₹{{ pricing.total_amount }}</span>
+                        </div>
+                    </div>
+
+                    <div class="booking-actions">
+                        {% if user.is_authenticated %}
+                            <a href="{% url 'package_book' package.id %}" class="booking-btn-primary">
+                                ✦ Book Now
+                            </a>
+                            <a href="{% url 'package_chat' package.id %}" class="booking-btn-secondary">
+                                💬 Chat with Agency
+                            </a>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="booking-btn-primary">Login to Book</a>
+                            <a href="{% url 'register' %}" class="booking-btn-secondary">Create Account</a>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="agency-strip">
+                    <div class="agency-strip-avatar">🏢</div>
+                    <div>
+                        <div class="agency-strip-name">{{ package.agency.name }}</div>
+                        <div class="agency-strip-loc">📍 {{ package.agency.location|default:"India" }}</div>
+                    </div>
+                </div>
+
+                <div class="booking-card-footer">
+                    🔒 Secure payment via Razorpay &nbsp;·&nbsp; Agency contact shared after booking
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
+    <button class="lightbox-close" onclick="closeLightbox()">✕</button>
+    <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1); event.stopPropagation();">‹</button>
+    <img src="" alt="" class="lightbox-img" id="lightboxImg">
+    <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1); event.stopPropagation();">›</button>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // ── Gallery / hero ──
+    const galleryImages = [
+        {% for img in images %}'{{ img.get_url }}'{% if not forloop.last %},{% endif %}{% endfor %}
+        {% if not images %}{% if package.image_url %}'{{ package.image_url }}'{% endif %}{% endif %}
+    ].filter(Boolean);
+
+    let currentIdx = 0;
+
+    function setHeroImage(url, thumb) {
+        document.getElementById('heroImg') && (document.getElementById('heroImg').src = url);
+        document.querySelectorAll('.pkg-gallery-thumb').forEach(t => t.classList.remove('active'));
+        thumb && thumb.classList.add('active');
+        currentIdx = galleryImages.indexOf(url);
+    }
+
+    // Click gallery thumbs to open lightbox
+    document.querySelectorAll('.pkg-gallery-thumb').forEach((el, i) => {
+        el.addEventListener('dblclick', () => openLightbox(i));
+    });
+
+    function openLightbox(idx) {
+        currentIdx = idx;
+        document.getElementById('lightboxImg').src = galleryImages[idx] || '';
+        document.getElementById('lightbox').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox(e) {
+        if (!e || e.target === document.getElementById('lightbox') || e.target.classList.contains('lightbox-close')) {
+            document.getElementById('lightbox').classList.remove('open');
+            document.body.style.overflow = '';
+        }
+    }
+
+    function lightboxNav(dir) {
+        currentIdx = (currentIdx + dir + galleryImages.length) % galleryImages.length;
+        document.getElementById('lightboxImg').src = galleryImages[currentIdx];
+    }
+
+    document.addEventListener('keydown', e => {
+        if (!document.getElementById('lightbox').classList.contains('open')) return;
+        if (e.key === 'ArrowRight') lightboxNav(1);
+        if (e.key === 'ArrowLeft')  lightboxNav(-1);
+        if (e.key === 'Escape')     closeLightbox({target: document.getElementById('lightbox')});
+    });
+
+    // ── Star picker: update hidden input ──
+    document.querySelectorAll('.star-picker input').forEach(inp => {
+        inp.addEventListener('change', () => {
+            // value is already the radio value, Django reads it directly
+        });
+    });
+</script>
+{% endblock %}

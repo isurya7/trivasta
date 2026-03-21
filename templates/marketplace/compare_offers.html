@@ -1,0 +1,961 @@
+{% extends "base.html" %}
+{% block title %}Compare Offers — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    .compare-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        font-family: 'Outfit', sans-serif;
+        padding: 3rem 2rem;
+    }
+
+    .compare-inner { max-width: 1200px; margin: 0 auto; }
+
+    /* ── HEADER ── */
+    .compare-header { margin-bottom: 2.5rem; }
+
+    .compare-eyebrow {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .compare-eyebrow::before { content: ''; width: 20px; height: 1px; background: var(--gold); }
+
+    .compare-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 300;
+        color: var(--ink);
+        line-height: 1.1;
+        margin-bottom: 0.5rem;
+    }
+
+    .compare-title em { font-style: italic; color: var(--sea); }
+
+    .compare-subtitle {
+        font-size: 0.9375rem;
+        color: var(--muted);
+    }
+
+    .trip-summary-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 1.5rem;
+        background: white;
+        border: 1px solid var(--cream-dark);
+        border-radius: 100px;
+        padding: 0.75rem 1.5rem;
+        margin-top: 1.25rem;
+        box-shadow: var(--shadow);
+        flex-wrap: wrap;
+    }
+
+    .pill-item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.8125rem;
+        color: var(--muted);
+    }
+
+    .pill-item strong { color: var(--ink); }
+
+    /* ── SORT BAR ── */
+    .sort-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+        flex-wrap: wrap;
+        gap: 1rem;
+    }
+
+    .sort-label { font-size: 0.8125rem; color: var(--muted); }
+
+    .sort-btns { display: flex; gap: 0.5rem; }
+
+    .sort-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 100px;
+        border: 1.5px solid var(--cream-dark);
+        background: white;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.775rem;
+        font-weight: 600;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.25s;
+    }
+
+    .sort-btn:hover, .sort-btn.active {
+        border-color: var(--sea);
+        color: var(--sea);
+        background: rgba(15,52,96,0.05);
+    }
+
+    /* ── COMPARISON TABLE (desktop) ── */
+    .compare-table-wrap {
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        margin-bottom: 3rem;
+    }
+
+    .compare-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    /* Sticky first column */
+    .compare-table th:first-child,
+    .compare-table td:first-child {
+        position: sticky;
+        left: 0;
+        background: var(--cream);
+        z-index: 2;
+        border-right: 1px solid var(--cream-dark);
+    }
+
+    .compare-table th {
+        padding: 0;
+        vertical-align: top;
+        border-bottom: 2px solid var(--cream-dark);
+        border-right: 1px solid var(--cream-dark);
+    }
+
+    .compare-table th:last-child { border-right: none; }
+
+    .compare-table td {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--cream-dark);
+        border-right: 1px solid var(--cream-dark);
+        vertical-align: middle;
+        font-size: 0.9rem;
+        color: var(--ink);
+        text-align: center;
+    }
+
+    .compare-table td:last-child { border-right: none; }
+    .compare-table tr:last-child td { border-bottom: none; }
+
+    /* Row label column */
+    .row-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--muted);
+        padding: 1rem 1.5rem;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    /* Agency header card inside th */
+    .agency-th-card {
+        padding: 1.5rem 1.25rem;
+        text-align: center;
+        min-width: 240px;
+        position: relative;
+    }
+
+    .agency-th-card.best-value {
+        background: linear-gradient(160deg, rgba(15,52,96,0.04), rgba(201,168,76,0.06));
+    }
+
+    .best-badge {
+        position: absolute;
+        top: 0; left: 50%;
+        transform: translateX(-50%);
+        background: var(--gold);
+        color: var(--ink);
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.2rem 0.875rem;
+        border-radius: 0 0 8px 8px;
+    }
+
+    .agency-avatar {
+        width: 56px; height: 56px;
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-size: 1.5rem;
+        margin: 0.5rem auto 0.75rem;
+    }
+
+    .agency-th-name {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 0.25rem;
+    }
+
+    .agency-th-plan {
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.2rem 0.6rem;
+        border-radius: 2px;
+        margin-bottom: 0.75rem;
+    }
+
+    .plan-starter      { background: rgba(127,140,141,0.12); color: #7f8c8d; }
+    .plan-professional { background: rgba(15,52,96,0.1);     color: var(--sea); }
+    .plan-enterprise   { background: rgba(201,168,76,0.15);  color: var(--gold); }
+
+    .agency-th-rating {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.35rem;
+        font-size: 0.875rem;
+        color: var(--ink);
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .stars { color: #f39c12; font-size: 0.875rem; }
+
+    /* Price cell */
+    .price-cell {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: var(--sea);
+        line-height: 1;
+    }
+
+    .price-cell .per-person {
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.75rem;
+        color: var(--muted);
+        font-weight: 400;
+        display: block;
+        margin-top: 0.2rem;
+    }
+
+    .price-cell .total-price {
+        font-size: 0.8125rem;
+        color: var(--muted);
+        font-family: 'Outfit', sans-serif;
+        font-weight: 400;
+    }
+
+    /* Check/cross cells */
+    .cell-yes { color: #27ae60; font-size: 1.1rem; font-weight: 700; }
+    .cell-no  { color: #e74c3c; font-size: 1.1rem; }
+    .cell-tag {
+        display: inline-block;
+        background: var(--cream);
+        border: 1px solid var(--cream-dark);
+        border-radius: 100px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.775rem;
+        color: var(--ink);
+    }
+
+    /* CTA inside table */
+    .book-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.4rem;
+        padding: 0.75rem 1.5rem;
+        background: var(--sea);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s;
+        width: 100%;
+    }
+
+    .book-btn:hover { background: #0a2240; transform: translateY(-1px); }
+
+    .book-btn.best {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        box-shadow: 0 6px 20px rgba(15,52,96,0.3);
+    }
+
+    .view-profile-btn {
+        display: block;
+        text-align: center;
+        margin-top: 0.5rem;
+        font-size: 0.775rem;
+        color: var(--muted);
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .view-profile-btn:hover { color: var(--sea); }
+
+    /* ── CARD VIEW (mobile / toggle) ── */
+    .cards-view { display: none; }
+
+    .offer-cards-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .offer-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        border: 2px solid transparent;
+        transition: all 0.3s;
+        position: relative;
+    }
+
+    .offer-card:hover {
+        border-color: rgba(15,52,96,0.2);
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-deep);
+    }
+
+    .offer-card.best-value-card { border-color: var(--gold); }
+
+    .offer-card-header {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        padding: 1.5rem;
+        position: relative;
+    }
+
+    .offer-card-best {
+        position: absolute;
+        top: 0; right: 1rem;
+        background: var(--gold);
+        color: var(--ink);
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.2rem 0.75rem;
+        border-radius: 0 0 8px 8px;
+    }
+
+    .offer-card-agency {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 0.25rem;
+    }
+
+    .offer-card-plan {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.5);
+    }
+
+    .offer-card-rating {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.875rem;
+        color: #e8c97a;
+        font-weight: 600;
+        margin-top: 0.75rem;
+    }
+
+    .offer-card-body { padding: 1.5rem; }
+
+    .offer-card-price {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem;
+        font-weight: 600;
+        color: var(--sea);
+        line-height: 1;
+        margin-bottom: 0.25rem;
+    }
+
+    .offer-card-price-note {
+        font-size: 0.8125rem;
+        color: var(--muted);
+        margin-bottom: 1.25rem;
+    }
+
+    .offer-card-features {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .offer-card-feature {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8375rem;
+        color: var(--muted);
+    }
+
+    .offer-card-feature .feat-icon { color: #27ae60; flex-shrink: 0; }
+
+    .offer-card-message {
+        background: var(--cream);
+        border-radius: 8px;
+        padding: 0.875rem;
+        font-size: 0.8125rem;
+        color: var(--muted);
+        line-height: 1.6;
+        border-left: 3px solid var(--gold);
+        margin-bottom: 1.25rem;
+        font-style: italic;
+    }
+
+    .offer-card-message::before {
+        content: '"';
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        color: var(--gold);
+        line-height: 0;
+        vertical-align: -0.4rem;
+        margin-right: 0.25rem;
+    }
+
+    /* ── WINNER BANNER ── */
+    .winner-banner {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 16px;
+        padding: 2rem 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .winner-banner::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.06) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+
+    .winner-content { position: relative; z-index: 1; }
+
+    .winner-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: #e8c97a;
+        margin-bottom: 0.5rem;
+    }
+
+    .winner-name {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 0.25rem;
+    }
+
+    .winner-reason { font-size: 0.875rem; color: rgba(255,255,255,0.55); }
+
+    .winner-action { position: relative; z-index: 1; flex-shrink: 0; }
+
+    .winner-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.875rem 2rem;
+        background: var(--gold);
+        color: var(--ink);
+        border: none;
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9375rem;
+        font-weight: 700;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .winner-btn:hover { background: #e8c97a; transform: translateY(-1px); }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: white;
+        border-radius: 20px;
+        box-shadow: var(--shadow);
+    }
+
+    .empty-state-icon { font-size: 3rem; margin-bottom: 1rem; }
+
+    .empty-state h3 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.75rem;
+        font-weight: 300;
+        color: var(--ink);
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state p { font-size: 0.9rem; color: var(--muted); }
+
+    /* ── VIEW TOGGLE ── */
+    .view-toggle {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .view-btn {
+        padding: 0.5rem 0.875rem;
+        border-radius: var(--radius);
+        border: 1.5px solid var(--cream-dark);
+        background: white;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--muted);
+        cursor: pointer;
+        transition: all 0.25s;
+    }
+
+    .view-btn.active { border-color: var(--sea); color: var(--sea); background: rgba(15,52,96,0.05); }
+
+    /* Highlight column on hover */
+    .compare-table th.highlighted,
+    .compare-table td.highlighted {
+        background: rgba(15,52,96,0.03);
+    }
+
+    @keyframes fadeUp {
+        from { opacity: 0; transform: translateY(16px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .compare-header  { animation: fadeUp 0.5s ease both; }
+    .winner-banner   { animation: fadeUp 0.5s 0.1s ease both; }
+    .compare-table-wrap { animation: fadeUp 0.5s 0.2s ease both; }
+
+    @media (max-width: 900px) {
+        .compare-table-wrap { overflow-x: auto; }
+        .cards-view { display: block; }
+        .table-view { display: none; }
+        .winner-banner { flex-direction: column; }
+    }
+
+    @media (max-width: 480px) {
+        .offer-cards-grid { grid-template-columns: 1fr; }
+        .sort-btns { flex-wrap: wrap; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="compare-page">
+    <div class="compare-inner">
+
+        <!-- HEADER -->
+        <div class="compare-header">
+            <div class="compare-eyebrow">✦ Agency Comparison</div>
+            <h1 class="compare-title">Compare offers for<br><em>{{ trip.destination }}</em></h1>
+            <p class="compare-subtitle">{{ offers.count }} agenc{{ offers.count|pluralize:"y,ies" }} have submitted offers. Compare and choose the best one.</p>
+
+            <div class="trip-summary-pill">
+                <div class="pill-item">📍 <strong>{{ trip.destination }}</strong></div>
+                <div class="pill-item">📅 <strong>{{ trip.days }} days</strong></div>
+                <div class="pill-item">👥 <strong>{{ trip.num_people|default:1 }} traveller{{ trip.num_people|default:1|pluralize }}</strong></div>
+                <div class="pill-item">🎒 <strong>{{ trip.travel_type|capfirst }}</strong></div>
+                <div class="pill-item">💰 Budget: <strong>₹{{ trip.budget }}</strong></div>
+            </div>
+        </div>
+
+        {% if offers %}
+
+        {% with best=offers.first %}
+
+        <!-- WINNER BANNER -->
+        <div class="winner-banner">
+            <div class="winner-content">
+                <div class="winner-label">⭐ Recommended Choice</div>
+                <div class="winner-name">{{ best.agency.name }}</div>
+                <div class="winner-reason">
+                    Best value at ₹{{ best.price }} · {{ best.agency.rating }}★ rated ·
+                    {% if best.agency.plan == 'enterprise' %}Enterprise verified
+                    {% elif best.agency.plan == 'professional' %}Professional agency
+                    {% else %}Starter agency{% endif %}
+                </div>
+            </div>
+            <div class="winner-action">
+                <a href="{% url 'checkout' best.id %}" class="winner-btn">
+                    Book {{ best.agency.name }} →
+                </a>
+            </div>
+        </div>
+
+        {% endwith %}
+
+        <!-- SORT + VIEW TOGGLE -->
+        <div class="sort-bar">
+            <div>
+                <span class="sort-label">Sort by: </span>
+                <div class="sort-btns">
+                    <button class="sort-btn active" onclick="sortOffers('price', this)">💰 Price</button>
+                    <button class="sort-btn" onclick="sortOffers('rating', this)">⭐ Rating</button>
+                    <button class="sort-btn" onclick="sortOffers('plan', this)">🏆 Plan</button>
+                </div>
+            </div>
+            <div class="view-toggle">
+                <button class="view-btn active" onclick="setView('table', this)">📊 Table</button>
+                <button class="view-btn" onclick="setView('cards', this)">🃏 Cards</button>
+            </div>
+        </div>
+
+        <!-- TABLE VIEW -->
+        <div class="table-view">
+            <div class="compare-table-wrap">
+                <table class="compare-table" id="compareTable">
+                    <thead>
+                        <tr>
+                            <th><div class="row-label">Agency</div></th>
+                            {% for offer in offers %}
+                            <th class="col-{{ forloop.counter }}"
+                                onmouseenter="highlightCol({{ forloop.counter }})"
+                                onmouseleave="unhighlightCol({{ forloop.counter }})">
+                                <div class="agency-th-card {% if forloop.first %}best-value{% endif %}">
+                                    {% if forloop.first %}
+                                    <div class="best-badge">⭐ Best Value</div>
+                                    {% endif %}
+                                    <div class="agency-avatar">🏢</div>
+                                    <div class="agency-th-name">{{ offer.agency.name }}</div>
+                                    <div>
+                                        <span class="agency-th-plan plan-{{ offer.agency.plan }}">
+                                            {{ offer.agency.plan|capfirst }}
+                                        </span>
+                                    </div>
+                                    <div class="agency-th-rating">
+                                        <span class="stars">
+                                            {% if offer.agency.rating >= 1 %}⭐{% endif %}
+                                            {% if offer.agency.rating >= 2 %}⭐{% endif %}
+                                            {% if offer.agency.rating >= 3 %}⭐{% endif %}
+                                            {% if offer.agency.rating >= 4 %}⭐{% endif %}
+                                            {% if offer.agency.rating >= 5 %}⭐{% endif %}
+                                        </span>
+                                        {{ offer.agency.rating }}
+                                    </div>
+                                </div>
+                            </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        <!-- PRICE ROW -->
+                        <tr>
+                            <td class="row-label">Price</td>
+                            {% for offer in offers %}
+                            <td class="col-{{ forloop.counter }}">
+                                <div class="price-cell">
+                                    ₹{{ offer.price }}
+                                    <span class="per-person">per person</span>
+                                    {% if trip.num_people > 1 %}
+                                    <span class="total-price">Total: ₹{% widthratio offer.price 1 trip.num_people %}</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- AGENCY PLAN -->
+                        <tr>
+                            <td class="row-label">Plan Tier</td>
+                            {% for offer in offers %}
+                            <td class="col-{{ forloop.counter }}">
+                                <span class="cell-tag agency-th-plan plan-{{ offer.agency.plan }}">
+                                    {% if offer.agency.plan == 'enterprise' %}🏆 Enterprise
+                                    {% elif offer.agency.plan == 'professional' %}💼 Professional
+                                    {% else %}🌱 Starter{% endif %}
+                                </span>
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- RATING -->
+                        <tr>
+                            <td class="row-label">Rating</td>
+                            {% for offer in offers %}
+                            <td class="col-{{ forloop.counter }}">
+                                <strong>{{ offer.agency.rating }}</strong> / 5.0
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- LOCATION -->
+                        <tr>
+                            <td class="row-label">Location</td>
+                            {% for offer in offers %}
+                            <td class="col-{{ forloop.counter }}">
+                                📍 {{ offer.agency.location|default:"India" }}
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- PLATFORM FEE -->
+                        <tr>
+                            <td class="row-label">Platform Fee</td>
+                            {% for offer in offers %}
+                            <td class="col-{{ forloop.counter }}">
+                                <span style="color:#27ae60; font-weight:600;">FREE 🎉</span>
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- GST -->
+                        <tr>
+                            <td class="row-label">GST (18%)</td>
+                            {% for offer in offers %}
+                            <td class="col-{{ forloop.counter }}">
+                                ₹{% widthratio offer.price 100 18 %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- TOTAL PAYABLE -->
+                        <tr style="background:rgba(15,52,96,0.02);">
+                            <td class="row-label" style="color:var(--ink); font-weight:700;">Total Payable</td>
+                            {% for offer in offers %}
+                            <td class="col-{{ forloop.counter }}">
+                                <div style="font-family:'Cormorant Garamond',serif; font-size:1.5rem; font-weight:600; color:var(--sea);">
+                                    ₹{% widthratio offer.price 100 118 %}
+                                </div>
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- OFFER MESSAGE -->
+                        <tr>
+                            <td class="row-label">Agency Message</td>
+                            {% for offer in offers %}
+                            <td class="col-{{ forloop.counter }}" style="text-align:left; max-width:220px;">
+                                <div style="font-size:0.8125rem; color:var(--muted); line-height:1.6; font-style:italic;">
+                                    "{{ offer.message|truncatechars:100 }}"
+                                </div>
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- PRIORITY RESPONSE -->
+                        <tr>
+                            <td class="row-label">Priority Response</td>
+                            {% for offer in offers %}
+                            <td class="col-{{ forloop.counter }}">
+                                {% if offer.agency.plan == 'enterprise' or offer.agency.plan == 'professional' %}
+                                <span class="cell-yes">✓</span>
+                                {% else %}
+                                <span class="cell-no">✗</span>
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- DEDICATED MANAGER -->
+                        <tr>
+                            <td class="row-label">Account Manager</td>
+                            {% for offer in offers %}
+                            <td class="col-{{ forloop.counter }}">
+                                {% if offer.agency.plan == 'enterprise' %}
+                                <span class="cell-yes">✓</span>
+                                {% else %}
+                                <span class="cell-no">✗</span>
+                                {% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                        <!-- BOOK CTA -->
+                        <tr>
+                            <td class="row-label"></td>
+                            {% for offer in offers %}
+                            <td class="col-{{ forloop.counter }}" style="padding:1.25rem;">
+                                <a href="{% url 'checkout' offer.id %}"
+                                   class="book-btn {% if forloop.first %}best{% endif %}">
+                                    {% if forloop.first %}⭐ Book Best{% else %}Book This{% endif %}
+                                </a>
+                                <a href="#" class="view-profile-btn">View Agency Profile →</a>
+                            </td>
+                            {% endfor %}
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- CARD VIEW (mobile) -->
+        <div class="cards-view">
+            <div class="offer-cards-grid" id="cardsGrid">
+                {% for offer in offers %}
+                <div class="offer-card {% if forloop.first %}best-value-card{% endif %}"
+                     data-price="{{ offer.price }}"
+                     data-rating="{{ offer.agency.rating }}"
+                     data-plan="{{ offer.agency.plan }}">
+
+                    {% if forloop.first %}
+                    <div class="offer-card-best">⭐ Best Value</div>
+                    {% endif %}
+
+                    <div class="offer-card-header">
+                        <div class="offer-card-agency">{{ offer.agency.name }}</div>
+                        <div class="offer-card-plan">{{ offer.agency.plan|capfirst }} Plan</div>
+                        <div class="offer-card-rating">
+                            ⭐ {{ offer.agency.rating }} / 5.0
+                        </div>
+                    </div>
+
+                    <div class="offer-card-body">
+                        <div class="offer-card-price">₹{{ offer.price }}</div>
+                        <div class="offer-card-price-note">
+                            per person · Total: ₹{% widthratio offer.price 1 trip.num_people|default:1 %}
+                            + 18% GST
+                        </div>
+
+                        <div class="offer-card-features">
+                            <div class="offer-card-feature">
+                                <span class="feat-icon">✓</span>
+                                📍 {{ offer.agency.location|default:"India" }}
+                            </div>
+                            <div class="offer-card-feature">
+                                <span class="feat-icon">✓</span>
+                                🎯 {{ offer.agency.plan|capfirst }} tier agency
+                            </div>
+                            <div class="offer-card-feature">
+                                <span class="feat-icon">✓</span>
+                                💳 Platform fee: FREE
+                            </div>
+                            {% if offer.agency.plan == 'enterprise' %}
+                            <div class="offer-card-feature">
+                                <span class="feat-icon">✓</span>
+                                🏆 Dedicated account manager
+                            </div>
+                            {% endif %}
+                            {% if offer.agency.plan != 'starter' %}
+                            <div class="offer-card-feature">
+                                <span class="feat-icon">✓</span>
+                                ⚡ Priority response
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="offer-card-message">
+                            {{ offer.message|truncatechars:120 }}
+                        </div>
+
+                        <a href="{% url 'checkout' offer.id %}" class="book-btn {% if forloop.first %}best{% endif %}">
+                            {% if forloop.first %}⭐ Book Best Offer{% else %}Book This Offer{% endif %}
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {% else %}
+        <!-- EMPTY STATE -->
+        <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <h3>No offers yet</h3>
+            <p>Agencies haven't submitted offers for this trip yet. Check back soon — offers usually arrive within 24 hours.</p>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Column hover highlight
+    function highlightCol(n) {
+        document.querySelectorAll(`.col-${n}`).forEach(el => el.classList.add('highlighted'));
+    }
+    function unhighlightCol(n) {
+        document.querySelectorAll(`.col-${n}`).forEach(el => el.classList.remove('highlighted'));
+    }
+
+    // View toggle
+    function setView(view, btn) {
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        if (view === 'table') {
+            document.querySelector('.table-view').style.display = 'block';
+            document.querySelector('.cards-view').style.display = 'none';
+        } else {
+            document.querySelector('.table-view').style.display = 'none';
+            document.querySelector('.cards-view').style.display = 'block';
+        }
+    }
+
+    // Sort cards
+    function sortOffers(by, btn) {
+        document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const grid  = document.getElementById('cardsGrid');
+        const cards = Array.from(grid.querySelectorAll('.offer-card'));
+
+        const planOrder = { enterprise: 0, professional: 1, starter: 2 };
+
+        cards.sort((a, b) => {
+            if (by === 'price')  return parseFloat(a.dataset.price)  - parseFloat(b.dataset.price);
+            if (by === 'rating') return parseFloat(b.dataset.rating) - parseFloat(a.dataset.rating);
+            if (by === 'plan')   return (planOrder[a.dataset.plan] || 9) - (planOrder[b.dataset.plan] || 9);
+        });
+
+        cards.forEach(c => grid.appendChild(c));
+
+        // Re-badge first as best
+        grid.querySelectorAll('.offer-card-best').forEach(b => b.remove());
+        grid.querySelectorAll('.offer-card').forEach(c => c.classList.remove('best-value-card'));
+        const first = grid.querySelector('.offer-card');
+        if (first) {
+            first.classList.add('best-value-card');
+            const badge = document.createElement('div');
+            badge.className = 'offer-card-best';
+            badge.textContent = '⭐ Best Value';
+            first.prepend(badge);
+        }
+    }
+
+    // Auto switch to cards on mobile
+    if (window.innerWidth < 900) {
+        document.querySelector('.table-view').style.display = 'none';
+        document.querySelector('.cards-view').style.display = 'block';
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.view-btn')[1]?.classList.add('active');
+    }
+</script>
+{% endblock %}

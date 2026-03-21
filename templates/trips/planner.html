@@ -1,0 +1,888 @@
+{% extends "base.html" %}
+{% block title %}Plan Your Trip — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600&display=swap');
+
+    .planner-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        font-family: 'Outfit', sans-serif;
+        display: grid;
+        grid-template-columns: 1fr 400px;
+    }
+
+    /* ── LEFT PANEL ─────────────────────────────── */
+    .planner-left {
+        padding: 3rem;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .planner-eyebrow {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--gold);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .planner-eyebrow::before { content: ''; width: 20px; height: 1px; background: var(--gold); }
+
+    .planner-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2.5rem;
+        font-weight: 300;
+        color: var(--ink);
+        line-height: 1.1;
+    }
+
+    .planner-title em { font-style: italic; color: var(--sea); }
+
+    /* ── FORM WRAP ──────────────────────────────── */
+    .form-wrap {
+        background: white;
+        border-radius: 16px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    /* Progress bar */
+    .progress-bar { height: 3px; background: var(--cream-dark); }
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--sea), var(--gold));
+        transition: width 0.4s ease;
+    }
+
+    /* Step tabs */
+    .step-tabs {
+        display: flex;
+        background: #faf7f2;
+        border-bottom: 1px solid var(--cream-dark);
+    }
+
+    .step-tab {
+        flex: 1;
+        padding: 1rem 0.5rem;
+        text-align: center;
+        font-size: 0.7rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--muted);
+        border-bottom: 2px solid transparent;
+        cursor: pointer;
+        transition: all 0.25s;
+        white-space: nowrap;
+        border: none;
+        background: none;
+        font-family: 'Outfit', sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.2rem;
+    }
+
+    .step-tab.active { color: var(--sea); border-bottom-color: var(--sea); background: white; }
+    .step-tab.done   { color: #27ae60; }
+    .step-tab-icon   { font-size: 1.1rem; }
+
+    .form-steps { padding: 2rem; }
+    .form-step  { display: none; }
+    .form-step.active { display: block; animation: fadeUp 0.35s ease; }
+
+    /* Step headers */
+    .step-heading {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 0.3rem;
+    }
+
+    .step-desc {
+        font-size: 0.875rem;
+        color: var(--muted);
+        margin-bottom: 1.5rem;
+        line-height: 1.55;
+    }
+
+    /* Fields */
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-bottom: 1.1rem;
+    }
+
+    .field label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--ink);
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .field label .req { color: #e74c3c; }
+
+    .field-input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 1.5px solid var(--cream-dark);
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9375rem;
+        color: var(--ink);
+        background: #faf7f2;
+        outline: none;
+        transition: all 0.2s;
+        appearance: none;
+        -webkit-appearance: none;
+    }
+
+    .field-input::placeholder { color: #b0aaa0; }
+
+    .field-input:focus {
+        border-color: var(--sea);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(15,52,96,0.08);
+    }
+
+    .field-input.error { border-color: #e74c3c; }
+
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.875rem; }
+
+    .field-hint { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+
+    /* Mode grid */
+    .mode-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.625rem; margin-bottom: 1.1rem; }
+
+    .mode-option { display: none; }
+
+    .mode-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.875rem 0.5rem;
+        border: 1.5px solid var(--cream-dark);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.25s;
+        text-align: center;
+        background: #faf7f2;
+        user-select: none;
+    }
+
+    .mode-label:hover { border-color: var(--sea); background: white; }
+
+    .mode-option:checked + .mode-label {
+        border-color: var(--sea);
+        background: rgba(15,52,96,0.06);
+        box-shadow: 0 0 0 3px rgba(15,52,96,0.08);
+    }
+
+    .mode-icon { font-size: 1.5rem; }
+    .mode-name { font-size: 0.72rem; font-weight: 700; color: var(--ink); letter-spacing: 0.04em; }
+    .mode-note { font-size: 0.65rem; color: var(--muted); }
+
+    /* ── BUDGET SECTION — fully fixed ─────────── */
+    .budget-type-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .budget-type-input { display: none; }
+
+    .budget-type-label {
+        display: block;
+        padding: 1rem 1.25rem;
+        border: 1.5px solid var(--cream-dark);
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.25s;
+        background: #faf7f2;
+        user-select: none;
+    }
+
+    .budget-type-label:hover { border-color: var(--sea); background: white; }
+
+    .budget-type-input:checked + .budget-type-label {
+        border-color: var(--sea);
+        background: rgba(15,52,96,0.06);
+        box-shadow: 0 0 0 3px rgba(15,52,96,0.08);
+    }
+
+    .budget-type-title {
+        font-size: 0.9rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 0.2rem;
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+
+    .budget-type-sub { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
+
+    .budget-input-wrap {
+        position: relative;
+        margin-bottom: 0.5rem;
+    }
+
+    .budget-rupee {
+        position: absolute;
+        left: 1rem; top: 50%;
+        transform: translateY(-50%);
+        font-size: 1rem;
+        color: var(--sea);
+        font-weight: 700;
+        pointer-events: none;
+    }
+
+    .budget-input-wrap .field-input { padding-left: 2rem; font-size: 1.125rem; font-weight: 600; }
+
+    .budget-summary-box {
+        background: linear-gradient(135deg, rgba(15,52,96,0.06), rgba(201,168,76,0.06));
+        border: 1px solid rgba(15,52,96,0.12);
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        margin-top: 0.75rem;
+        display: none;
+    }
+
+    .budget-summary-box.visible { display: block; }
+
+    .budget-summary-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.875rem; margin-bottom: 0.4rem; }
+    .budget-summary-row:last-child { margin-bottom: 0; padding-top: 0.4rem; border-top: 1px solid rgba(15,52,96,0.1); }
+    .budget-summary-row .bs-label { color: var(--muted); }
+    .budget-summary-row .bs-value { font-weight: 600; color: var(--ink); }
+    .budget-summary-row.total .bs-value { color: var(--sea); font-size: 1rem; }
+
+    /* Navigation buttons */
+    .step-nav { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+
+    .btn-next, .btn-prev {
+        padding: 0.875rem 1.75rem;
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s;
+    }
+
+    .btn-next { background: var(--sea); color: white; flex: 1; }
+    .btn-next:hover { background: #0a2240; transform: translateY(-1px); }
+
+    .btn-prev { background: var(--cream); color: var(--muted); border: 1.5px solid var(--cream-dark); }
+    .btn-prev:hover { border-color: var(--sea); color: var(--sea); }
+
+    .btn-submit {
+        width: 100%;
+        padding: 1.1rem;
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.0625rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(15,52,96,0.35); }
+    .btn-submit:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
+
+    /* Error display */
+    .form-errors {
+        background: rgba(231,76,60,0.08);
+        border: 1px solid rgba(231,76,60,0.25);
+        border-radius: var(--radius);
+        padding: 0.875rem 1rem;
+        font-size: 0.875rem;
+        color: #c0392b;
+        margin-top: 1rem;
+    }
+
+    /* ── RIGHT PANEL ────────────────────────────── */
+    .planner-right {
+        background: linear-gradient(160deg, #0f3460 0%, #0a2240 100%);
+        padding: 3rem 2rem;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        position: sticky;
+        top: 68px;
+        height: calc(100vh - 68px);
+        overflow-y: auto;
+    }
+
+    .right-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.625rem;
+        font-weight: 300;
+        color: white;
+        line-height: 1.25;
+    }
+
+    .right-title em { font-style: italic; color: #e8c97a; }
+
+    .trip-preview {
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 14px;
+        padding: 1.5rem;
+    }
+
+    .preview-section-label {
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.35);
+        margin-bottom: 1rem;
+    }
+
+    .preview-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding: 0.6rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        font-size: 0.875rem;
+        gap: 0.5rem;
+    }
+
+    .preview-row:last-child { border-bottom: none; padding-bottom: 0; }
+    .preview-row .key { color: rgba(255,255,255,0.4); flex-shrink: 0; }
+    .preview-row .val { color: white; font-weight: 500; text-align: right; }
+    .preview-row .val.empty { color: rgba(255,255,255,0.2); font-style: italic; font-weight: 400; }
+
+    /* What you get */
+    .ai-features-title {
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.35);
+        margin-bottom: 0.75rem;
+    }
+
+    .ai-feature {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.65);
+        line-height: 1.5;
+        margin-bottom: 0.75rem;
+    }
+
+    .ai-feature:last-child { margin-bottom: 0; }
+
+    .ai-feature-icon {
+        width: 30px; height: 30px;
+        background: rgba(201,168,76,0.12);
+        border-radius: 7px;
+        display: grid;
+        place-items: center;
+        font-size: 0.85rem;
+        flex-shrink: 0;
+    }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+    @media (max-width: 900px) {
+        .planner-page { grid-template-columns: 1fr; }
+        .planner-right { display: none; }
+        .planner-left  { padding: 2rem 1.25rem; }
+        .mode-grid { grid-template-columns: repeat(3, 1fr); }
+        .field-row { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="planner-page">
+
+    <!-- LEFT PANEL -->
+    <div class="planner-left">
+        <div>
+            <div class="planner-eyebrow">AI Travel Planner</div>
+            <h1 class="planner-title">Plan your perfect <em>journey</em></h1>
+            <p style="color:var(--muted);font-size:0.9rem;margin-top:0.5rem;line-height:1.6;">
+                Fill in the details below and our AI will generate a personalised day-by-day itinerary for you in seconds.
+            </p>
+        </div>
+
+        <form method="POST" id="plannerForm">
+            {% csrf_token %}
+            <div class="form-wrap">
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width:25%"></div>
+                </div>
+
+                <div class="step-tabs">
+                    <button type="button" class="step-tab active" onclick="goToStep(1)" id="tab1">
+                        <span class="step-tab-icon">📍</span>Where
+                    </button>
+                    <button type="button" class="step-tab" onclick="goToStep(2)" id="tab2">
+                        <span class="step-tab-icon">📅</span>When
+                    </button>
+                    <button type="button" class="step-tab" onclick="goToStep(3)" id="tab3">
+                        <span class="step-tab-icon">🚀</span>How
+                    </button>
+                    <button type="button" class="step-tab" onclick="goToStep(4)" id="tab4">
+                        <span class="step-tab-icon">💰</span>Budget
+                    </button>
+                </div>
+
+                <div class="form-steps">
+
+                    <!-- STEP 1: WHERE -->
+                    <div class="form-step active" id="step1">
+                        <div class="step-heading">Where are you going? 📍</div>
+                        <p class="step-desc">Enter your departure city and destination. We'll plan the best route around it.</p>
+
+                        <div class="field">
+                            <label>Departing From (City)</label>
+                            <input type="text" name="origin" id="originInput" class="field-input"
+                                   placeholder="e.g. Mumbai, Delhi, Kolkata"
+                                   value="{{ form.origin.value|default:'' }}">
+                            <span class="field-hint">Leave blank if you're flexible about your origin.</span>
+                        </div>
+
+                        <div class="field">
+                            <label>Destination <span class="req">*</span></label>
+                            <input type="text" name="destination" id="destInput" class="field-input"
+                                   placeholder="e.g. Goa, Kerala, Manali, Jaipur"
+                                   value="{{ form.destination.value|default:'' }}"
+                                   required>
+                        </div>
+
+                        <div class="field">
+                            <label>Travel Style</label>
+                            <select name="travel_type" class="field-input" id="travelTypeInput">
+                                <option value="">— Select travel style —</option>
+                                <option value="solo">🎒 Solo</option>
+                                <option value="couple">💑 Couple / Honeymoon</option>
+                                <option value="family">👨‍👩‍👧 Family with Kids</option>
+                                <option value="friends">👫 Friends Group</option>
+                                <option value="adventure">🏔️ Adventure / Trekking</option>
+                                <option value="business">💼 Business</option>
+                                <option value="luxury">✨ Luxury</option>
+                            </select>
+                        </div>
+
+                        <div class="step-nav">
+                            <button type="button" class="btn-next" onclick="nextStep(1)">Next: When are you going? →</button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: WHEN -->
+                    <div class="form-step" id="step2">
+                        <div class="step-heading">When are you travelling? 📅</div>
+                        <p class="step-desc">Set your travel dates or just enter the number of days if you're flexible on timing.</p>
+
+                        <div class="field-row">
+                            <div class="field">
+                                <label>Start Date</label>
+                                <input type="date" name="start_date" id="startDateInput" class="field-input"
+                                       value="{{ form.start_date.value|default:'' }}">
+                            </div>
+                            <div class="field">
+                                <label>End Date</label>
+                                <input type="date" name="end_date" id="endDateInput" class="field-input"
+                                       value="{{ form.end_date.value|default:'' }}">
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label>Number of Days <span class="req">*</span></label>
+                            <input type="number" name="days" id="daysInput" class="field-input"
+                                   placeholder="How many days? e.g. 7"
+                                   min="1" max="30"
+                                   value="{{ form.days.value|default:'' }}"
+                                   required>
+                            <span class="field-hint">This is auto-filled if you enter start and end dates above.</span>
+                        </div>
+
+                        <div class="field">
+                            <label>Number of Travellers</label>
+                            <input type="number" name="num_people" id="peopleInput" class="field-input"
+                                   placeholder="How many people? e.g. 2"
+                                   min="1" max="50"
+                                   value="{{ form.num_people.value|default:'1' }}">
+                        </div>
+
+                        <div class="step-nav">
+                            <button type="button" class="btn-prev" onclick="prevStep(2)">← Back</button>
+                            <button type="button" class="btn-next" onclick="nextStep(2)">Next: Transport →</button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: HOW -->
+                    <div class="form-step" id="step3">
+                        <div class="step-heading">How are you travelling? 🚀</div>
+                        <p class="step-desc">Choose your preferred transport. The AI will plan your itinerary around this choice.</p>
+
+                        <div class="mode-grid">
+                            <div>
+                                <input type="radio" name="travel_mode" id="mode_any" value="any" class="mode-option" checked>
+                                <label for="mode_any" class="mode-label">
+                                    <span class="mode-icon">🚀</span>
+                                    <span class="mode-name">Flexible</span>
+                                    <span class="mode-note">Any mode</span>
+                                </label>
+                            </div>
+                            <div>
+                                <input type="radio" name="travel_mode" id="mode_flight" value="flight" class="mode-option">
+                                <label for="mode_flight" class="mode-label">
+                                    <span class="mode-icon">✈️</span>
+                                    <span class="mode-name">Flight</span>
+                                    <span class="mode-note">Fastest option</span>
+                                </label>
+                            </div>
+                            <div>
+                                <input type="radio" name="travel_mode" id="mode_train" value="train" class="mode-option">
+                                <label for="mode_train" class="mode-label">
+                                    <span class="mode-icon">🚂</span>
+                                    <span class="mode-name">Train</span>
+                                    <span class="mode-note">Scenic & affordable</span>
+                                </label>
+                            </div>
+                            <div>
+                                <input type="radio" name="travel_mode" id="mode_bus" value="bus" class="mode-option">
+                                <label for="mode_bus" class="mode-label">
+                                    <span class="mode-icon">🚌</span>
+                                    <span class="mode-name">Bus</span>
+                                    <span class="mode-note">Budget-friendly</span>
+                                </label>
+                            </div>
+                            <div>
+                                <input type="radio" name="travel_mode" id="mode_car" value="car" class="mode-option">
+                                <label for="mode_car" class="mode-label">
+                                    <span class="mode-icon">🚗</span>
+                                    <span class="mode-name">Self Drive</span>
+                                    <span class="mode-note">Your own pace</span>
+                                </label>
+                            </div>
+                            <div>
+                                <input type="radio" name="travel_mode" id="mode_cruise" value="cruise" class="mode-option">
+                                <label for="mode_cruise" class="mode-label">
+                                    <span class="mode-icon">🚢</span>
+                                    <span class="mode-name">Cruise</span>
+                                    <span class="mode-note">Sea journey</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="step-nav">
+                            <button type="button" class="btn-prev" onclick="prevStep(3)">← Back</button>
+                            <button type="button" class="btn-next" onclick="nextStep(3)">Next: Budget →</button>
+                        </div>
+                    </div>
+
+                    <!-- STEP 4: BUDGET — fully redesigned -->
+                    <div class="form-step" id="step4">
+                        <div class="step-heading">What's your budget? 💰</div>
+                        <p class="step-desc">Tell us how much you'd like to spend. The AI will optimise every rupee.</p>
+
+                        <!-- Budget type selector -->
+                        <div class="field">
+                            <label>Budget Type <span class="req">*</span></label>
+                        </div>
+
+                        <div class="budget-type-row">
+                            <div>
+                                <input type="radio" name="budget_type" id="bt_total" value="total" class="budget-type-input" checked>
+                                <label for="bt_total" class="budget-type-label">
+                                    <div class="budget-type-title">🧾 Total Budget</div>
+                                    <div class="budget-type-sub">The full amount for the entire trip combined.</div>
+                                </label>
+                            </div>
+                            <div>
+                                <input type="radio" name="budget_type" id="bt_per" value="per_person" class="budget-type-input">
+                                <label for="bt_per" class="budget-type-label">
+                                    <div class="budget-type-title">👤 Per Person</div>
+                                    <div class="budget-type-sub">Budget per traveller — we'll multiply by headcount.</div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Budget amount -->
+                        <div class="field">
+                            <label>Budget Amount <span class="req">*</span></label>
+                            <div class="budget-input-wrap">
+                                <span class="budget-rupee">₹</span>
+                                <input type="number" name="budget" id="budgetInput" class="field-input"
+                                       placeholder="e.g. 50000"
+                                       min="1000"
+                                       value="{{ form.budget.value|default:'' }}"
+                                       required>
+                            </div>
+                            <span class="field-hint" id="budgetHint">Enter the total amount you plan to spend on this trip.</span>
+                        </div>
+
+                        <!-- Live budget breakdown -->
+                        <div class="budget-summary-box" id="budgetSummary">
+                            <div class="budget-summary-row">
+                                <span class="bs-label">Budget entered</span>
+                                <span class="bs-value" id="bsEntered">—</span>
+                            </div>
+                            <div class="budget-summary-row" id="bsPerPersonRow" style="display:none;">
+                                <span class="bs-label">Travellers</span>
+                                <span class="bs-value" id="bsTravellers">—</span>
+                            </div>
+                            <div class="budget-summary-row total">
+                                <span class="bs-label" id="bsTotalLabel">Total trip budget</span>
+                                <span class="bs-value" id="bsTotal">—</span>
+                            </div>
+                        </div>
+
+                        {% if form.errors %}
+                        <div class="form-errors">
+                            ⚠️ Please check your inputs and try again.
+                            {% for field, errors in form.errors.items %}
+                                {% for error in errors %}<br>• {{ error }}{% endfor %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <div class="step-nav">
+                            <button type="button" class="btn-prev" onclick="prevStep(4)">← Back</button>
+                        </div>
+
+                        <button type="submit" class="btn-submit" id="submitBtn">
+                            🤖 Generate My Itinerary
+                        </button>
+
+                        <p style="text-align:center;font-size:0.75rem;color:var(--muted);margin-top:0.875rem;line-height:1.5;">
+                            ✦ Powered by Groq AI &nbsp;·&nbsp; Takes about 5–10 seconds
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- RIGHT PANEL -->
+    <div class="planner-right">
+        <div class="right-title">Your trip<br><em>at a glance</em></div>
+
+        <div class="trip-preview">
+            <div class="preview-section-label">Trip Summary</div>
+            <div class="preview-row">
+                <span class="key">From</span>
+                <span class="val empty" id="previewOrigin">Not set</span>
+            </div>
+            <div class="preview-row">
+                <span class="key">To</span>
+                <span class="val empty" id="previewDest">Not set</span>
+            </div>
+            <div class="preview-row">
+                <span class="key">Style</span>
+                <span class="val empty" id="previewStyle">Not set</span>
+            </div>
+            <div class="preview-row">
+                <span class="key">Days</span>
+                <span class="val empty" id="previewDays">Not set</span>
+            </div>
+            <div class="preview-row">
+                <span class="key">People</span>
+                <span class="val" id="previewPeople">1</span>
+            </div>
+            <div class="preview-row">
+                <span class="key">Transport</span>
+                <span class="val" id="previewMode">Flexible</span>
+            </div>
+            <div class="preview-row">
+                <span class="key">Budget</span>
+                <span class="val empty" id="previewBudget">Not set</span>
+            </div>
+        </div>
+
+        <div>
+            <div class="ai-features-title">What you'll get</div>
+            <div class="ai-feature"><div class="ai-feature-icon">📅</div><span>Day-by-day itinerary with detailed timing</span></div>
+            <div class="ai-feature"><div class="ai-feature-icon">🏨</div><span>Hotel recommendations for your budget range</span></div>
+            <div class="ai-feature"><div class="ai-feature-icon">🍽️</div><span>Restaurants and local food recommendations</span></div>
+            <div class="ai-feature"><div class="ai-feature-icon">🎯</div><span>Activities with entry fees and timings</span></div>
+            <div class="ai-feature"><div class="ai-feature-icon">💰</div><span>Full budget breakdown by category</span></div>
+            <div class="ai-feature"><div class="ai-feature-icon">🚀</div><span>Transport options from your origin city</span></div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentStep = 1;
+const totalSteps = 4;
+
+function goToStep(n) {
+    document.querySelectorAll('.form-step').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.step-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('step' + n).classList.add('active');
+    document.getElementById('tab' + n).classList.add('active');
+    currentStep = n;
+    updateProgress();
+}
+
+function nextStep(from) {
+    if (from === 1) {
+        const dest = document.getElementById('destInput').value.trim();
+        if (!dest) {
+            const el = document.getElementById('destInput');
+            el.classList.add('error'); el.focus();
+            el.addEventListener('input', () => el.classList.remove('error'), { once: true });
+            return;
+        }
+    }
+    if (from === 2) {
+        const days = document.getElementById('daysInput').value;
+        if (!days || days < 1) {
+            const el = document.getElementById('daysInput');
+            el.classList.add('error'); el.focus();
+            el.addEventListener('input', () => el.classList.remove('error'), { once: true });
+            return;
+        }
+    }
+    if (from < totalSteps) {
+        document.getElementById('tab' + from).classList.add('done');
+        goToStep(from + 1);
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+}
+
+function prevStep(from) {
+    if (from > 1) { goToStep(from - 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+}
+
+function updateProgress() {
+    document.getElementById('progressFill').style.width = (currentStep / totalSteps * 100) + '%';
+}
+
+// Auto-calculate days from dates
+function calcDays() {
+    const s = document.getElementById('startDateInput')?.value;
+    const e = document.getElementById('endDateInput')?.value;
+    if (s && e) {
+        const diff = Math.round((new Date(e) - new Date(s)) / 86400000);
+        if (diff > 0) { document.getElementById('daysInput').value = diff; updatePreview(); }
+    }
+}
+
+document.getElementById('startDateInput')?.addEventListener('change', calcDays);
+document.getElementById('endDateInput')?.addEventListener('change', calcDays);
+
+// Live preview update
+function updatePreview() {
+    const origin  = document.getElementById('originInput').value.trim();
+    const dest    = document.getElementById('destInput').value.trim();
+    const days    = document.getElementById('daysInput').value;
+    const people  = parseInt(document.getElementById('peopleInput').value || 1);
+    const budget  = parseInt(document.getElementById('budgetInput')?.value || 0);
+    const style   = document.getElementById('travelTypeInput').value;
+    const mode    = document.querySelector('input[name="travel_mode"]:checked')?.value || 'any';
+    const btype   = document.querySelector('input[name="budget_type"]:checked')?.value || 'total';
+
+    const modeMap  = { any:'🚀 Flexible', flight:'✈️ Flight', train:'🚂 Train', bus:'🚌 Bus', car:'🚗 Self Drive', cruise:'🚢 Cruise' };
+    const styleMap = { solo:'🎒 Solo', couple:'💑 Couple', family:'👨‍👩‍👧 Family', friends:'👫 Friends', adventure:'🏔️ Adventure', business:'💼 Business', luxury:'✨ Luxury' };
+
+    setVal('previewOrigin', origin || null);
+    setVal('previewDest',   dest   || null);
+    setVal('previewStyle',  style  ? styleMap[style] : null);
+    setVal('previewDays',   days   ? days + ' days'  : null);
+    setVal('previewPeople', people + ' traveller' + (people > 1 ? 's' : ''));
+    setVal('previewMode',   modeMap[mode]);
+
+    // Budget logic
+    if (budget > 0) {
+        const total = btype === 'per_person' ? budget * people : budget;
+        setVal('previewBudget', '₹' + total.toLocaleString('en-IN'));
+
+        // Budget summary box
+        const box = document.getElementById('budgetSummary');
+        box.classList.add('visible');
+        document.getElementById('bsEntered').textContent = '₹' + budget.toLocaleString('en-IN');
+        document.getElementById('bsTotal').textContent   = '₹' + total.toLocaleString('en-IN');
+
+        const perPersonRow = document.getElementById('bsPerPersonRow');
+        if (btype === 'per_person') {
+            perPersonRow.style.display = 'flex';
+            document.getElementById('bsTravellers').textContent = people + ' person' + (people > 1 ? 's' : '');
+            document.getElementById('bsTotalLabel').textContent = 'Total trip budget';
+        } else {
+            perPersonRow.style.display = 'none';
+            document.getElementById('bsTotalLabel').textContent = 'Trip budget';
+        }
+    } else {
+        setVal('previewBudget', null);
+        document.getElementById('budgetSummary').classList.remove('visible');
+    }
+
+    // Update budget hint
+    const hint = document.getElementById('budgetHint');
+    if (btype === 'per_person') {
+        hint.textContent = 'Amount per traveller. We will multiply this by the number of people.';
+    } else {
+        hint.textContent = 'Total amount for the entire trip, shared across all travellers.';
+    }
+}
+
+function setVal(id, val) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    if (val) {
+        el.textContent = val;
+        el.className = 'val';
+    } else {
+        el.textContent = 'Not set';
+        el.className = 'val empty';
+    }
+}
+
+// Attach all listeners
+['originInput','destInput','daysInput','peopleInput','budgetInput'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', updatePreview);
+});
+document.getElementById('travelTypeInput')?.addEventListener('change', updatePreview);
+document.querySelectorAll('input[name="travel_mode"]').forEach(r => r.addEventListener('change', updatePreview));
+document.querySelectorAll('input[name="budget_type"]').forEach(r => r.addEventListener('change', updatePreview));
+
+// Submit
+document.getElementById('plannerForm').addEventListener('submit', function() {
+    const btn = document.getElementById('submitBtn');
+    btn.innerHTML = '⏳ Generating your itinerary...';
+    btn.disabled = true;
+});
+
+// Init preview
+updatePreview();
+</script>
+{% endblock %}

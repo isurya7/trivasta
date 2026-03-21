@@ -1,0 +1,389 @@
+{% extends "base.html" %}
+{% block title %}Checkout — {{ package.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Outfit', sans-serif; }
+
+    .checkout-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        padding: 3rem 2rem 6rem;
+    }
+
+    .checkout-wrap {
+        max-width: 960px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 2rem;
+        align-items: start;
+    }
+
+    .checkout-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+    }
+
+    .checkout-card-header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid var(--cream-dark);
+        display: flex; align-items: center; gap: 0.75rem;
+    }
+
+    .checkout-card-header::before {
+        content: ''; width: 4px; height: 22px;
+        background: var(--gold); border-radius: 2px; flex-shrink: 0;
+    }
+
+    .checkout-card-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.25rem; font-weight: 600; color: var(--ink);
+    }
+
+    .checkout-card-body { padding: 2rem; }
+
+    /* Package summary */
+    .pkg-summary {
+        display: flex; gap: 1.25rem; align-items: flex-start;
+        padding: 1.5rem; background: var(--cream);
+        border-radius: 10px; margin-bottom: 1.5rem;
+    }
+
+    .pkg-summary-img {
+        width: 90px; height: 70px; border-radius: 8px;
+        object-fit: cover; flex-shrink: 0;
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        display: grid; place-items: center; font-size: 2rem;
+    }
+
+    .pkg-summary-img img {
+        width: 100%; height: 100%; object-fit: cover; border-radius: 8px;
+    }
+
+    .pkg-summary-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.15rem; font-weight: 600; color: var(--ink);
+        margin-bottom: 0.25rem;
+    }
+
+    .pkg-summary-meta {
+        font-size: 0.8125rem; color: var(--muted); line-height: 1.6;
+    }
+
+    /* Price breakdown */
+    .price-table {
+        display: flex; flex-direction: column; gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .price-row {
+        display: flex; align-items: center; justify-content: space-between;
+        font-size: 0.9rem;
+    }
+
+    .price-row-label { color: var(--muted); }
+    .price-row-val   { font-weight: 600; color: var(--ink); }
+
+    .price-row-total {
+        display: flex; align-items: center; justify-content: space-between;
+        padding-top: 1rem; border-top: 2px solid var(--cream-dark);
+        font-size: 1rem; font-weight: 700;
+    }
+
+    .price-row-total-val {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.75rem; font-weight: 600; color: var(--sea);
+    }
+
+    /* Security badges */
+    .security-badges {
+        display: flex; gap: 1rem; flex-wrap: wrap;
+        padding: 1rem 1.5rem;
+        background: rgba(39,174,96,0.04);
+        border: 1px solid rgba(39,174,96,0.15);
+        border-radius: 8px; margin-bottom: 1.5rem;
+    }
+
+    .security-badge {
+        display: flex; align-items: center; gap: 0.4rem;
+        font-size: 0.75rem; color: #1e8449; font-weight: 500;
+    }
+
+    /* Pay button */
+    .pay-btn {
+        width: 100%; padding: 1.1rem;
+        background: var(--sea); color: white;
+        border: none; border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 1rem; font-weight: 700;
+        cursor: pointer; transition: all 0.2s;
+        display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+
+    .pay-btn:hover {
+        background: #0a2240;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(15,52,96,0.3);
+    }
+
+    .pay-btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+    /* Sidebar info card */
+    .info-card {
+        background: white; border-radius: 12px;
+        box-shadow: var(--shadow); overflow: hidden;
+    }
+
+    .info-card-header {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        padding: 1.5rem;
+        position: relative; overflow: hidden;
+    }
+
+    .info-card-header::before {
+        content: ''; position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.07) 1px, transparent 1px);
+        background-size: 24px 24px;
+    }
+
+    .info-card-header-content { position: relative; z-index: 1; }
+
+    .info-card-agency {
+        font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
+        text-transform: uppercase; color: #e8c97a; margin-bottom: 0.4rem;
+    }
+
+    .info-card-name {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.5rem; font-weight: 300; color: white; margin-bottom: 0.5rem;
+    }
+
+    .info-card-meta {
+        font-size: 0.8rem; color: rgba(255,255,255,0.6);
+        display: flex; gap: 1rem; flex-wrap: wrap;
+    }
+
+    .info-card-body { padding: 1.5rem; }
+
+    .info-row {
+        display: flex; align-items: flex-start; gap: 0.75rem;
+        padding: 0.875rem 0; border-bottom: 1px solid var(--cream-dark);
+    }
+
+    .info-row:last-child { border-bottom: none; }
+
+    .info-row-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
+
+    .info-row-label {
+        font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
+        text-transform: uppercase; color: var(--muted); margin-bottom: 0.2rem;
+    }
+
+    .info-row-val {
+        font-size: 0.9rem; color: var(--ink); font-weight: 500;
+    }
+
+    .contact-locked {
+        display: flex; align-items: center; gap: 0.5rem;
+        font-size: 0.8rem; color: var(--muted);
+        padding: 0.875rem 1.5rem;
+        background: var(--cream); border-top: 1px solid var(--cream-dark);
+        border-radius: 0 0 12px 12px;
+    }
+
+    @media (max-width: 860px) {
+        .checkout-wrap { grid-template-columns: 1fr; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="checkout-page">
+
+    <div style="max-width:960px; margin:0 auto 2rem;">
+        <div style="font-size:0.72rem; font-weight:700; letter-spacing:0.14em; text-transform:uppercase; color:var(--gold); margin-bottom:0.5rem;">Secure Checkout</div>
+        <h1 style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:300; color:var(--ink);">Complete your booking</h1>
+    </div>
+
+    <div class="checkout-wrap">
+
+        <!-- LEFT: Checkout form -->
+        <div class="checkout-card">
+            <div class="checkout-card-header">
+                <div class="checkout-card-title">Order Summary</div>
+            </div>
+            <div class="checkout-card-body">
+
+                <!-- Package summary -->
+                <div class="pkg-summary">
+                    <div class="pkg-summary-img">
+                        {% if package.images.first %}
+                            <img src="{{ package.images.first.get_url }}" alt="{{ package.title }}">
+                        {% elif package.image_url %}
+                            <img src="{{ package.image_url }}" alt="{{ package.title }}" onerror="this.style.display='none'">
+                        {% else %}
+                            {% if package.category == 'adventure' %}🏔️{% elif package.category == 'cultural' %}🏛️
+                            {% elif package.category == 'leisure' %}🌴{% elif package.category == 'romantic' %}💑
+                            {% elif package.category == 'family' %}👨‍👩‍👧{% elif package.category == 'luxury' %}✨
+                            {% elif package.category == 'solo' %}🎒{% else %}✈️{% endif %}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="pkg-summary-title">{{ package.title }}</div>
+                        <div class="pkg-summary-meta">
+                            📍 {{ package.destination }}<br>
+                            📅 {{ package.duration }} days &nbsp;·&nbsp; 🏢 {{ package.agency.name }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Price breakdown -->
+                <div class="price-table">
+                    <div class="price-row">
+                        <span class="price-row-label">Package price</span>
+                        <span class="price-row-val">₹{{ pricing.base_amount|floatformat:0 }}</span>
+                    </div>
+                    <div class="price-row">
+                        <span class="price-row-label">GST (5%)</span>
+                        <span class="price-row-val">₹{{ pricing.gst_amount|floatformat:0 }}</span>
+                    </div>
+                    <div class="price-row-total">
+                        <span>Total payable</span>
+                        <span class="price-row-total-val">₹{{ pricing.total_amount|floatformat:0 }}</span>
+                    </div>
+                </div>
+
+                <!-- Security badges -->
+                <div class="security-badges">
+                    <div class="security-badge">🔒 256-bit SSL Encrypted</div>
+                    <div class="security-badge">✅ Razorpay Secured</div>
+                    <div class="security-badge">🛡️ Money-back guarantee</div>
+                </div>
+
+                <!-- Pay button -->
+                <button id="payBtn" class="pay-btn">
+                    🔒 Pay ₹{{ pricing.total_amount|floatformat:0 }} Securely
+                </button>
+
+                <p style="text-align:center; font-size:0.75rem; color:var(--muted); margin-top:1rem; line-height:1.6;">
+                    By completing payment you agree to Trivasta's Terms of Service.<br>
+                    Agency contact details will be shared immediately after payment.
+                </p>
+            </div>
+        </div>
+
+        <!-- RIGHT: Agency info card -->
+        <div>
+            <div class="info-card">
+                <div class="info-card-header">
+                    <div class="info-card-header-content">
+                        <div class="info-card-agency">Offered by</div>
+                        <div class="info-card-name">{{ package.agency.name }}</div>
+                        <div class="info-card-meta">
+                            {% if package.agency.location %}
+                            <span>📍 {{ package.agency.location }}</span>
+                            {% endif %}
+                            <span>⭐ {{ package.agency.rating }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="info-card-body">
+                    <div class="info-row">
+                        <div class="info-row-icon">📦</div>
+                        <div>
+                            <div class="info-row-label">Package</div>
+                            <div class="info-row-val">{{ package.title }}</div>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-row-icon">📍</div>
+                        <div>
+                            <div class="info-row-label">Destination</div>
+                            <div class="info-row-val">{{ package.destination }}</div>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-row-icon">📅</div>
+                        <div>
+                            <div class="info-row-label">Duration</div>
+                            <div class="info-row-val">{{ package.duration }} days</div>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-row-icon">🏷️</div>
+                        <div>
+                            <div class="info-row-label">Category</div>
+                            <div class="info-row-val">{{ package.get_category_display }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="contact-locked">
+                    🔒 Agency contact details shared after payment
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Razorpay -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    document.getElementById('payBtn').addEventListener('click', function () {
+        this.disabled = true;
+        this.textContent = 'Opening payment…';
+
+        var options = {
+            key:         '{{ razorpay_key }}',
+            amount:      {{ pricing.total_amount }} * 100,
+            currency:    'INR',
+            name:        'Trivasta',
+            description: '{{ package.title }}',
+            order_id:    '{{ razorpay_order_id }}',
+            prefill: {
+                name:  '{{ user.get_full_name|default:user.username }}',
+                email: '{{ user.email }}',
+            },
+            theme: { color: '#0f3460' },
+            handler: function (response) {
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{% url "package_book_success" package.id %}';
+
+                [
+                    ['razorpay_order_id',   response.razorpay_order_id],
+                    ['razorpay_payment_id', response.razorpay_payment_id],
+                    ['razorpay_signature',  response.razorpay_signature],
+                    ['csrfmiddlewaretoken', '{{ csrf_token }}'],
+                ].forEach(function([name, val]) {
+                    var inp = document.createElement('input');
+                    inp.type  = 'hidden';
+                    inp.name  = name;
+                    inp.value = val;
+                    form.appendChild(inp);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+            },
+            modal: {
+                ondismiss: function () {
+                    var btn = document.getElementById('payBtn');
+                    btn.disabled    = false;
+                    btn.textContent = '🔒 Pay ₹{{ pricing.total_amount|floatformat:0 }} Securely';
+                }
+            }
+        };
+
+        new Razorpay(options).open();
+    });
+</script>
+{% endblock %}

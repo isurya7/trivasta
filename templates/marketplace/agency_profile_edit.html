@@ -1,0 +1,226 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile — {{ agency.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Outfit', sans-serif; }
+
+    .form-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        padding: 3rem 1rem 5rem;
+    }
+
+    .form-container { max-width: 760px; margin: 0 auto; }
+
+    .form-header {
+        background: linear-gradient(135deg, var(--sea), #0a2240);
+        border-radius: 16px 16px 0 0;
+        padding: 2.5rem 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .form-header::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.07) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.07) 1px, transparent 1px);
+        background-size: 30px 30px;
+    }
+
+    .form-header-content { position: relative; z-index: 1; }
+    .form-eyebrow { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #e8c97a; margin-bottom: 0.4rem; }
+
+    .form-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.875rem;
+        font-weight: 300;
+        color: white;
+    }
+
+    .form-title em { font-style: italic; color: #e8c97a; }
+
+    .form-body {
+        background: white;
+        border-radius: 0 0 16px 16px;
+        padding: 2.5rem 3rem;
+        box-shadow: var(--shadow);
+    }
+
+    .field-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+    }
+
+    .field-group.full { grid-template-columns: 1fr; }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .field label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+    }
+
+    .field-input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        border: 1.5px solid var(--cream-dark);
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9375rem;
+        color: var(--ink);
+        background: var(--cream);
+        outline: none;
+        transition: all 0.2s;
+        box-sizing: border-box;
+    }
+
+    .field-input:focus {
+        border-color: var(--sea);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(15,52,96,0.08);
+    }
+
+    textarea.field-input { resize: vertical; min-height: 120px; }
+
+    .field-hint {
+        font-size: 0.75rem;
+        color: var(--muted);
+        margin-top: 0.2rem;
+    }
+
+    .field-error { font-size: 0.78rem; color: #e74c3c; margin-top: 0.2rem; }
+
+    .form-divider {
+        height: 1px;
+        background: var(--cream-dark);
+        margin: 1.75rem 0;
+    }
+
+    .form-section-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--ink);
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .locked-field {
+        padding: 0.875rem 1rem;
+        background: rgba(15,52,96,0.04);
+        border: 1.5px solid var(--cream-dark);
+        border-radius: var(--radius);
+        font-size: 0.9375rem;
+        color: var(--muted);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--cream-dark);
+    }
+
+    @media (max-width: 640px) {
+        .form-body   { padding: 1.5rem; }
+        .form-header { padding: 1.75rem 1.5rem; }
+        .field-group { grid-template-columns: 1fr; }
+        .form-actions { flex-direction: column; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-page">
+    <div class="form-container">
+
+        <div class="form-header">
+            <div class="form-header-content">
+                <div class="form-eyebrow">🏢 Agency Settings</div>
+                <div class="form-title">Edit <em>Profile</em></div>
+            </div>
+        </div>
+
+        <div class="form-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <div class="form-section-title">✦ Agency Identity</div>
+
+                <div class="field-group">
+                    <div class="field">
+                        <label for="{{ form.name.id_for_label }}">Agency Name *</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}<div class="field-error">{{ form.name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="field">
+                        <label>Email</label>
+                        <div class="locked-field">🔒 {{ agency.email }}</div>
+                        <div class="field-hint">Email cannot be changed. Contact support if needed.</div>
+                    </div>
+                </div>
+
+                <div class="field-group">
+                    <div class="field">
+                        <label for="{{ form.phone.id_for_label }}">Phone Number</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}<div class="field-error">{{ form.phone.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="field">
+                        <label for="{{ form.location.id_for_label }}">Location</label>
+                        {{ form.location }}
+                        {% if form.location.errors %}<div class="field-error">{{ form.location.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="field-group full">
+                    <div class="field">
+                        <label for="{{ form.website.id_for_label }}">Website</label>
+                        {{ form.website }}
+                        {% if form.website.errors %}<div class="field-error">{{ form.website.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-divider"></div>
+                <div class="form-section-title">📝 About Your Agency</div>
+
+                <div class="field-group full">
+                    <div class="field">
+                        <label for="{{ form.description.id_for_label }}">Description</label>
+                        {{ form.description }}
+                        <div class="field-hint">Tell travelers what makes your agency special. This is shown on your public profile.</div>
+                        {% if form.description.errors %}<div class="field-error">{{ form.description.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="{% url 'agency_profile' %}" class="btn btn-outline">Cancel</a>
+                    <button type="submit" class="btn btn-primary">✦ Save Profile</button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

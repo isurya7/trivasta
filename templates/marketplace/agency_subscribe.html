@@ -1,0 +1,294 @@
+{% extends "base.html" %}
+{% block title %}Activate Subscription — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600&display=swap');
+
+    .subscribe-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 2rem;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .subscribe-wrap {
+        width: 100%;
+        max-width: 520px;
+    }
+
+    .subscribe-card {
+        background: var(--white);
+        border-radius: 16px;
+        box-shadow: var(--shadow-deep);
+        overflow: hidden;
+    }
+
+    .subscribe-header {
+        background: linear-gradient(135deg, #0f3460, #0a2240);
+        padding: 2.5rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .subscribe-header::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: linear-gradient(rgba(201,168,76,0.05) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(201,168,76,0.05) 1px, transparent 1px);
+        background-size: 40px 40px;
+    }
+
+    .subscribe-header-content { position: relative; z-index: 1; }
+
+    .subscribe-badge {
+        display: inline-block;
+        background: rgba(201,168,76,0.2);
+        border: 1px solid rgba(201,168,76,0.4);
+        color: #e8c97a;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        padding: 0.35rem 0.875rem;
+        border-radius: 2px;
+        margin-bottom: 1rem;
+    }
+
+    .subscribe-header h1 {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 300;
+        color: white;
+        margin-bottom: 0.4rem;
+    }
+
+    .subscribe-header h1 em { font-style: italic; color: #e8c97a; }
+
+    .subscribe-header p {
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.5);
+    }
+
+    .subscribe-body { padding: 2.5rem; }
+
+    .plan-summary {
+        background: var(--cream);
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .plan-summary-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.9rem;
+        color: var(--muted);
+        padding: 0.5rem 0;
+        border-bottom: 1px solid var(--cream-dark);
+    }
+
+    .plan-summary-row:last-child { border-bottom: none; }
+
+    .plan-summary-row strong { color: var(--ink); }
+
+    .plan-total {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.25rem;
+        padding-top: 1.25rem;
+        border-top: 2px solid var(--cream-dark);
+    }
+
+    .plan-total-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        color: var(--ink);
+    }
+
+    .plan-total-amount {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 600;
+        color: var(--sea);
+    }
+
+    .subscribe-perks {
+        display: flex;
+        flex-direction: column;
+        gap: 0.625rem;
+        margin-bottom: 2rem;
+    }
+
+    .subscribe-perk {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        font-size: 0.875rem;
+        color: var(--muted);
+    }
+
+    .subscribe-perk-icon { color: #27ae60; }
+
+    .pay-btn {
+        width: 100%;
+        padding: 1.1rem;
+        background: var(--sea);
+        color: white;
+        border: none;
+        border-radius: var(--radius);
+        font-family: 'Outfit', sans-serif;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .pay-btn:hover {
+        background: #0a2240;
+        transform: translateY(-1px);
+        box-shadow: 0 10px 28px rgba(15,52,96,0.3);
+    }
+
+    .pay-note {
+        text-align: center;
+        font-size: 0.775rem;
+        color: var(--muted);
+        margin-top: 0.875rem;
+    }
+
+    .trial-note {
+        background: rgba(39,174,96,0.08);
+        border: 1px solid rgba(39,174,96,0.2);
+        border-radius: 8px;
+        padding: 0.875rem 1rem;
+        font-size: 0.8125rem;
+        color: #27ae60;
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="subscribe-page">
+    <div class="subscribe-wrap">
+
+        <div class="subscribe-card">
+            <div class="subscribe-header">
+                <div class="subscribe-header-content">
+                    <div class="subscribe-badge">🎉 Approved!</div>
+                    <h1>Activate your <em>{{ agency.plan|capfirst }}</em> plan</h1>
+                    <p>Welcome aboard, {{ agency.name }}. One last step to go live.</p>
+                </div>
+            </div>
+
+            <div class="subscribe-body">
+
+                <div class="trial-note">
+                    ✅ Your 14-day free trial is active — payment charged after trial ends
+                </div>
+
+                <!-- Plan Summary -->
+                <div class="plan-summary">
+                    <div class="plan-summary-row">
+                        <span>Plan</span>
+                        <strong>{{ agency.plan|capfirst }}</strong>
+                    </div>
+                    <div class="plan-summary-row">
+                        <span>Billing</span>
+                        <strong>Annual</strong>
+                    </div>
+                    <div class="plan-summary-row">
+                        <span>Platform fee per booking</span>
+                        <strong>
+                            {% if agency.plan == 'starter' %}10%
+                            {% elif agency.plan == 'professional' %}8%
+                            {% else %}5%{% endif %}
+                        </strong>
+                    </div>
+                    <div class="plan-summary-row">
+                        <span>Valid for</span>
+                        <strong>365 days</strong>
+                    </div>
+                    <div class="plan-total">
+                        <span class="plan-total-label">Total Due</span>
+                        <span class="plan-total-amount">₹{{ price }}</span>
+                    </div>
+                </div>
+
+                <!-- Perks -->
+                <div class="subscribe-perks">
+                    <div class="subscribe-perk"><span class="subscribe-perk-icon">✓</span> Instant dashboard access</div>
+                    <div class="subscribe-perk"><span class="subscribe-perk-icon">✓</span> List packages immediately</div>
+                    <div class="subscribe-perk"><span class="subscribe-perk-icon">✓</span> Respond to live trip requests</div>
+                    <div class="subscribe-perk"><span class="subscribe-perk-icon">✓</span> Secure Razorpay payments</div>
+                    <div class="subscribe-perk"><span class="subscribe-perk-icon">✓</span> Cancel anytime before renewal</div>
+                </div>
+
+                <!-- Pay Button -->
+                <button class="pay-btn" id="pay-btn">
+                    🔒 Pay ₹{{ price }} & Activate →
+                </button>
+                <p class="pay-note">Secured by Razorpay · 256-bit SSL encryption</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Razorpay Script -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    document.getElementById('pay-btn').addEventListener('click', function() {
+        var options = {
+            key:         "{{ razorpay_key }}",
+            amount:      {{ price }} * 100,
+            currency:    "INR",
+            name:        "Trivasta",
+            description: "{{ agency.plan|capfirst }} Annual Subscription",
+            order_id:    "{{ razorpay_order_id }}",
+            prefill: {
+                name:    "{{ agency.name }}",        // ← use agency name, not user full name
+                email:   "{{ agency.email }}",
+                contact: ""                           // ← leave blank if no phone available
+            },
+            theme: { color: "#0f3460" },
+            handler: function(response) {
+                var form = document.createElement('form');
+                form.method = 'POST';
+                form.action = "{% url 'agency_payment_success' %}";
+                var fields = {
+                    'razorpay_order_id':   response.razorpay_order_id,
+                    'razorpay_payment_id': response.razorpay_payment_id,
+                    'razorpay_signature':  response.razorpay_signature,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                };
+            Object.entries(fields).forEach(([k, v]) => {
+            var input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = k;
+            input.value = v;
+            form.appendChild(input);
+        });
+        document.body.appendChild(form);
+        form.submit();
+    },
+    modal: {
+        ondismiss: function() {
+            console.log('Payment modal closed');
+        }
+    }
+};
+</script>
+{% endblock %}
