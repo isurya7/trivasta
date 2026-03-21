@@ -86,7 +86,7 @@ DATABASES = {
 
 # Override with PostgreSQL on Render (DATABASE_URL is set in environment)
 DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL:
+if DATABASE_URL and DATABASE_URL.startswith('postgres'):
     DATABASES['default'] = dj_database_url.parse(
         DATABASE_URL,
         conn_max_age=600,
