@@ -161,7 +161,9 @@ RAZORPAY_KEY_SECRET    = os.environ.get("RAZORPAY_KEY_SECRET")
 
 # ── Production security (only active when DEBUG=False) ────────────────────────
 if not DEBUG:
-    SECURE_SSL_REDIRECT            = True
+    # Render handles HTTPS termination so SSL redirect must be OFF
+    SECURE_SSL_REDIRECT            = False
+    SECURE_PROXY_SSL_HEADER        = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE          = True
     CSRF_COOKIE_SECURE             = True
     SECURE_HSTS_SECONDS            = 31536000
