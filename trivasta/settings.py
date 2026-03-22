@@ -6,24 +6,15 @@ from dotenv import load_dotenv
 # ── Base directory ────────────────────────────────────────────────────────────
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ── Load .env for local development ──────────────────────────────────────────
+# ── Load .env for local development only ─────────────────────────────────────
 load_dotenv(BASE_DIR / ".env")
 
 # ── Security ──────────────────────────────────────────────────────────────────
-SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-change-this-in-production")
+SECRET_KEY = os.environ.get("SECRET_KEY", "django-insecure-change-this")
 DEBUG      = os.environ.get("DEBUG", "False") == "True"
 
 # ── Allowed hosts ─────────────────────────────────────────────────────────────
-ALLOWED_HOSTS = [
-    '127.0.0.1',
-    'localhost',
-    'trivasta.onrender.com',
-]
-
-# Auto-add Render's hostname
-RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
-if RENDER_EXTERNAL_HOSTNAME:
-    ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+ALLOWED_HOSTS = ['*']
 
 # ── Installed apps ────────────────────────────────────────────────────────────
 INSTALLED_APPS = [
@@ -72,47 +63,43 @@ TEMPLATES = [
     },
 ]
 
-# ── ASGI / Channels ───────────────────────────────────────────────────────────
+# ── ASGI ──────────────────────────────────────────────────────────────────────
 ASGI_APPLICATION = 'trivasta.asgi.application'
 
 # ── Database ──────────────────────────────────────────────────────────────────
-# Default to SQLite for local development
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+_db_url = os.environ.get('DATABASE_URL', '')
 
-# Override with PostgreSQL on Render (DATABASE_URL is set in environment)
-DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL and DATABASE_URL.startswith('postgres'):
-    DATABASES['default'] = dj_database_url.parse(
-        DATABASE_URL,
-        conn_max_age=600,
-        conn_health_checks=True,
-    )
+if _db_url and 'postgres' in _db_url:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            _db_url,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # ── Redis / Channels ──────────────────────────────────────────────────────────
-# Default to local Redis for development
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [('127.0.0.1', 6379)],
-        },
-    },
-}
+_redis_url = os.environ.get('REDIS_URL', '')
 
-# Override with Render's Redis URL in production
-REDIS_URL = os.environ.get('REDIS_URL')
-if REDIS_URL:
+if _redis_url:
     CHANNEL_LAYERS = {
         'default': {
             'BACKEND': 'channels_redis.core.RedisChannelLayer',
-            'CONFIG': {
-                'hosts': [REDIS_URL],
-            },
+            'CONFIG': {'hosts': [_redis_url]},
+        },
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {'hosts': [('127.0.0.1', 6379)]},
         },
     }
 
@@ -134,8 +121,6 @@ USE_TZ        = True
 STATIC_URL       = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT      = BASE_DIR / "staticfiles"
-
-# Whitenoise serves static files in production without a CDN
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # ── Media files ───────────────────────────────────────────────────────────────
@@ -146,28 +131,23 @@ MEDIA_ROOT = BASE_DIR / "media"
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
-AUTH_USER_MODEL       = 'auth.User'
-LOGIN_REDIRECT_URL    = "dashboard"
-LOGOUT_REDIRECT_URL   = "home"
-LOGIN_URL             = "login"
+AUTH_USER_MODEL     = 'auth.User'
+LOGIN_REDIRECT_URL  = "dashboard"
+LOGOUT_REDIRECT_URL = "home"
+LOGIN_URL           = "login"
 
-# ── Third party API keys ──────────────────────────────────────────────────────
-GROQ_API_KEY    = os.environ.get("GROQ_API_KEY")
-GEMINI_API_KEY  = os.environ.get("GEMINI_API_KEY")
+# ── API keys ──────────────────────────────────────────────────────────────────
+GROQ_API_KEY            = os.environ.get("GROQ_API_KEY")
+GEMINI_API_KEY          = os.environ.get("GEMINI_API_KEY")
+RAZORPAY_KEY_ID         = os.environ.get("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET     = os.environ.get("RAZORPAY_KEY_SECRET")
 
-# ── Razorpay ──────────────────────────────────────────────────────────────────
-RAZORPAY_KEY_ID        = os.environ.get("RAZORPAY_KEY_ID")
-RAZORPAY_KEY_SECRET    = os.environ.get("RAZORPAY_KEY_SECRET")
-
-# ── Production security (only active when DEBUG=False) ────────────────────────
+# ── Production security ───────────────────────────────────────────────────────
 if not DEBUG:
-    # Render handles HTTPS termination so SSL redirect must be OFF
     SECURE_SSL_REDIRECT            = False
     SECURE_PROXY_SSL_HEADER        = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE          = True
     CSRF_COOKIE_SECURE             = True
-    SECURE_HSTS_SECONDS            = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_BROWSER_XSS_FILTER      = True
     SECURE_CONTENT_TYPE_NOSNIFF    = True
     X_FRAME_OPTIONS                = 'DENY'
