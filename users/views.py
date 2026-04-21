@@ -224,22 +224,43 @@ def admin_reset_warnings(request, agency_id):
 
 @staff_member_required
 def support_dashboard(request):
+    """
+    Unified support dashboard — tickets + contact messages in one place.
+    Tab switching via ?tab=tickets or ?tab=contact
+    """
+    tab           = request.GET.get('tab', 'tickets')
     status_filter = request.GET.get('status', 'escalated')
+ 
     tickets = SupportTicket.objects.filter(
         status=status_filter
     ).select_related('user', 'booking').order_by('-created_at')
-
+ 
     all_counts = {
         'open':      SupportTicket.objects.filter(status='open').count(),
         'escalated': SupportTicket.objects.filter(status='escalated').count(),
         'in_review': SupportTicket.objects.filter(status='in_review').count(),
         'resolved':  SupportTicket.objects.filter(status='resolved').count(),
     }
-
+ 
+    # Contact messages
+    from .models import ContactMessage
+    contact_msgs  = ContactMessage.objects.select_related('user', 'booking').order_by('-created_at')
+    unread_count  = ContactMessage.objects.filter(is_read=False).count()
+ 
+    # Handle mark-as-read POST from the contact tab
+    if request.method == 'POST':
+        msg_id = request.POST.get('mark_read')
+        if msg_id:
+            ContactMessage.objects.filter(pk=msg_id).update(is_read=True)
+        return redirect(f"{request.path}?tab=contact")
+ 
     return render(request, 'support/support_dashboard.html', {
+        'tab':           tab,
         'tickets':       tickets,
         'status_filter': status_filter,
         'all_counts':    all_counts,
+        'contact_msgs':  contact_msgs,
+        'unread_count':  unread_count,
     })
 
 

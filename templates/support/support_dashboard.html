@@ -11,7 +11,7 @@
     .sd-page { min-height: calc(100vh - 68px); padding: 3rem 1.5rem 5rem; }
     .sd-inner { max-width: 1100px; margin: 0 auto; }
 
-    /* Page header */
+    /* Header */
     .sd-header {
         background: linear-gradient(135deg, #0f4c3a 0%, #063d2f 100%);
         border-radius: 20px; padding: 2.5rem 3rem; margin-bottom: 2rem;
@@ -30,57 +30,59 @@
     .sd-title { font-family: var(--font-display); font-size: 2rem; font-weight: 300; color: white; line-height: 1.1; margin-bottom: .35rem; }
     .sd-title em { font-style: italic; color: #6ee7b7; }
     .sd-sub { font-size: .875rem; color: rgba(255,255,255,.45); }
-    .sd-header-right { position: relative; z-index: 1; flex-shrink: 0; }
-    .sd-date { font-size: .8rem; color: rgba(255,255,255,.35); text-align: right; margin-bottom: .25rem; }
-    .sd-refund-link { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15); border-radius: 8px; padding: .625rem 1.25rem; color: white; text-decoration: none; font-size: .8125rem; font-weight: 600; transition: all .2s; display: inline-block; }
-    .sd-refund-link:hover { background: rgba(255,255,255,.18); }
+    .sd-header-right { position: relative; z-index: 1; flex-shrink: 0; display: flex; flex-direction: column; gap: .5rem; align-items: flex-end; }
+    .sd-date { font-size: .8rem; color: rgba(255,255,255,.35); }
+    .sd-link { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.15); border-radius: 8px; padding: .625rem 1.25rem; color: white; text-decoration: none; font-size: .8125rem; font-weight: 600; transition: all .2s; display: inline-block; white-space: nowrap; }
+    .sd-link:hover { background: rgba(255,255,255,.2); }
 
     /* Stat cards */
-    .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; }
-    @media(max-width:700px) { .stat-row { grid-template-columns: 1fr 1fr; } }
+    .stat-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1rem; margin-bottom: 2rem; }
+    @media(max-width:800px) { .stat-row { grid-template-columns: 1fr 1fr; } }
 
-    .stat-card {
-        background: white; border: 1.5px solid var(--cream-dark);
-        border-radius: 14px; padding: 1.5rem;
-        text-decoration: none; color: inherit;
-        transition: all .25s; display: block;
-    }
+    .stat-card { background: white; border: 1.5px solid var(--cream-dark); border-radius: 14px; padding: 1.25rem 1.5rem; text-decoration: none; color: inherit; transition: all .25s; display: block; position: relative; }
     .stat-card:hover { border-color: var(--sea); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(13,17,23,.1); }
     .stat-card.active { border-color: var(--sea); box-shadow: 0 0 0 3px rgba(15,52,96,.1); }
-
-    .stat-num { font-family: var(--font-display); font-size: 2.75rem; font-weight: 700; line-height: 1; margin-bottom: .25rem; }
-    .stat-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
-
+    .stat-num { font-family: var(--font-display); font-size: 2.5rem; font-weight: 700; line-height: 1; margin-bottom: .25rem; }
+    .stat-label { font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
     .n-open      { color: #2563eb; }
     .n-escalated { color: #d97706; }
     .n-in_review { color: #059669; }
     .n-resolved  { color: var(--muted); }
+    .n-contact   { color: #7c3aed; }
 
-    /* Filter tabs */
+    /* Unread dot */
+    .unread-dot { position: absolute; top: 1rem; right: 1rem; width: 8px; height: 8px; background: #ef4444; border-radius: 50%; }
+
+    /* Nav tabs */
+    .nav-tabs { display: flex; gap: .5rem; margin-bottom: 1.5rem; flex-wrap: wrap; background: white; border-radius: 12px; padding: .5rem; border: 1.5px solid var(--cream-dark); width: fit-content; }
+    .nav-tab { padding: .5rem 1.25rem; border-radius: 8px; font-size: .8125rem; font-weight: 600; text-decoration: none; color: var(--muted); transition: all .2s; border: none; background: none; cursor: pointer; white-space: nowrap; }
+    .nav-tab:hover { color: var(--ink); background: var(--cream); }
+    .nav-tab.active { background: var(--sea); color: white; }
+
+    /* Filter bar */
     .filter-bar { display: flex; gap: .625rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; }
     .filter-tab { background: white; border: 1.5px solid var(--cream-dark); border-radius: 20px; padding: .5rem 1.25rem; font-size: .8125rem; font-weight: 500; color: var(--ink); text-decoration: none; transition: all .2s; }
     .filter-tab:hover  { border-color: var(--sea); color: var(--sea); }
     .filter-tab.active { background: var(--sea); border-color: var(--sea); color: white; }
 
-    /* Tickets table */
-    .tickets-wrap { background: white; border-radius: 14px; box-shadow: 0 4px 24px rgba(13,17,23,.07); overflow: hidden; }
-
+    /* Table wrapper */
+    .table-wrap { background: white; border-radius: 14px; box-shadow: 0 4px 24px rgba(13,17,23,.07); overflow: hidden; }
     .tw-header { background: var(--cream); border-bottom: 1px solid var(--cream-dark); padding: 1.1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
-    .tw-header-left { display: flex; align-items: center; gap: .5rem; }
-    .tw-header-left::before { content: ''; width: 3px; height: 14px; background: var(--gold); border-radius: 2px; }
-    .tw-header-left h3 { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0; }
+    .twh-left { display: flex; align-items: center; gap: .5rem; }
+    .twh-left::before { content: ''; width: 3px; height: 14px; background: var(--gold); border-radius: 2px; }
+    .twh-left h3 { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin: 0; }
     .tw-count { font-size: .75rem; color: var(--muted); }
 
     table { width: 100%; border-collapse: collapse; }
     thead th { background: #f5f0e8; padding: .875rem 1.25rem; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); text-align: left; }
-    tbody td { padding: 1.1rem 1.25rem; border-top: 1px solid var(--cream-dark); font-size: .875rem; vertical-align: middle; }
+    tbody td { padding: 1rem 1.25rem; border-top: 1px solid var(--cream-dark); font-size: .875rem; vertical-align: middle; }
     tbody tr:hover td { background: #faf7f2; }
 
-    .user-name { font-weight: 600; font-size: .9rem; color: var(--ink); }
-    .user-email { font-size: .75rem; color: var(--muted); margin-top: .1rem; }
-
-    .t-subject { font-weight: 500; color: var(--ink); max-width: 260px; }
-    .t-subject small { display: block; font-size: .72rem; color: var(--muted); font-weight: 400; margin-top: .15rem; }
+    .user-name  { font-weight: 600; font-size: .875rem; color: var(--ink); }
+    .user-email { font-size: .72rem; color: var(--muted); margin-top: .1rem; }
+    .t-subject  { font-weight: 500; color: var(--ink); max-width: 240px; }
+    .t-subject small { display: block; font-size: .7rem; color: var(--muted); font-weight: 400; margin-top: .15rem; }
+    .t-time { font-size: .72rem; color: var(--muted); white-space: nowrap; }
 
     .s-badge { display: inline-flex; align-items: center; padding: .25rem .75rem; border-radius: 20px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; white-space: nowrap; }
     .b-open      { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
@@ -88,19 +90,38 @@
     .b-in_review { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
     .b-resolved  { background: #f9f5ee; color: var(--muted); border: 1px solid var(--cream-dark); }
 
-    .t-time { font-size: .75rem; color: var(--muted); white-space: nowrap; }
-
-    .btn-view { background: var(--ink); color: white; text-decoration: none; border-radius: 8px; padding: .4rem 1rem; font-size: .75rem; font-weight: 600; transition: background .2s; white-space: nowrap; display: inline-block; }
+    .btn-view { background: var(--ink); color: white; text-decoration: none; border-radius: 8px; padding: .375rem 1rem; font-size: .75rem; font-weight: 600; transition: background .2s; display: inline-block; }
     .btn-view:hover { background: var(--sea); }
 
+    /* Contact messages panel */
+    .msg-card { padding: 1.5rem; border-bottom: 1px solid #f0ebe2; transition: background .15s; }
+    .msg-card:last-child { border-bottom: none; }
+    .msg-card:hover { background: #faf7f2; }
+    .msg-card.unread { border-left: 3px solid var(--sea); }
+    .mc-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: .625rem; flex-wrap: wrap; }
+    .mc-sender strong { font-size: .9rem; font-weight: 700; color: var(--ink); }
+    .mc-sender span { font-size: .75rem; color: var(--muted); margin-left: .5rem; }
+    .mc-meta { display: flex; align-items: center; gap: .625rem; flex-wrap: wrap; }
+    .subj-badge { display: inline-flex; align-items: center; padding: .2rem .75rem; border-radius: 20px; font-size: .68rem; font-weight: 700; text-transform: uppercase; background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .new-dot { width: 8px; height: 8px; background: #ef4444; border-radius: 50%; flex-shrink: 0; }
+    .mc-time { font-size: .7rem; color: var(--muted); white-space: nowrap; }
+    .mc-email { font-size: .8rem; color: var(--sea); margin-bottom: .4rem; }
+    .mc-email a { color: inherit; text-decoration: none; }
+    .mc-email a:hover { text-decoration: underline; }
+    .mc-body { font-size: .875rem; color: #444; line-height: 1.65; background: #faf7f2; border-radius: 8px; padding: .875rem 1rem; border-left: 3px solid #ede8df; }
+    .mc-actions { display: flex; gap: .5rem; margin-top: .75rem; align-items: center; }
+    .btn-mark { background: none; border: 1.5px solid var(--cream-dark); border-radius: 8px; padding: .35rem 1rem; font-size: .72rem; font-weight: 600; color: var(--muted); cursor: pointer; font-family: var(--font-body); transition: all .2s; }
+    .btn-mark:hover { border-color: #059669; color: #059669; }
+    .btn-email { background: var(--sea); color: white; border: none; border-radius: 8px; padding: .35rem 1rem; font-size: .72rem; font-weight: 600; cursor: pointer; font-family: var(--font-body); text-decoration: none; display: inline-flex; transition: background .2s; }
+    .btn-email:hover { background: #0a2240; }
+    .read-mark { font-size: .7rem; color: #059669; font-weight: 700; }
+
+    /* Empty */
     .empty-state { text-align: center; padding: 4rem 2rem; }
     .empty-state .e-icon { font-size: 3rem; margin-bottom: 1rem; opacity: .4; }
     .empty-state p { font-size: 1rem; color: var(--muted); }
 
-    @media(max-width:768px) {
-        .sd-header { flex-direction: column; }
-        table { display: block; overflow-x: auto; }
-    }
+    @media(max-width:768px) { .sd-header { flex-direction: column; } table { display: block; overflow-x: auto; } }
 </style>
 {% endblock %}
 
@@ -113,47 +134,62 @@
         <div class="sd-header-left">
             <div class="sd-eyebrow">Staff Panel</div>
             <h1 class="sd-title">Support <em>Dashboard</em></h1>
-            <p class="sd-sub">Review, respond and escalate customer tickets to the refund team.</p>
+            <p class="sd-sub">Review, respond and escalate customer tickets. Monitor contact messages.</p>
         </div>
         <div class="sd-header-right">
             <div class="sd-date">{% now "N j, Y" %}</div>
-            <a href="{% url 'refund_dashboard' %}" class="sd-refund-link">💰 Go to Refund Dashboard →</a>
+            <a href="{% url 'refund_dashboard' %}" class="sd-link">💰 Refund Dashboard →</a>
+            <a href="{% url 'trivasta_admin' %}" class="sd-link">📊 Admin Dashboard →</a>
         </div>
     </div>
 
-    <!-- Stats -->
+    <!-- Stat cards -->
     <div class="stat-row">
-        <a href="?status=open" class="stat-card {% if status_filter == 'open' %}active{% endif %}">
+        <a href="?tab=tickets&status=open" class="stat-card {% if tab == 'tickets' and status_filter == 'open' %}active{% endif %}">
             <div class="stat-num n-open">{{ all_counts.open }}</div>
-            <div class="stat-label">Open</div>
+            <div class="stat-label">Open Tickets</div>
         </a>
-        <a href="?status=escalated" class="stat-card {% if status_filter == 'escalated' %}active{% endif %}">
+        <a href="?tab=tickets&status=escalated" class="stat-card {% if tab == 'tickets' and status_filter == 'escalated' %}active{% endif %}">
             <div class="stat-num n-escalated">{{ all_counts.escalated }}</div>
             <div class="stat-label">Escalated</div>
         </a>
-        <a href="?status=in_review" class="stat-card {% if status_filter == 'in_review' %}active{% endif %}">
+        <a href="?tab=tickets&status=in_review" class="stat-card {% if tab == 'tickets' and status_filter == 'in_review' %}active{% endif %}">
             <div class="stat-num n-in_review">{{ all_counts.in_review }}</div>
             <div class="stat-label">In Review</div>
         </a>
-        <a href="?status=resolved" class="stat-card {% if status_filter == 'resolved' %}active{% endif %}">
+        <a href="?tab=tickets&status=resolved" class="stat-card {% if tab == 'tickets' and status_filter == 'resolved' %}active{% endif %}">
             <div class="stat-num n-resolved">{{ all_counts.resolved }}</div>
             <div class="stat-label">Resolved</div>
         </a>
+        <a href="?tab=contact" class="stat-card {% if tab == 'contact' %}active{% endif %}">
+            {% if unread_count %}<span class="unread-dot"></span>{% endif %}
+            <div class="stat-num n-contact">{{ unread_count|default:"0" }}</div>
+            <div class="stat-label">Unread Contact</div>
+        </a>
     </div>
 
-    <!-- Filter bar -->
+    <!-- Nav tabs -->
+    <div class="nav-tabs">
+        <a href="?tab=tickets&status={{ status_filter }}" class="nav-tab {% if tab == 'tickets' %}active{% endif %}">🎧 Support Tickets</a>
+        <a href="?tab=contact" class="nav-tab {% if tab == 'contact' %}active{% endif %}">
+            ✉️ Contact Messages
+            {% if unread_count %}<span style="background:#ef4444;color:white;border-radius:10px;padding:1px 7px;font-size:.65rem;margin-left:.25rem;">{{ unread_count }}</span>{% endif %}
+        </a>
+    </div>
+
+    {% if tab == 'tickets' %}
+    <!-- ── TICKETS TAB ── -->
     <div class="filter-bar">
-        <span style="font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">Filter:</span>
-        <a href="?status=open"      class="filter-tab {% if status_filter == 'open' %}active{% endif %}">● Open</a>
-        <a href="?status=escalated" class="filter-tab {% if status_filter == 'escalated' %}active{% endif %}">⚡ Escalated</a>
-        <a href="?status=in_review" class="filter-tab {% if status_filter == 'in_review' %}active{% endif %}">👤 In Review</a>
-        <a href="?status=resolved"  class="filter-tab {% if status_filter == 'resolved' %}active{% endif %}">✓ Resolved</a>
+        <span style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);">Filter:</span>
+        <a href="?tab=tickets&status=open"      class="filter-tab {% if status_filter == 'open' %}active{% endif %}">● Open</a>
+        <a href="?tab=tickets&status=escalated" class="filter-tab {% if status_filter == 'escalated' %}active{% endif %}">⚡ Escalated</a>
+        <a href="?tab=tickets&status=in_review" class="filter-tab {% if status_filter == 'in_review' %}active{% endif %}">👤 In Review</a>
+        <a href="?tab=tickets&status=resolved"  class="filter-tab {% if status_filter == 'resolved' %}active{% endif %}">✓ Resolved</a>
     </div>
 
-    <!-- Tickets table -->
-    <div class="tickets-wrap">
+    <div class="table-wrap">
         <div class="tw-header">
-            <div class="tw-header-left"><h3>{{ status_filter|title }} Tickets</h3></div>
+            <div class="twh-left"><h3>{{ status_filter|title }} Tickets</h3></div>
             <span class="tw-count">{{ tickets|length }} ticket{{ tickets|length|pluralize }}</span>
         </div>
 
@@ -179,7 +215,7 @@
                     </td>
                     <td>
                         <div class="t-subject">
-                            {{ ticket.subject|truncatechars:55 }}
+                            {{ ticket.subject|truncatechars:50 }}
                             <small>{{ ticket.get_category_display }}{% if ticket.booking %} · Booking #{{ ticket.booking.id }}{% endif %}</small>
                         </div>
                     </td>
@@ -197,6 +233,54 @@
         </div>
         {% endif %}
     </div>
+
+    {% else %}
+    <!-- ── CONTACT MESSAGES TAB ── -->
+    <div class="table-wrap">
+        <div class="tw-header">
+            <div class="twh-left"><h3>Contact Form Messages</h3></div>
+            <span class="tw-count">{{ contact_msgs|length }} message{{ contact_msgs|length|pluralize }}{% if unread_count %} · {{ unread_count }} unread{% endif %}</span>
+        </div>
+
+        {% if contact_msgs %}
+            {% for msg in contact_msgs %}
+            <div class="msg-card {% if not msg.is_read %}unread{% endif %}">
+                <div class="mc-top">
+                    <div class="mc-sender">
+                        <strong>{{ msg.first_name }} {{ msg.last_name }}</strong>
+                        {% if msg.user %}<span>· @{{ msg.user.username }}</span>{% endif %}
+                    </div>
+                    <div class="mc-meta">
+                        {% if not msg.is_read %}<span class="new-dot"></span>{% endif %}
+                        <span class="subj-badge">{{ msg.get_subject_display }}</span>
+                        <span class="mc-time">{{ msg.created_at|date:"M j, Y · g:i A" }}</span>
+                    </div>
+                </div>
+                <div class="mc-email"><a href="mailto:{{ msg.email }}">{{ msg.email }}</a></div>
+                {% if msg.booking %}<div style="font-size:.75rem;color:var(--muted);margin-bottom:.4rem;">📋 Booking #{{ msg.booking.id }}</div>{% endif %}
+                <div class="mc-body">{{ msg.message }}</div>
+                <div class="mc-actions">
+                    {% if not msg.is_read %}
+                    <form method="post" action="{% url 'contact_messages' %}" style="margin:0">
+                        {% csrf_token %}
+                        <input type="hidden" name="mark_read" value="{{ msg.id }}">
+                        <button type="submit" class="btn-mark">✓ Mark Read</button>
+                    </form>
+                    {% else %}
+                    <span class="read-mark">✓ Read</span>
+                    {% endif %}
+                    <a href="mailto:{{ msg.email }}?subject=Re: {{ msg.get_subject_display }} — Trivasta" class="btn-email">↩ Reply via Email</a>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+        <div class="empty-state">
+            <div class="e-icon">📭</div>
+            <p>No contact messages yet.</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
 
 </div>
 </div>
