@@ -9,6 +9,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models.functions import TruncMonth
 from django.utils import timezone
 from datetime import timedelta
+from django.core.mail import send_mail
+from django.conf import settings
 import json
 import razorpay
 
@@ -102,7 +104,6 @@ def dashboard_view(request):
         is_active=True
     ).select_related('agency').order_by('-created_at')[:6]
 
-    # Open support ticket if any
     open_ticket = SupportTicket.objects.filter(
         user=user, status__in=['open', 'escalated', 'in_review']
     ).first()
@@ -156,21 +157,23 @@ def trivasta_admin(request):
     )
 
     pending_agency_list = Agency.objects.filter(status='pending').order_by('-created_at')
-
     warned_agencies = (
         Agency.objects.annotate(warning_count=Count('warnings'))
         .filter(warning_count__gt=0).order_by('-warning_count')[:5]
     )
 
-    status_dist    = TripStatus.objects.values('status').annotate(count=Count('id')).order_by('-count')
-    status_labels  = [s['status'].replace('_', ' ').title() for s in status_dist]
-    status_counts  = [s['count'] for s in status_dist]
-    recent_trips   = Trip.objects.select_related('user').order_by('-created_at')[:10]
+    status_dist   = TripStatus.objects.values('status').annotate(count=Count('id')).order_by('-count')
+    status_labels = [s['status'].replace('_', ' ').title() for s in status_dist]
+    status_counts = [s['count'] for s in status_dist]
+    recent_trips  = Trip.objects.select_related('user').order_by('-created_at')[:10]
 
-    # Support stats for admin overview
     open_tickets      = SupportTicket.objects.filter(status='open').count()
     escalated_tickets = SupportTicket.objects.filter(status='escalated').count()
     pending_refunds   = RefundRequest.objects.filter(status='pending').count()
+
+    # Contact form messages for admin
+    from .models import ContactMessage
+    contact_messages = ContactMessage.objects.order_by('-created_at')[:20]
 
     return render(request, 'users/trivasta_admin.html', {
         'total_revenue': total_revenue, 'total_gst': total_gst,
@@ -187,6 +190,7 @@ def trivasta_admin(request):
         'warned_agencies': warned_agencies, 'recent_trips': recent_trips,
         'open_tickets': open_tickets, 'escalated_tickets': escalated_tickets,
         'pending_refunds': pending_refunds,
+        'contact_messages': contact_messages,
     })
 
 
@@ -216,14 +220,10 @@ def admin_reset_warnings(request, agency_id):
     return redirect('trivasta_admin')
 
 
-# ── Support Dashboard (support team) ─────────────────────────────────────────
+# ── Support Dashboard ─────────────────────────────────────────────────────────
 
 @staff_member_required
 def support_dashboard(request):
-    """
-    Support team sees all open/escalated tickets.
-    Can reply and mark resolved.
-    """
     status_filter = request.GET.get('status', 'escalated')
     tickets = SupportTicket.objects.filter(
         status=status_filter
@@ -245,15 +245,13 @@ def support_dashboard(request):
 
 @staff_member_required
 def support_ticket_detail(request, ticket_id):
-    """Support agent views a ticket and can reply or escalate to refund team."""
-    ticket   = get_object_or_404(SupportTicket, pk=ticket_id)
-    msgs     = ticket.messages.all()
+    ticket     = get_object_or_404(SupportTicket, pk=ticket_id)
+    msgs       = ticket.messages.all()
     has_refund = hasattr(ticket, 'refund_request')
 
     if request.method == 'POST':
         action = request.POST.get('action')
 
-        # Agent reply
         if action == 'reply':
             content = request.POST.get('content', '').strip()
             if content:
@@ -265,7 +263,6 @@ def support_ticket_detail(request, ticket_id):
                 ticket.save(update_fields=['status'])
                 messages.success(request, "Reply sent.")
 
-        # Mark resolved
         elif action == 'resolve':
             ticket.status      = 'resolved'
             ticket.resolved_at = timezone.now()
@@ -277,7 +274,6 @@ def support_ticket_detail(request, ticket_id):
             )
             messages.success(request, "Ticket resolved.")
 
-        # Push to refund team
         elif action == 'create_refund':
             if not has_refund and ticket.booking:
                 amount = request.POST.get('refund_amount', ticket.booking.total_amount)
@@ -294,7 +290,7 @@ def support_ticket_detail(request, ticket_id):
                     sender_type='system',
                     content=f"💰 Refund request of ₹{amount} created and sent to the refund team.",
                 )
-                messages.success(request, "Refund request created and sent to refund team.")
+                messages.success(request, "Refund request created.")
 
         return redirect('support_ticket_detail', ticket_id=ticket_id)
 
@@ -305,14 +301,10 @@ def support_ticket_detail(request, ticket_id):
     })
 
 
-# ── Refund Dashboard (refund team) ────────────────────────────────────────────
+# ── Refund Dashboard ──────────────────────────────────────────────────────────
 
 @staff_member_required
 def refund_dashboard(request):
-    """
-    Refund team sees all pending/approved refund requests.
-    One-click approve fires Razorpay Refund API.
-    """
     status_filter = request.GET.get('status', 'pending')
     refunds = RefundRequest.objects.filter(
         status=status_filter
@@ -334,9 +326,6 @@ def refund_dashboard(request):
 
 @staff_member_required
 def process_refund(request, refund_id):
-    """
-    One-click refund: calls Razorpay Refund API and marks processed.
-    """
     refund  = get_object_or_404(RefundRequest, pk=refund_id)
     booking = refund.booking
 
@@ -348,18 +337,17 @@ def process_refund(request, refund_id):
         action = request.POST.get('action')
 
         if action == 'approve':
-            # ── Fire Razorpay Refund API ──
             if not booking.razorpay_payment_id:
-                messages.error(request, "No Razorpay payment ID on this booking. Cannot process refund.")
+                messages.error(request, "No Razorpay payment ID on this booking.")
                 return redirect('refund_dashboard')
 
             try:
                 razorpay_refund = razorpay_client.payment.refund(
                     booking.razorpay_payment_id,
                     {
-                        "amount":   refund.amount * 100,   # paise
-                        "speed":    "normal",              # 'normal' = 5-7 days, 'optimum' = instant if eligible
-                        "notes":    {
+                        "amount": refund.amount * 100,
+                        "speed":  "normal",
+                        "notes":  {
                             "refund_id":  refund.id,
                             "booking_id": booking.id,
                             "reason":     refund.reason,
@@ -372,7 +360,6 @@ def process_refund(request, refund_id):
                 refund.processed_at       = timezone.now()
                 refund.save()
 
-                # Update ticket
                 if refund.ticket:
                     refund.ticket.status      = 'resolved'
                     refund.ticket.resolved_at = timezone.now()
@@ -389,17 +376,17 @@ def process_refund(request, refund_id):
                         ),
                     )
 
-                messages.success(request, f"Refund of ₹{refund.amount:,} processed. Razorpay ID: {razorpay_refund['id']}")
+                messages.success(request, f"Refund of ₹{refund.amount:,} processed. ID: {razorpay_refund['id']}")
 
             except Exception as e:
                 messages.error(request, f"Razorpay refund failed: {e}")
 
         elif action == 'reject':
-            rejection_reason  = request.POST.get('rejection_reason', '').strip()
-            refund.status             = 'rejected'
-            refund.rejection_reason   = rejection_reason
-            refund.processed_by       = request.user
-            refund.processed_at       = timezone.now()
+            rejection_reason        = request.POST.get('rejection_reason', '').strip()
+            refund.status           = 'rejected'
+            refund.rejection_reason = rejection_reason
+            refund.processed_by     = request.user
+            refund.processed_at     = timezone.now()
             refund.save()
 
             if refund.ticket:
@@ -422,3 +409,95 @@ def process_refund(request, refund_id):
         return redirect('refund_dashboard')
 
     return render(request, 'support/process_refund.html', {'refund': refund, 'booking': booking})
+
+
+# ── Contact Us ────────────────────────────────────────────────────────────────
+
+def contact_view(request):
+    """
+    Public contact page. Saves message to DB and optionally emails staff.
+    Staff can view all messages in the support dashboard or admin panel.
+    """
+    user_bookings = []
+    if request.user.is_authenticated:
+        user_bookings = Booking.objects.filter(
+            user=request.user, is_paid=True
+        ).order_by('-created_at')[:10]
+
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        last_name  = request.POST.get('last_name', '').strip()
+        email      = request.POST.get('email', '').strip()
+        subject    = request.POST.get('subject', '').strip()
+        message    = request.POST.get('message', '').strip()
+        booking_id = request.POST.get('booking_id', '')
+
+        if not first_name or not email or not subject or not message:
+            messages.error(request, "Please fill in all required fields.")
+            return redirect('contact')
+
+        # Save to DB
+        from .models import ContactMessage
+        booking = None
+        if booking_id:
+            booking = Booking.objects.filter(pk=booking_id).first()
+
+        ContactMessage.objects.create(
+            first_name = first_name,
+            last_name  = last_name,
+            email      = email,
+            subject    = subject,
+            message    = message,
+            booking    = booking,
+            user       = request.user if request.user.is_authenticated else None,
+        )
+
+        # Email staff (silent fail if email not configured)
+        try:
+            send_mail(
+                subject  = f"[Contact] {subject} — {first_name} {last_name}",
+                message  = (
+                    f"From: {first_name} {last_name} <{email}>\n"
+                    f"Subject: {subject}\n"
+                    f"Booking: {'#' + booking_id if booking_id else 'N/A'}\n\n"
+                    f"{message}"
+                ),
+                from_email = settings.DEFAULT_FROM_EMAIL,
+                recipient_list = [settings.EMAIL_HOST_USER],
+                fail_silently  = True,
+            )
+        except Exception:
+            pass
+
+        messages.success(
+            request,
+            "Your message has been sent! Our team will get back to you within 2 hours."
+        )
+        return redirect('contact')
+
+    return render(request, 'contact.html', {
+        'user_bookings': user_bookings,
+    })
+
+
+# ── Contact Messages (staff view) ─────────────────────────────────────────────
+
+@staff_member_required
+def contact_messages_view(request):
+    """
+    Staff-only view to read all contact form submissions.
+    """
+    from .models import ContactMessage
+    contact_msgs = ContactMessage.objects.select_related('user', 'booking').order_by('-created_at')
+
+    # Mark as read when staff views
+    if request.method == 'POST':
+        msg_id = request.POST.get('mark_read')
+        if msg_id:
+            ContactMessage.objects.filter(pk=msg_id).update(is_read=True)
+        return redirect('contact_messages')
+
+    return render(request, 'support/contact_messages.html', {
+        'contact_msgs': contact_msgs,
+        'unread_count': ContactMessage.objects.filter(is_read=False).count(),
+    })

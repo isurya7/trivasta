@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+{% block title %}Contact Us — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600;700&display=swap');
+    :root { --font-display:'Cormorant Garamond',Georgia,serif; --font-body:'Outfit',sans-serif; }
+    * { font-family: var(--font-body); box-sizing: border-box; }
+    body { background: var(--cream, #faf7f2); }
+
+    .contact-page { min-height: calc(100vh - 68px); padding: 3rem 1.5rem 5rem; }
+    .contact-inner { max-width: 1060px; margin: 0 auto; }
+
+    /* Hero */
+    .contact-hero {
+        background: linear-gradient(135deg, var(--sea,#0f3460) 0%, #0a2240 100%);
+        border-radius: 20px; padding: 3.5rem 3rem; margin-bottom: 2.5rem;
+        position: relative; overflow: hidden;
+        display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+    }
+    .contact-hero::before {
+        content: ''; position: absolute; inset: 0;
+        background-image: linear-gradient(rgba(201,168,76,.06) 1px,transparent 1px),
+                          linear-gradient(90deg,rgba(201,168,76,.06) 1px,transparent 1px);
+        background-size: 40px 40px;
+    }
+    .contact-hero::after { content: '✉️'; position: absolute; right: 3rem; top: 50%; transform: translateY(-50%); font-size: 8rem; opacity: .07; pointer-events: none; }
+    .ch-left { position: relative; z-index: 1; }
+    .ch-eyebrow { font-size: .68rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--gold-light,#e8c97a); margin-bottom: .6rem; display: flex; align-items: center; gap: .5rem; }
+    .ch-eyebrow::before { content: ''; width: 20px; height: 1px; background: var(--gold-light,#e8c97a); }
+    .ch-title { font-family: var(--font-display); font-size: 2.75rem; font-weight: 300; color: white; line-height: 1.1; margin-bottom: .5rem; }
+    .ch-title em { font-style: italic; color: var(--gold-light,#e8c97a); }
+    .ch-sub { font-size: .9375rem; color: rgba(255,255,255,.5); line-height: 1.6; max-width: 420px; }
+    .ch-right { position: relative; z-index: 1; flex-shrink: 0; }
+    .response-badge { background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); border-radius: 14px; padding: 1.25rem 1.75rem; text-align: center; }
+    .rb-num { font-family: var(--font-display); font-size: 2.5rem; font-weight: 700; color: var(--gold-light,#e8c97a); line-height: 1; }
+    .rb-label { font-size: .75rem; color: rgba(255,255,255,.45); margin-top: .25rem; letter-spacing: .05em; }
+    @media(max-width:680px) { .contact-hero { flex-direction: column; } .contact-hero::after { display: none; } }
+
+    /* Grid */
+    .contact-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 1.5rem; }
+    @media(max-width:760px) { .contact-grid { grid-template-columns: 1fr; } }
+
+    /* Cards */
+    .card { background: white; border-radius: 16px; box-shadow: 0 4px 24px rgba(13,17,23,.07); overflow: hidden; }
+    .card-header { background: var(--cream,#faf7f2); border-bottom: 1px solid #ede8df; padding: 1.1rem 1.75rem; display: flex; align-items: center; gap: .5rem; }
+    .card-header::before { content: ''; width: 3px; height: 16px; background: var(--gold,#c9a84c); border-radius: 2px; }
+    .card-header h3 { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #7a7060; margin: 0; }
+    .card-body { padding: 2rem; }
+
+    /* Info */
+    .info-item { display: flex; align-items: flex-start; gap: 1rem; padding: 1.25rem 0; border-bottom: 1px solid #f0ebe2; }
+    .info-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .info-icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-size: 1.25rem; flex-shrink: 0; background: rgba(15,52,96,.06); }
+    .info-text strong { display: block; font-size: .8125rem; font-weight: 700; color: #1a1510; margin-bottom: .2rem; }
+    .info-text span { font-size: .875rem; color: #7a7060; line-height: 1.5; }
+    .info-text a { color: var(--sea,#0f3460); text-decoration: none; font-weight: 500; }
+    .info-text a:hover { text-decoration: underline; }
+
+    .social-row { display: flex; gap: .625rem; flex-wrap: wrap; margin-top: 1.5rem; }
+    .social-btn { display: inline-flex; align-items: center; gap: .4rem; padding: .5rem 1rem; border-radius: 20px; font-size: .8rem; font-weight: 600; text-decoration: none; transition: all .2s; border: 1.5px solid #ede8df; color: #1a1510; background: white; }
+    .social-btn:hover { background: var(--sea,#0f3460); color: white; border-color: var(--sea,#0f3460); }
+
+    /* FAQ */
+    .faq-item { padding: 1rem 0; border-bottom: 1px solid #f0ebe2; }
+    .faq-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .faq-q { font-size: .875rem; font-weight: 600; color: #1a1510; margin-bottom: 0; cursor: pointer; display: flex; align-items: center; justify-content: space-between; user-select: none; }
+    .faq-q::after { content: '+'; font-size: 1.1rem; color: var(--sea,#0f3460); font-weight: 300; flex-shrink: 0; margin-left: 1rem; }
+    .faq-a { font-size: .8125rem; color: #7a7060; line-height: 1.65; display: none; margin-top: .5rem; }
+    .faq-item.open .faq-q::after { content: '−'; }
+    .faq-item.open .faq-a { display: block; }
+
+    /* Form */
+    .field { margin-bottom: 1.1rem; }
+    .field label { display: block; font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #1a1510; margin-bottom: .5rem; }
+    .field label .req { color: #e74c3c; margin-left: 2px; }
+    .field input, .field select, .field textarea { width: 100%; padding: .875rem 1rem; border: 1.5px solid #ede8df; border-radius: 8px; font-family: var(--font-body); font-size: .9375rem; color: #1a1510; background: #faf7f2; outline: none; transition: all .2s; appearance: none; -webkit-appearance: none; }
+    .field input::placeholder, .field textarea::placeholder { color: #b0aaa0; }
+    .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--sea,#0f3460); background: white; box-shadow: 0 0 0 3px rgba(15,52,96,.08); }
+    .field textarea { resize: vertical; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media(max-width:480px) { .form-row { grid-template-columns: 1fr; } }
+
+    /* Alerts */
+    .success-msg { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 1rem 1.25rem; display: flex; align-items: center; gap: .75rem; font-size: .875rem; color: #166534; margin-bottom: 1.25rem; }
+    .error-msg { background: #fef2f2; border: 1px solid #fecaca; border-radius: 10px; padding: 1rem 1.25rem; font-size: .875rem; color: #991b1b; margin-bottom: 1.25rem; }
+
+    .btn-submit { width: 100%; padding: 1.1rem; background: linear-gradient(135deg,var(--sea,#0f3460),#0a2240); color: white; border: none; border-radius: 10px; font-family: var(--font-body); font-size: 1rem; font-weight: 600; cursor: pointer; transition: all .3s; margin-top: .5rem; display: flex; align-items: center; justify-content: center; gap: .5rem; }
+    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 12px 32px rgba(15,52,96,.3); }
+    .form-note { font-size: .72rem; color: #b0aaa0; text-align: center; margin-top: .75rem; line-height: 1.5; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="contact-page">
+<div class="contact-inner">
+
+    <!-- Hero -->
+    <div class="contact-hero">
+        <div class="ch-left">
+            <div class="ch-eyebrow">Get in Touch</div>
+            <h1 class="ch-title">We'd love to <em>hear from you</em></h1>
+            <p class="ch-sub">Have a question, complaint, or partnership idea? Our team responds to every message personally — no bots, no auto-replies.</p>
+        </div>
+        <div class="ch-right">
+            <div class="response-badge">
+                <div class="rb-num">&lt; 2h</div>
+                <div class="rb-label">Average response time</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for msg in messages %}
+            {% if 'success' in msg.tags %}
+            <div class="success-msg">✅ {{ msg }}</div>
+            {% else %}
+            <div class="error-msg">{{ msg }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <div class="contact-grid">
+
+        <!-- LEFT -->
+        <div>
+            <div class="card" style="margin-bottom:1.5rem">
+                <div class="card-header"><h3>Contact Information</h3></div>
+                <div class="card-body">
+                    <div class="info-item">
+                        <div class="info-icon">📧</div>
+                        <div class="info-text">
+                            <strong>Email Us</strong>
+                            <span><a href="mailto:support@trivasta.com">support@trivasta.com</a><br>For general enquiries &amp; support</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">📞</div>
+                        <div class="info-text">
+                            <strong>Call Us</strong>
+                            <span><a href="tel:+918001234567">+91 800 123 4567</a><br>Mon–Sat, 9 AM – 7 PM IST</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">💬</div>
+                        <div class="info-text">
+                            <strong>Live Support</strong>
+                            <span>Available on the platform<br><a href="{% url 'support_chat' %}">Open support chat →</a></span>
+                        </div>
+                    </div>
+                    <div class="social-row">
+                        <a href="#" class="social-btn">𝕏 Twitter</a>
+                        <a href="#" class="social-btn">in LinkedIn</a>
+                        <a href="#" class="social-btn">📸 Instagram</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ -->
+            <div class="card">
+                <div class="card-header"><h3>Frequently Asked</h3></div>
+                <div class="card-body">
+                    <div class="faq-item">
+                        <div class="faq-q">How do I request a refund?</div>
+                        <div class="faq-a">Go to Dashboard → Bookings → select your booking → click "Request Refund". Refunds are processed within 5–7 business days to your original payment method.</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">How do I become a listed agency?</div>
+                        <div class="faq-a">Register an account and select "I am a travel agency" during signup. After basic verification, your profile goes live within 24 hours.</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Is my payment secure?</div>
+                        <div class="faq-a">Yes. All payments are processed via Razorpay — a PCI DSS compliant payment gateway. We never store your card details.</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">How do I report a fraudulent agency?</div>
+                        <div class="faq-a">Open a support ticket from your dashboard and select "Agency Complaint". Our team reviews all complaints within 2 hours and takes immediate action.</div>
+                    </div>
+                    <div class="faq-item">
+                        <div class="faq-q">Can I cancel a booking?</div>
+                        <div class="faq-a">Cancellation depends on the agency's policy. Contact the agency directly through the chat room, or raise a support ticket if they are unresponsive.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT — Form -->
+        <div class="card">
+            <div class="card-header"><h3>Send Us a Message</h3></div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="field">
+                            <label>First Name <span class="req">*</span></label>
+                            <input type="text" name="first_name" placeholder="Your first name" required>
+                        </div>
+                        <div class="field">
+                            <label>Last Name <span class="req">*</span></label>
+                            <input type="text" name="last_name" placeholder="Your last name" required>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Email Address <span class="req">*</span></label>
+                        <input type="email" name="email"
+                               value="{% if user.is_authenticated %}{{ user.email }}{% endif %}"
+                               placeholder="your@email.com" required>
+                    </div>
+                    <div class="field">
+                        <label>Subject <span class="req">*</span></label>
+                        <select name="subject" required>
+                            <option value="">— Select a topic —</option>
+                            <option value="general">General Enquiry</option>
+                            <option value="booking">Booking Issue</option>
+                            <option value="refund">Refund Request</option>
+                            <option value="agency">Agency Complaint</option>
+                            <option value="payment">Payment Problem</option>
+                            <option value="technical">Technical Issue</option>
+                            <option value="partnership">Partnership / B2B</option>
+                            <option value="press">Press / Media</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    {% if user_bookings %}
+                    <div class="field">
+                        <label>Related Booking <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></label>
+                        <select name="booking_id">
+                            <option value="">— Not booking-related —</option>
+                            {% for b in user_bookings %}
+                            <option value="{{ b.id }}">#{{ b.id }} — {% if b.package %}{{ b.package.title }}{% elif b.offer %}{{ b.offer.trip.destination }}{% endif %}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
+                    <div class="field">
+                        <label>Message <span class="req">*</span></label>
+                        <textarea name="message" rows="6"
+                                  placeholder="Describe your issue or question in detail. The more context you give, the faster we can help." required></textarea>
+                    </div>
+                    <button type="submit" class="btn-submit">✉️ Send Message</button>
+                    <p class="form-note">By submitting this form you agree to our <a href="#" style="color:var(--sea)">Privacy Policy</a>. We'll never share your information with third parties.</p>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.querySelectorAll('.faq-q').forEach(q => {
+        q.addEventListener('click', () => {
+            const item = q.parentElement;
+            const wasOpen = item.classList.contains('open');
+            document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+            if (!wasOpen) item.classList.add('open');
+        });
+    });
+</script>
+{% endblock %}
