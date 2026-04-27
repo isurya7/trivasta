@@ -52,17 +52,98 @@
 
     .agency-banner-title em { font-style: italic; color: #e8c97a; }
     .agency-banner-sub { font-size: 0.875rem; color: rgba(255,255,255,0.5); margin-top: 0.4rem; }
+
     .agency-banner-actions {
         display: flex; gap: 0.75rem; flex-shrink: 0;
         position: relative; z-index: 1; flex-wrap: wrap; justify-content: flex-end;
     }
+
+    /* ── KYC NOTICE BANNERS ── */
+    .kyc-notice {
+        border-radius: 12px;
+        padding: 1.1rem 1.5rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .kyc-notice-left {
+        display: flex;
+        align-items: center;
+        gap: 0.875rem;
+    }
+
+    .kyc-notice-icon { font-size: 1.375rem; flex-shrink: 0; }
+
+    .kyc-notice-title {
+        font-weight: 700;
+        font-size: 0.9rem;
+        margin-bottom: 0.15rem;
+    }
+
+    .kyc-notice-sub {
+        font-size: 0.8rem;
+        color: #7a7060;
+        line-height: 1.4;
+    }
+
+    .kyc-notice-btn {
+        padding: 0.6rem 1.25rem;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-decoration: none;
+        white-space: nowrap;
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        transition: all 0.2s;
+    }
+
+    .kyc-notice.warn {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-left: 4px solid #f59e0b;
+    }
+    .kyc-notice.warn .kyc-notice-title { color: #92400e; }
+    .kyc-notice.warn .kyc-notice-btn { background: #f59e0b; color: white; }
+    .kyc-notice.warn .kyc-notice-btn:hover { background: #d97706; }
+
+    .kyc-notice.info {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-left: 4px solid #3b82f6;
+    }
+    .kyc-notice.info .kyc-notice-title { color: #1d4ed8; }
+
+    .kyc-notice.err {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-left: 4px solid #ef4444;
+    }
+    .kyc-notice.err .kyc-notice-title { color: #991b1b; }
+    .kyc-notice.err .kyc-notice-btn { background: #ef4444; color: white; }
+    .kyc-notice.err .kyc-notice-btn:hover { background: #dc2626; }
+
+    .kyc-notice.ok {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-left: 4px solid #10b981;
+    }
+    .kyc-notice.ok .kyc-notice-title { color: #166534; }
+    .kyc-notice.ok .kyc-notice-btn { background: #10b981; color: white; }
+    .kyc-notice.ok .kyc-notice-btn:hover { background: #059669; }
 
     /* ── STATS ROW ── */
     .stats-row {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 1.25rem;
-        margin-bottom: 2rem;
+        margin-bottom: 1.5rem;
     }
 
     .stat-card {
@@ -166,15 +247,6 @@
 
     .package-dest { font-size: 0.8125rem; color: var(--muted); margin-bottom: 0.75rem; }
 
-    .package-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.875rem; }
-
-    .meta-chip {
-        font-size: 0.72rem; font-weight: 500; color: var(--sea);
-        background: rgba(15,52,96,0.07); padding: 0.2rem 0.6rem;
-        border-radius: 100px;
-    }
-
-    /* ── ANALYTICS BAR ── */
     .pkg-analytics {
         background: var(--cream);
         border-radius: 8px;
@@ -186,26 +258,19 @@
         border: 1px solid var(--cream-dark);
     }
 
-    .pkg-stat {
-        text-align: center;
-    }
+    .pkg-stat { text-align: center; }
 
     .pkg-stat-num {
         font-family: 'Cormorant Garamond', serif;
-        font-size: 1.25rem; font-weight: 600; color: var(--sea);
-        line-height: 1;
+        font-size: 1.25rem; font-weight: 600; color: var(--sea); line-height: 1;
     }
 
-    .pkg-stat-num.gold { color: var(--gold); }
+    .pkg-stat-num.gold  { color: var(--gold); }
     .pkg-stat-num.green { color: #27ae60; }
 
     .pkg-stat-label {
         font-size: 0.6rem; font-weight: 600; letter-spacing: 0.08em;
         text-transform: uppercase; color: var(--muted); margin-top: 0.2rem;
-    }
-
-    .pkg-stat-divider {
-        width: 1px; background: var(--cream-dark); margin: 0 auto;
     }
 
     .package-price {
@@ -232,7 +297,6 @@
     .pkg-btn-del    { background: rgba(231,76,60,0.08); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
     .pkg-btn-del:hover { background: rgba(231,76,60,0.15); }
 
-    /* ── CONVERSION BAR ── */
     .conversion-bar-wrap { margin-top: 0.35rem; }
 
     .conversion-track {
@@ -400,6 +464,8 @@
         .agency-banner { padding: 1.75rem; }
         .stats-row { grid-template-columns: repeat(2, 1fr); gap: 0.75rem; }
         .pkg-analytics { grid-template-columns: repeat(2, 1fr); }
+        .kyc-notice { flex-direction: column; align-items: flex-start; }
+        .kyc-notice-btn { width: 100%; justify-content: center; }
     }
 </style>
 {% endblock %}
@@ -418,15 +484,79 @@
                     {% if agency.plan == 'enterprise' %}🏆 Enterprise
                     {% elif agency.plan == 'professional' %}💼 Professional
                     {% else %}🌱 Starter{% endif %}
-                    Plan
+                    Plan &nbsp;·&nbsp; Founding Partner
                 </div>
             </div>
             <div class="agency-banner-actions">
+                <!-- KYC button — adapts to current KYC state -->
+                {% if not bank or bank.kyc_status == 'pending' %}
+                    <a href="{% url 'agency_bank_details' %}" class="btn btn-gold">🏦 Submit KYC</a>
+                {% elif bank.kyc_status == 'submitted' %}
+                    <a href="{% url 'agency_bank_details' %}" class="btn btn-outline" style="color:#fcd34d; border-color:#fcd34d;">🔍 KYC Under Review</a>
+                {% elif bank.kyc_status == 'rejected' %}
+                    <a href="{% url 'agency_bank_details' %}" class="btn btn-gold" style="background:#ef4444; border-color:#ef4444;">⚠️ Resubmit KYC</a>
+                {% elif bank.kyc_status == 'verified' %}
+                    <a href="{% url 'agency_earnings' %}" class="btn btn-gold">💰 Earnings & Payouts</a>
+                {% endif %}
+                <a href="{% url 'agency_bank_details' %}" class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.3);">🏦 Bank Details</a>
                 <a href="{% url 'agency_profile_edit' %}" class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.3);">🏢 Profile</a>
-                <a href="{% url 'package_create' %}" class="btn btn-gold">+ New Package</a>
+                <a href="{% url 'package_create' %}" class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.3);">+ Package</a>
                 <a href="{% url 'agency_logout' %}" class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.3);">Logout</a>
             </div>
         </div>
+
+        <!-- ── KYC NOTICE BANNER ── -->
+        {% if not bank or bank.kyc_status == 'pending' %}
+        <div class="kyc-notice warn">
+            <div class="kyc-notice-left">
+                <div class="kyc-notice-icon">🏦</div>
+                <div>
+                    <div class="kyc-notice-title">Submit bank details to start receiving payouts</div>
+                    <div class="kyc-notice-sub">Required for Razorpay payout setup. Takes 2 minutes. Verified within 24 hours.</div>
+                </div>
+            </div>
+            <a href="{% url 'agency_bank_details' %}" class="kyc-notice-btn">Submit KYC Details →</a>
+        </div>
+
+        {% elif bank.kyc_status == 'submitted' %}
+        <div class="kyc-notice info">
+            <div class="kyc-notice-left">
+                <div class="kyc-notice-icon">🔍</div>
+                <div>
+                    <div class="kyc-notice-title">KYC under review — verification in progress</div>
+                    <div class="kyc-notice-sub">Our team will verify your bank details within 24 hours. Payouts activate automatically once approved.</div>
+                </div>
+            </div>
+            <a href="{% url 'agency_bank_details' %}" class="kyc-notice-btn" style="background:#3b82f6; color:white;">View Submitted Details</a>
+        </div>
+
+        {% elif bank.kyc_status == 'rejected' %}
+        <div class="kyc-notice err">
+            <div class="kyc-notice-left">
+                <div class="kyc-notice-icon">❌</div>
+                <div>
+                    <div class="kyc-notice-title">KYC rejected — action required</div>
+                    <div class="kyc-notice-sub">{{ bank.kyc_rejection_reason|default:"Please check your details and resubmit with correct information." }}</div>
+                </div>
+            </div>
+            <a href="{% url 'agency_bank_details' %}" class="kyc-notice-btn">Resubmit KYC →</a>
+        </div>
+
+        {% elif bank.kyc_status == 'verified' %}
+        <div class="kyc-notice ok">
+            <div class="kyc-notice-left">
+                <div class="kyc-notice-icon">✅</div>
+                <div>
+                    <div class="kyc-notice-title">KYC verified — payouts are active</div>
+                    <div class="kyc-notice-sub">
+                        {{ bank.account_holder_name }} · {{ bank.bank_name|default:"Bank account verified" }} ·
+                        Earnings transfer automatically after each confirmed booking.
+                    </div>
+                </div>
+            </div>
+            <a href="{% url 'agency_earnings' %}" class="kyc-notice-btn">View Earnings & Payouts →</a>
+        </div>
+        {% endif %}
 
         <!-- ── STATS ── -->
         <div class="stats-row">
@@ -466,7 +596,9 @@
         <!-- ── TAB: PACKAGES ── -->
         <div class="tab-content active" id="tab-packages">
             <div class="section-header">
-                <h2 class="section-title">My Packages <span style="font-size:0.8125rem; color:var(--muted); background:var(--cream-dark); padding:0.2rem 0.65rem; border-radius:100px; font-family:'Outfit',sans-serif; font-weight:400;">{{ packages|length }}</span></h2>
+                <h2 class="section-title">My Packages
+                    <span style="font-size:0.8125rem; color:var(--muted); background:var(--cream-dark); padding:0.2rem 0.65rem; border-radius:100px; font-family:'Outfit',sans-serif; font-weight:400;">{{ packages|length }}</span>
+                </h2>
                 <a href="{% url 'package_create' %}" class="btn btn-primary">+ Create Package</a>
             </div>
 
@@ -498,7 +630,6 @@
                         <div class="package-title">{{ pkg.title }}</div>
                         <div class="package-dest">📍 {{ pkg.destination }} &nbsp;·&nbsp; 📅 {{ pkg.duration }} days</div>
 
-                        <!-- Analytics mini-bar -->
                         <div class="pkg-analytics">
                             <div class="pkg-stat">
                                 <div class="pkg-stat-num">{{ stat.views }}</div>
@@ -518,10 +649,9 @@
                             </div>
                         </div>
 
-                        <!-- Conversion progress bar -->
                         <div class="conversion-bar-wrap">
                             <div class="conversion-track">
-                                <div class="conversion-fill" style="width: {{ stat.conversion|floatformat:0 }}%"></div>
+                                <div class="conversion-fill" style="width:{{ stat.conversion|floatformat:0 }}%"></div>
                             </div>
                         </div>
 
@@ -567,15 +697,9 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Package</th>
-                            <th>Destination</th>
-                            <th>Price</th>
-                            <th>👁 Views</th>
-                            <th>💬 Chats</th>
-                            <th>✅ Bookings</th>
-                            <th>📈 Conversion</th>
-                            <th>💰 Revenue</th>
-                            <th>Status</th>
+                            <th>Package</th><th>Destination</th><th>Price</th>
+                            <th>👁 Views</th><th>💬 Chats</th><th>✅ Bookings</th>
+                            <th>📈 Conversion</th><th>💰 Revenue</th><th>Status</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -586,18 +710,10 @@
                                 <div style="font-size:0.72rem; color:var(--muted);">{{ stat.pkg.get_category_display }}</div>
                             </td>
                             <td style="font-size:0.875rem;">{{ stat.pkg.destination }}</td>
-                            <td>
-                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--sea);">₹{{ stat.pkg.price }}</strong>
-                            </td>
-                            <td>
-                                <strong style="font-size:1rem; color:var(--ink);">{{ stat.views }}</strong>
-                            </td>
-                            <td>
-                                <strong style="font-size:1rem; color:var(--sea);">{{ stat.chats }}</strong>
-                            </td>
-                            <td>
-                                <strong style="font-size:1rem; color:#27ae60;">{{ stat.bookings }}</strong>
-                            </td>
+                            <td><strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--sea);">₹{{ stat.pkg.price }}</strong></td>
+                            <td><strong>{{ stat.views }}</strong></td>
+                            <td><strong style="color:var(--sea);">{{ stat.chats }}</strong></td>
+                            <td><strong style="color:#27ae60;">{{ stat.bookings }}</strong></td>
                             <td>
                                 <div style="display:flex; align-items:center; gap:0.5rem;">
                                     <strong style="color:{% if stat.conversion >= 10 %}#27ae60{% elif stat.conversion >= 3 %}var(--gold){% else %}var(--muted){% endif %};">
@@ -626,8 +742,6 @@
                 </table>
             </div>
 
-            <!-- Totals summary bar -->
-            {% with total_views=package_stats|length %}
             <div style="background:white; border-radius:12px; box-shadow:var(--shadow); padding:1.5rem 2rem; display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; text-align:center;">
                 <div>
                     <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; color:var(--sea); line-height:1;">
@@ -636,25 +750,18 @@
                     <div style="font-size:0.75rem; color:var(--muted); margin-top:0.2rem;">Total Views</div>
                 </div>
                 <div>
-                    <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; color:var(--sea); line-height:1;">
-                        {{ bookings|length }}
-                    </div>
+                    <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; color:var(--sea); line-height:1;">{{ bookings|length }}</div>
                     <div style="font-size:0.75rem; color:var(--muted); margin-top:0.2rem;">Total Bookings</div>
                 </div>
                 <div>
-                    <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; color:var(--gold); line-height:1;">
-                        ₹{{ revenue }}
-                    </div>
+                    <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; color:var(--gold); line-height:1;">₹{{ revenue }}</div>
                     <div style="font-size:0.75rem; color:var(--muted); margin-top:0.2rem;">Total Revenue</div>
                 </div>
                 <div>
-                    <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; color:#27ae60; line-height:1;">
-                        {{ packages|length }}
-                    </div>
+                    <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; color:#27ae60; line-height:1;">{{ packages|length }}</div>
                     <div style="font-size:0.75rem; color:var(--muted); margin-top:0.2rem;">Live Packages</div>
                 </div>
             </div>
-            {% endwith %}
             {% else %}
             <div class="empty-state">
                 <div class="empty-state-icon">📊</div>
@@ -673,15 +780,8 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Destination</th>
-                            <th>From</th>
-                            <th>Duration</th>
-                            <th>Budget</th>
-                            <th>People</th>
-                            <th>Style</th>
-                            <th>Mode</th>
-                            <th>Posted</th>
-                            <th>Action</th>
+                            <th>Destination</th><th>From</th><th>Duration</th><th>Budget</th>
+                            <th>People</th><th>Style</th><th>Mode</th><th>Posted</th><th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -730,13 +830,7 @@
                 {% if offers %}
                 <table class="data-table">
                     <thead>
-                        <tr>
-                            <th>Trip</th>
-                            <th>Price Offered</th>
-                            <th>Message</th>
-                            <th>Date</th>
-                            <th>Chat</th>
-                        </tr>
+                        <tr><th>Trip</th><th>Price Offered</th><th>Message</th><th>Date</th><th>Chat</th></tr>
                     </thead>
                     <tbody>
                         {% for offer in offers %}
@@ -748,9 +842,7 @@
                                 </div>
                             </td>
                             <td>
-                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--sea);">
-                                    ₹{{ offer.price }}
-                                </strong>
+                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--sea);">₹{{ offer.price }}</strong>
                             </td>
                             <td style="max-width:220px; font-size:0.8375rem; color:var(--muted);">
                                 {{ offer.message|truncatechars:70 }}
@@ -784,14 +876,8 @@
                 <table class="data-table">
                     <thead>
                         <tr>
-                            <th>Ref</th>
-                            <th>Trip / Package</th>
-                            <th>Traveler</th>
-                            <th>Amount</th>
-                            <th>Your Payout</th>
-                            <th>Date</th>
-                            <th>Status</th>
-                            <th>Actions</th>
+                            <th>Ref</th><th>Trip / Package</th><th>Traveler</th>
+                            <th>Amount</th><th>Your Payout</th><th>Date</th><th>Status</th><th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -809,15 +895,11 @@
                             </td>
                             <td style="font-size:0.875rem;">{{ booking.user.username }}</td>
                             <td>
-                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--sea);">
-                                    ₹{{ booking.total_amount }}
-                                </strong>
+                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--sea);">₹{{ booking.total_amount }}</strong>
                                 <div style="font-size:0.72rem; color:var(--muted);">incl. 5% GST</div>
                             </td>
                             <td>
-                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:#27ae60;">
-                                    ₹{{ booking.agency_payout }}
-                                </strong>
+                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:#27ae60;">₹{{ booking.agency_payout }}</strong>
                                 <div style="font-size:0.72rem; color:var(--muted);">after 10% commission</div>
                             </td>
                             <td style="font-size:0.8rem; color:var(--muted);">{{ booking.created_at|date:"N j, Y" }}</td>
@@ -852,7 +934,9 @@
         <!-- ── TAB: CHATS ── -->
         <div class="tab-content" id="tab-chats">
             <div class="section-header">
-                <h2 class="section-title">Active Chats <span style="font-size:0.8125rem; color:var(--muted); background:var(--cream-dark); padding:0.2rem 0.65rem; border-radius:100px; font-family:'Outfit',sans-serif; font-weight:400;">{{ chatrooms|length }}</span></h2>
+                <h2 class="section-title">Active Chats
+                    <span style="font-size:0.8125rem; color:var(--muted); background:var(--cream-dark); padding:0.2rem 0.65rem; border-radius:100px; font-family:'Outfit',sans-serif; font-weight:400;">{{ chatrooms|length }}</span>
+                </h2>
             </div>
             {% if chatrooms %}
             <div class="chat-list">
@@ -871,11 +955,8 @@
                             {% endif %}
                         </div>
                         <div class="chat-list-preview">
-                            {% if room.package %}
-                                📍 {{ room.package.destination }} ·
-                            {% elif room.offer %}
-                                ₹{{ room.offer.price }} offer ·
-                            {% endif %}
+                            {% if room.package %}📍 {{ room.package.destination }} ·
+                            {% elif room.offer %}₹{{ room.offer.price }} offer ·{% endif %}
                             {% with last=room.messages.last %}
                                 {% if last %}{{ last.content|truncatechars:50 }}{% else %}No messages yet{% endif %}
                             {% endwith %}
@@ -888,9 +969,7 @@
                             {% endwith %}
                         </div>
                         <div style="margin-top:0.35rem;">
-                            <span class="raise-btn" style="font-size:0.72rem; padding:0.3rem 0.75rem;">
-                                💳 Raise Payment
-                            </span>
+                            <span class="raise-btn" style="font-size:0.72rem; padding:0.3rem 0.75rem;">💳 Raise Payment</span>
                         </div>
                     </div>
                 </a>
@@ -948,6 +1027,25 @@
                             </div>
                         </div>
                     </div>
+                    <div class="profile-row">
+                        <span class="profile-row-icon">🏦</span>
+                        <div>
+                            <div class="profile-row-lbl">Bank & KYC Status</div>
+                            <div class="profile-row-val">
+                                {% if not bank %}
+                                    <a href="{% url 'agency_bank_details' %}" style="color:#f59e0b; font-weight:600;">⚠️ Not submitted — Submit KYC</a>
+                                {% elif bank.kyc_status == 'submitted' %}
+                                    <span style="color:#3b82f6; font-weight:600;">🔍 Under Review</span>
+                                {% elif bank.kyc_status == 'verified' %}
+                                    <span style="color:#10b981; font-weight:600;">✅ Verified — {{ bank.bank_name|default:"Bank account" }}</span>
+                                {% elif bank.kyc_status == 'rejected' %}
+                                    <a href="{% url 'agency_bank_details' %}" style="color:#ef4444; font-weight:600;">❌ Rejected — Resubmit</a>
+                                {% else %}
+                                    <a href="{% url 'agency_bank_details' %}" style="color:#f59e0b; font-weight:600;">⚠️ Pending — Submit KYC</a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="profile-info-card">
@@ -973,6 +1071,7 @@
                                 {% if agency.plan == 'enterprise' %}🏆 Enterprise
                                 {% elif agency.plan == 'professional' %}💼 Professional
                                 {% else %}🌱 Starter{% endif %}
+                                <span style="font-size:0.75rem; color:#10b981; font-weight:600; margin-left:0.5rem;">· Free for founding agencies</span>
                             </div>
                         </div>
                     </div>
@@ -984,12 +1083,15 @@
                         </div>
                     </div>
                     <div class="profile-row">
-                        <span class="profile-row-icon">🔄</span>
+                        <span class="profile-row-icon">💰</span>
                         <div>
-                            <div class="profile-row-lbl">Subscription expires</div>
+                            <div class="profile-row-lbl">Earnings</div>
                             <div class="profile-row-val">
-                                {% if agency.subscription_expires_at %}{{ agency.subscription_expires_at|date:"N j, Y" }}
-                                {% else %}<span style="color:var(--muted);">—</span>{% endif %}
+                                {% if bank and bank.kyc_status == 'verified' %}
+                                    <a href="{% url 'agency_earnings' %}" style="color:var(--sea); font-weight:600;">View payout history →</a>
+                                {% else %}
+                                    <span style="color:var(--muted); font-style:italic;">KYC required to activate</span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>

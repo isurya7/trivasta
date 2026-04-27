@@ -2,9 +2,54 @@ from django.contrib import admin
 from .models import (
     Agency, Package, Offer, Booking, ChatRoom, Message,
     PaymentRequest, AgencyWarning, TripUpdate, TripStatus,
-    SupportTicket, SupportMessage, RefundRequest,
+    SupportTicket, SupportMessage, RefundRequest,Coupon, CouponUsage, AgencyBankDetails, PayoutRecord
 )
 
+@admin.register(Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    list_display  = ('code', 'discount_value', 'status', 'used_count', 'max_uses', 'valid_until', 'created_at')
+    list_filter   = ('status', 'created_by_admin')
+    search_fields = ('code', 'description')
+    list_editable = ('status',)
+    ordering      = ('-created_at',)
+ 
+ 
+@admin.register(AgencyBankDetails)
+class AgencyBankDetailsAdmin(admin.ModelAdmin):
+    list_display  = ('agency', 'account_holder_name', 'bank_name', 'ifsc_code', 'kyc_status', 'created_at')
+    list_filter   = ('kyc_status', 'account_type')
+    search_fields = ('agency__name', 'account_holder_name', 'pan_number')
+    readonly_fields = ('razorpay_account_id', 'razorpay_fund_account_id', 'kyc_verified_at', 'kyc_verified_by')
+    ordering      = ('-created_at',)
+    actions       = ['verify_kyc_action']
+ 
+    def verify_kyc_action(self, request, queryset):
+        from trivasta.payment_service import create_agency_linked_account
+        from django.utils import timezone
+        for bank in queryset:
+            account_id, error = create_agency_linked_account(bank.agency)
+            bank.kyc_status      = 'verified'
+            bank.kyc_verified_at = timezone.now()
+            bank.kyc_verified_by = request.user
+            bank.save()
+        self.message_user(request, f"{queryset.count()} agency(ies) KYC verified.")
+    verify_kyc_action.short_description = "✅ Verify KYC for selected agencies"
+ 
+ 
+@admin.register(PayoutRecord)
+class PayoutRecordAdmin(admin.ModelAdmin):
+    list_display  = ('id', 'agency', 'total_amount', 'trivasta_commission', 'agency_payout_amount', 'status', 'created_at')
+    list_filter   = ('status',)
+    search_fields = ('agency__name', 'razorpay_transfer_id')
+    readonly_fields = ('razorpay_transfer_id', 'created_at', 'paid_at')
+    ordering      = ('-created_at',)
+ 
+ 
+@admin.register(CouponUsage)
+class CouponUsageAdmin(admin.ModelAdmin):
+    list_display  = ('coupon', 'user', 'discount_applied', 'created_at')
+    search_fields = ('coupon__code', 'user__username')
+    ordering      = ('-created_at',)
 
 @admin.register(Agency)
 class AgencyAdmin(admin.ModelAdmin):

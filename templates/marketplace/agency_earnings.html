@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}My Earnings — {{ agency.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+    :root { --font-display:'Cormorant Garamond',Georgia,serif; --font-body:'Outfit',sans-serif; }
+    * { font-family: var(--font-body); box-sizing: border-box; }
+    body { background: var(--cream,#faf7f2); }
+
+    .page { min-height: calc(100vh - 68px); padding: 2.5rem 1.5rem 5rem; }
+    .inner { max-width: 1100px; margin: 0 auto; }
+
+    .back-link { display: inline-flex; align-items: center; gap: .5rem; color: var(--muted,#7a7060); font-size: .875rem; text-decoration: none; margin-bottom: 1.5rem; transition: color .2s; }
+    .back-link:hover { color: var(--sea,#0f3460); }
+
+    /* Hero */
+    .hero {
+        background: linear-gradient(135deg, #1a472a, #0f2d18);
+        border-radius: 20px; padding: 2.5rem 3rem; margin-bottom: 2rem;
+        position: relative; overflow: hidden;
+        display: flex; align-items: center; justify-content: space-between; gap: 2rem;
+    }
+    .hero::before {
+        content: ''; position: absolute; inset: 0;
+        background-image: linear-gradient(rgba(255,255,255,.04) 1px,transparent 1px),
+                          linear-gradient(90deg,rgba(255,255,255,.04) 1px,transparent 1px);
+        background-size: 32px 32px;
+    }
+    .hero::after { content: '💰'; position: absolute; right: 3rem; top: 50%; transform: translateY(-50%); font-size: 6rem; opacity: .07; pointer-events: none; }
+    .hero-left { position: relative; z-index: 1; }
+    .hero-eyebrow { font-size: .68rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: #6ee7b7; margin-bottom: .5rem; }
+    .hero-title { font-family: var(--font-display); font-size: 2rem; font-weight: 300; color: white; margin-bottom: .35rem; }
+    .hero-title em { font-style: italic; color: #6ee7b7; }
+    .hero-sub { font-size: .875rem; color: rgba(255,255,255,.45); }
+    .hero-right { position: relative; z-index: 1; flex-shrink: 0; }
+
+    /* KYC notice */
+    .kyc-notice {
+        border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem;
+        display: flex; align-items: flex-start; gap: 1rem;
+    }
+    .kyc-pending   { background: #fffbeb; border: 1px solid #fde68a; border-left: 3px solid #f59e0b; }
+    .kyc-submitted { background: #eff6ff; border: 1px solid #bfdbfe; border-left: 3px solid #3b82f6; }
+    .kyc-verified  { background: #f0fdf4; border: 1px solid #bbf7d0; border-left: 3px solid #059669; }
+    .kyc-rejected  { background: #fef2f2; border: 1px solid #fecaca; border-left: 3px solid #dc2626; }
+    .kyc-notice-icon { font-size: 1.5rem; flex-shrink: 0; }
+    .kyc-notice-text strong { display: block; font-size: .875rem; font-weight: 700; color: #1a1510; margin-bottom: .2rem; }
+    .kyc-notice-text p { font-size: .8125rem; color: #7a7060; line-height: 1.5; margin: 0; }
+    .btn-kyc { display: inline-flex; align-items: center; gap: .4rem; background: #1a472a; color: white; text-decoration: none; border-radius: 8px; padding: .5rem 1.25rem; font-size: .8rem; font-weight: 600; margin-top: .5rem; transition: background .2s; }
+    .btn-kyc:hover { background: #0f2d18; }
+
+    /* Stat cards */
+    .stat-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; margin-bottom: 2rem; }
+    @media(max-width:600px) { .stat-row { grid-template-columns: 1fr; } }
+
+    .stat-card { background: white; border-radius: 14px; box-shadow: 0 4px 24px rgba(13,17,23,.07); padding: 1.5rem; }
+    .stat-num { font-family: var(--font-display); font-size: 2.75rem; font-weight: 700; line-height: 1; margin-bottom: .25rem; }
+    .stat-label { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--muted,#7a7060); }
+    .n-earned  { color: #059669; }
+    .n-pending { color: #d97706; }
+    .n-total   { color: var(--sea,#0f3460); }
+
+    /* Table */
+    .table-wrap { background: white; border-radius: 14px; box-shadow: 0 4px 24px rgba(13,17,23,.07); overflow: hidden; }
+    .tw-header { background: var(--cream,#faf7f2); border-bottom: 1px solid #ede8df; padding: 1.1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+    .twh-left { display: flex; align-items: center; gap: .5rem; }
+    .twh-left::before { content: ''; width: 3px; height: 14px; background: var(--gold,#c9a84c); border-radius: 2px; }
+    .twh-left h3 { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #7a7060; margin: 0; }
+    .tw-count { font-size: .75rem; color: #7a7060; }
+
+    table { width: 100%; border-collapse: collapse; }
+    thead th { background: #f5f0e8; padding: .875rem 1.25rem; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #7a7060; text-align: left; }
+    tbody td { padding: 1rem 1.25rem; border-top: 1px solid #ede8df; font-size: .875rem; vertical-align: middle; }
+    tbody tr:hover td { background: #faf7f2; }
+
+    .amount-cell { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; }
+    .earned  { color: #059669; }
+    .pending { color: #d97706; }
+    .failed  { color: #dc2626; }
+
+    .s-pill { display: inline-flex; align-items: center; padding: .25rem .75rem; border-radius: 20px; font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+    .p-paid      { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; }
+    .p-pending   { background: #fffbeb; color: #92400e; border: 1px solid #fde68a; }
+    .p-processing{ background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .p-failed    { background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+    .t-time { font-size: .72rem; color: #7a7060; white-space: nowrap; }
+    .ref-id { font-family: monospace; font-size: .72rem; color: #7a7060; }
+
+    .empty-state { text-align: center; padding: 4rem 2rem; }
+    .empty-state .e-icon { font-size: 3rem; margin-bottom: 1rem; opacity: .4; }
+    .empty-state p { color: #7a7060; }
+
+    @media(max-width:768px) { table { display: block; overflow-x: auto; } .hero { flex-direction: column; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page">
+<div class="inner">
+
+    <a href="{% url 'agency_dashboard' %}" class="back-link">← Back to Dashboard</a>
+
+    <!-- Hero -->
+    <div class="hero">
+        <div class="hero-left">
+            <div class="hero-eyebrow">Agency Earnings</div>
+            <h1 class="hero-title">Your <em>Payout History</em></h1>
+            <p class="hero-sub">Track every booking payout, commission deduction and transfer status.</p>
+        </div>
+    </div>
+
+    <!-- KYC Notice -->
+    {% if not bank %}
+    <div class="kyc-notice kyc-pending">
+        <div class="kyc-notice-icon">🏦</div>
+        <div class="kyc-notice-text">
+            <strong>Bank details not submitted</strong>
+            <p>Submit your bank account details so Trivasta can transfer your earnings after each booking. Without KYC, payouts will be queued.</p>
+            <a href="{% url 'agency_bank_details' %}" class="btn-kyc">Submit Bank Details →</a>
+        </div>
+    </div>
+    {% elif bank.kyc_status == 'pending' %}
+    <div class="kyc-notice kyc-pending">
+        <div class="kyc-notice-icon">⏳</div>
+        <div class="kyc-notice-text">
+            <strong>Bank details not yet submitted</strong>
+            <p>Please complete and submit your bank details for KYC verification.</p>
+            <a href="{% url 'agency_bank_details' %}" class="btn-kyc">Complete Submission →</a>
+        </div>
+    </div>
+    {% elif bank.kyc_status == 'submitted' %}
+    <div class="kyc-notice kyc-submitted">
+        <div class="kyc-notice-icon">🔍</div>
+        <div class="kyc-notice-text">
+            <strong>KYC under review</strong>
+            <p>Your bank details are being verified by our team. This usually takes 24 hours. Payouts will begin automatically once verified.</p>
+        </div>
+    </div>
+    {% elif bank.kyc_status == 'verified' %}
+    <div class="kyc-notice kyc-verified">
+        <div class="kyc-notice-icon">✅</div>
+        <div class="kyc-notice-text">
+            <strong>KYC verified — payouts active</strong>
+            <p>Your account <strong>{{ bank.account_holder_name }}</strong> ({{ bank.bank_name }}) is verified. Earnings are transferred instantly after each booking.</p>
+        </div>
+    </div>
+    {% elif bank.kyc_status == 'rejected' %}
+    <div class="kyc-notice kyc-rejected">
+        <div class="kyc-notice-icon">❌</div>
+        <div class="kyc-notice-text">
+            <strong>KYC rejected — resubmit required</strong>
+            <p>{{ bank.kyc_rejection_reason|default:"Please resubmit with correct details." }}</p>
+            <a href="{% url 'agency_bank_details' %}" class="btn-kyc">Resubmit Details →</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="stat-row">
+        <div class="stat-card">
+            <div class="stat-num n-earned">₹{{ total_earned|floatformat:0 }}</div>
+            <div class="stat-label">Total Earned</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-num n-pending">₹{{ total_pending|floatformat:0 }}</div>
+            <div class="stat-label">Pending Payouts</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-num n-total">{{ total_bookings }}</div>
+            <div class="stat-label">Total Bookings</div>
+        </div>
+    </div>
+
+    <!-- Payout history -->
+    <div class="table-wrap">
+        <div class="tw-header">
+            <div class="twh-left"><h3>Payout History</h3></div>
+            <span class="tw-count">{{ payouts|length }} payout{{ payouts|length|pluralize }}</span>
+        </div>
+
+        {% if payouts %}
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Booking</th>
+                    <th>Total Paid by Traveller</th>
+                    <th>Trivasta Fee (5%)</th>
+                    <th>Your Payout</th>
+                    <th>Status</th>
+                    <th>Transfer ID</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for payout in payouts %}
+                <tr>
+                    <td style="color:#7a7060;font-size:.72rem;font-family:monospace;">#{{ payout.id }}</td>
+                    <td>
+                        <div style="font-weight:600;font-size:.875rem;color:#1a1510;">Booking #{{ payout.booking.id }}</div>
+                        {% if payout.booking.package %}
+                        <div style="font-size:.72rem;color:#7a7060;">{{ payout.booking.package.title }}</div>
+                        {% elif payout.booking.offer %}
+                        <div style="font-size:.72rem;color:#7a7060;">{{ payout.booking.offer.trip.destination }}</div>
+                        {% endif %}
+                    </td>
+                    <td><span class="amount-cell" style="color:#1a1510;">₹{{ payout.total_amount|floatformat:0 }}</span></td>
+                    <td><span style="font-size:.875rem;color:#7a7060;">₹{{ payout.trivasta_commission|floatformat:0 }}</span></td>
+                    <td>
+                        <span class="amount-cell {% if payout.status == 'paid' %}earned{% elif payout.status == 'failed' %}failed{% else %}pending{% endif %}">
+                            ₹{{ payout.agency_payout_amount|floatformat:0 }}
+                        </span>
+                    </td>
+                    <td><span class="s-pill p-{{ payout.status }}">{{ payout.get_status_display }}</span></td>
+                    <td class="ref-id">{{ payout.razorpay_transfer_id|default:"—" }}</td>
+                    <td class="t-time">{{ payout.created_at|date:"M j, Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <div class="e-icon">💸</div>
+            <p>No payouts yet. They'll appear here after your first booking.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+</div>
+{% endblock %}

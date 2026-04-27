@@ -1,1103 +1,1519 @@
 {% extends "base.html" %}
-{% block title %}Trivasta Admin — Dashboard{% endblock %}
+{% block title %}Trivasta Command Centre{% endblock %}
 
 {% block extra_css %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap');
 
-    .admin-page {
-        background: #0d1117;
-        min-height: calc(100vh - 68px);
-        font-family: 'Outfit', sans-serif;
-        padding: 2.5rem 2rem 5rem;
-    }
+/* ── RESET & BASE ── */
+*, *::before, *::after { box-sizing: border-box; }
 
-    .admin-inner {
-        max-width: 1400px;
-        margin: 0 auto;
-    }
+.ap {
+    background: #080c10;
+    min-height: calc(100vh - 68px);
+    font-family: 'Outfit', sans-serif;
+    color: #e2e8f0;
+    position: relative;
+    overflow-x: hidden;
+}
 
-    /* ── TOP HEADER ── */
-    .admin-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 2.5rem;
-        gap: 1.5rem;
-        flex-wrap: wrap;
-    }
+/* Subtle grid texture */
+.ap::before {
+    content: '';
+    position: fixed; inset: 0; z-index: 0;
+    background-image:
+        linear-gradient(rgba(201,168,76,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(201,168,76,0.025) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+}
 
-    .admin-header-left {}
+.ap-inner {
+    max-width: 1520px;
+    margin: 0 auto;
+    padding: 2rem 2rem 6rem;
+    position: relative; z-index: 1;
+}
 
-    .admin-eyebrow {
-        font-size: 0.68rem;
-        font-weight: 700;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: #e8c97a;
-        margin-bottom: 0.4rem;
-    }
+/* ── HEADER ── */
+.ap-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(201,168,76,0.12);
+}
 
-    .admin-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 2.25rem;
-        font-weight: 300;
-        color: white;
-        line-height: 1.1;
-    }
+.ap-header-left {}
 
-    .admin-title em { font-style: italic; color: #e8c97a; }
+.ap-eyebrow {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #c9a84c;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
 
-    .admin-title-sub {
-        font-size: 0.875rem;
-        color: rgba(255,255,255,0.35);
-        margin-top: 0.25rem;
-    }
+.ap-eyebrow::before {
+    content: '';
+    width: 20px; height: 1px;
+    background: #c9a84c;
+}
 
-    .admin-live-badge {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        background: rgba(39,174,96,0.1);
-        border: 1px solid rgba(39,174,96,0.25);
-        border-radius: 100px;
-        padding: 0.5rem 1rem;
-        font-size: 0.775rem;
-        font-weight: 600;
-        color: #27ae60;
-    }
+.ap-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: #f8f4ed;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+}
 
-    .live-dot {
-        width: 7px; height: 7px;
-        background: #27ae60;
-        border-radius: 50%;
-        animation: livePulse 1.5s infinite;
-    }
+.ap-title em { font-style: italic; color: #c9a84c; }
 
-    @keyframes livePulse {
-        0%,100% { opacity:1; transform:scale(1); }
-        50%      { opacity:0.4; transform:scale(0.8); }
-    }
+.ap-title-sub {
+    font-size: 0.8125rem;
+    color: rgba(255,255,255,0.3);
+    margin-top: 0.35rem;
+    font-family: 'DM Mono', monospace;
+    letter-spacing: 0.04em;
+}
 
-    /* ── STATS GRID ── */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.25rem;
-        margin-bottom: 2rem;
-    }
+.ap-header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-shrink: 0;
+}
 
-    .stat-card {
-        background: #161b22;
-        border: 1px solid #21262d;
-        border-radius: 14px;
-        padding: 1.5rem;
-        transition: all 0.3s;
-        animation: fadeUp 0.5s ease both;
-        position: relative;
-        overflow: hidden;
-    }
+.live-pill {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 100px;
+    padding: 0.45rem 1rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #10b981;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
 
-    .stat-card::before {
-        content: '';
-        position: absolute;
-        bottom: 0; left: 0; right: 0;
-        height: 3px;
-        background: var(--accent, #0f3460);
-        border-radius: 0 0 14px 14px;
-    }
+.live-dot {
+    width: 6px; height: 6px;
+    background: #10b981;
+    border-radius: 50%;
+    animation: pulse 1.8s infinite;
+}
 
-    .stat-card:hover {
-        border-color: #30363d;
-        transform: translateY(-2px);
-    }
+@keyframes pulse {
+    0%,100% { opacity:1; box-shadow: 0 0 0 0 rgba(16,185,129,0.4); }
+    50% { opacity:0.6; box-shadow: 0 0 0 4px rgba(16,185,129,0); }
+}
 
-    .stat-card-icon {
-        font-size: 1.5rem;
-        margin-bottom: 0.875rem;
-    }
+/* ── GLOBAL SEARCH ── */
+.search-bar-wrap {
+    position: relative;
+    margin-bottom: 2rem;
+}
 
-    .stat-card-num {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 2rem;
-        font-weight: 600;
-        color: white;
-        line-height: 1;
-        margin-bottom: 0.25rem;
-    }
+.search-bar {
+    width: 100%;
+    background: #0e1318;
+    border: 1px solid rgba(201,168,76,0.15);
+    border-radius: 12px;
+    padding: 1rem 1.25rem 1rem 3.25rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9375rem;
+    color: #f8f4ed;
+    outline: none;
+    transition: all 0.25s;
+}
 
-    .stat-card-label {
-        font-size: 0.8rem;
-        color: rgba(255,255,255,0.4);
-    }
+.search-bar::placeholder { color: rgba(255,255,255,0.2); }
 
-    .stat-card-delta {
-        font-size: 0.72rem;
-        font-weight: 600;
-        margin-top: 0.4rem;
-        color: #27ae60;
-    }
+.search-bar:focus {
+    border-color: rgba(201,168,76,0.4);
+    background: #111620;
+    box-shadow: 0 0 0 3px rgba(201,168,76,0.06);
+}
 
-    /* ── SECTION ── */
-    .admin-section {
-        margin-bottom: 2rem;
-    }
+.search-icon {
+    position: absolute;
+    left: 1.1rem; top: 50%; transform: translateY(-50%);
+    color: rgba(255,255,255,0.25);
+    font-size: 1rem;
+    pointer-events: none;
+}
 
-    .section-hd {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 1.25rem;
-        gap: 1rem;
-    }
+.search-results-panel {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0; right: 0;
+    background: #0e1318;
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 12px;
+    box-shadow: 0 24px 48px rgba(0,0,0,0.6);
+    z-index: 200;
+    overflow: hidden;
+    display: none;
+    max-height: 420px;
+    overflow-y: auto;
+}
 
-    .section-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.375rem;
-        font-weight: 600;
-        color: white;
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
+.search-results-panel.open { display: block; }
 
-    .section-title::before {
-        content: '';
-        width: 4px; height: 20px;
-        background: #e8c97a;
-        border-radius: 2px;
-        display: inline-block;
-        flex-shrink: 0;
-    }
+.search-group-label {
+    padding: 0.6rem 1.25rem;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #c9a84c;
+    background: rgba(201,168,76,0.04);
+    border-bottom: 1px solid rgba(201,168,76,0.08);
+}
 
-    .section-count {
-        font-size: 0.75rem;
-        color: rgba(255,255,255,0.3);
-        background: rgba(255,255,255,0.06);
-        padding: 0.2rem 0.65rem;
-        border-radius: 100px;
-    }
+.search-result-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1.25rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    text-decoration: none;
+}
 
-    /* ── CHARTS ROW ── */
-    .charts-row {
-        display: grid;
-        grid-template-columns: 2fr 1fr;
-        gap: 1.25rem;
-        margin-bottom: 2rem;
-    }
+.search-result-item:hover { background: rgba(201,168,76,0.06); }
 
-    .chart-card {
-        background: #161b22;
-        border: 1px solid #21262d;
-        border-radius: 14px;
-        padding: 1.5rem;
-    }
+.sri-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    display: grid;
+    place-items: center;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
 
-    .chart-title {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: rgba(255,255,255,0.7);
-        margin-bottom: 1.25rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
+.sri-main { font-size: 0.875rem; font-weight: 600; color: #f8f4ed; }
+.sri-sub  { font-size: 0.72rem; color: rgba(255,255,255,0.35); margin-top: 0.1rem; }
 
-    .chart-canvas { width: 100% !important; }
+.search-empty {
+    padding: 2rem;
+    text-align: center;
+    color: rgba(255,255,255,0.25);
+    font-size: 0.875rem;
+}
 
-    /* ── TABLES ── */
-    .table-card {
-        background: #161b22;
-        border: 1px solid #21262d;
-        border-radius: 14px;
-        overflow: hidden;
-    }
+/* ── ALERT BANNERS ── */
+.alert-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 2rem;
+}
 
-    .table-card-header {
-        padding: 1.25rem 1.5rem;
-        border-bottom: 1px solid #21262d;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-    }
+.alert-strip {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.875rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
 
-    .table-card-title {
-        font-size: 0.9375rem;
-        font-weight: 600;
-        color: white;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
+.alert-danger {
+    background: rgba(239,68,68,0.07);
+    border: 1px solid rgba(239,68,68,0.18);
+    color: #fca5a5;
+    border-left: 3px solid #ef4444;
+}
 
-    .admin-table { width: 100%; border-collapse: collapse; }
+.alert-warning {
+    background: rgba(245,158,11,0.07);
+    border: 1px solid rgba(245,158,11,0.18);
+    color: #fcd34d;
+    border-left: 3px solid #f59e0b;
+}
 
-    .admin-table th {
-        text-align: left;
-        padding: 0.875rem 1.5rem;
-        font-size: 0.65rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: rgba(255,255,255,0.3);
-        background: rgba(255,255,255,0.03);
-        border-bottom: 1px solid #21262d;
-    }
+.alert-info {
+    background: rgba(59,130,246,0.07);
+    border: 1px solid rgba(59,130,246,0.18);
+    color: #93c5fd;
+    border-left: 3px solid #3b82f6;
+}
 
-    .admin-table td {
-        padding: 1rem 1.5rem;
-        border-bottom: 1px solid #21262d;
-        font-size: 0.875rem;
-        color: rgba(255,255,255,0.75);
-        vertical-align: middle;
-    }
+/* ── STATS GRID ── */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
 
-    .admin-table tr:last-child td { border-bottom: none; }
+.sc {
+    background: #0e1318;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 1.375rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.25s, border-color 0.25s;
+    animation: fadeUp 0.5s ease both;
+}
 
-    .admin-table tr:hover td {
-        background: rgba(255,255,255,0.02);
-    }
+.sc:hover {
+    transform: translateY(-2px);
+    border-color: rgba(201,168,76,0.2);
+}
 
-    .td-main { color: white !important; font-weight: 600; }
-    .td-muted { color: rgba(255,255,255,0.35) !important; font-size: 0.8rem !important; }
+.sc::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--ac, rgba(201,168,76,0.4));
+    border-radius: 0 0 14px 14px;
+}
 
-    .td-amount {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.125rem !important;
-        color: #e8c97a !important;
-        font-weight: 600;
-    }
+.sc-icon { font-size: 1.375rem; margin-bottom: 0.75rem; }
 
-    /* ── BADGES ── */
-    .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-        font-size: 0.65rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        padding: 0.2rem 0.6rem;
-        border-radius: 2px;
-    }
+.sc-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.25rem;
+    font-weight: 600;
+    color: #f8f4ed;
+    line-height: 1;
+    margin-bottom: 0.2rem;
+}
 
-    .badge-approved { background: rgba(39,174,96,0.15);  color: #27ae60; }
-    .badge-pending  { background: rgba(243,156,18,0.15); color: #f39c12; }
-    .badge-rejected { background: rgba(231,76,60,0.12);  color: #e74c3c; }
-    .badge-paid     { background: rgba(39,174,96,0.15);  color: #27ae60; }
-    .badge-warn     { background: rgba(231,76,60,0.12);  color: #e74c3c; }
-    .badge-enterprise   { background: rgba(201,168,76,0.15); color: #e8c97a; }
-    .badge-professional { background: rgba(15,52,96,0.3);    color: #7fa8d4; }
-    .badge-starter      { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); }
+.sc-label { font-size: 0.775rem; color: rgba(255,255,255,0.35); letter-spacing: 0.02em; }
 
-    /* ── ACTION BUTTONS ── */
-    .action-btn {
-        padding: 0.35rem 0.875rem;
-        border-radius: 6px;
-        font-family: 'Outfit', sans-serif;
-        font-size: 0.775rem;
-        font-weight: 600;
-        cursor: pointer;
-        border: none;
-        text-decoration: none;
-        transition: all 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.3rem;
-    }
+.sc-sub {
+    font-size: 0.68rem;
+    font-weight: 600;
+    margin-top: 0.4rem;
+    color: var(--ac, #c9a84c);
+    font-family: 'DM Mono', monospace;
+}
 
-    .btn-approve { background: rgba(39,174,96,0.15);  color: #27ae60; }
-    .btn-approve:hover { background: rgba(39,174,96,0.25); }
-    .btn-reject  { background: rgba(231,76,60,0.12);  color: #e74c3c; }
-    .btn-reject:hover  { background: rgba(231,76,60,0.22); }
-    .btn-reset   { background: rgba(243,156,18,0.12); color: #f39c12; }
-    .btn-reset:hover   { background: rgba(243,156,18,0.22); }
+/* ── COMMISSION HIGHLIGHT ── */
+.commission-bar {
+    background: linear-gradient(135deg, #0e1318 0%, #111a0a 100%);
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 14px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    position: relative;
+    overflow: hidden;
+}
 
-    /* ── PENDING AGENCIES ── */
-    .pending-card {
-        background: #161b22;
-        border: 1px solid #21262d;
-        border-radius: 14px;
-        overflow: hidden;
-    }
+.commission-bar::before {
+    content: '₹';
+    position: absolute;
+    right: 1.5rem; top: 50%; transform: translateY(-50%);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 8rem;
+    color: rgba(16,185,129,0.04);
+    font-weight: 700;
+    line-height: 1;
+}
 
-    .pending-empty {
-        padding: 2.5rem;
-        text-align: center;
-        color: rgba(255,255,255,0.25);
-        font-size: 0.875rem;
-    }
+.cb-item {}
+.cb-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.3);
+    margin-bottom: 0.4rem;
+}
+.cb-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.875rem;
+    font-weight: 600;
+    line-height: 1;
+}
+.cb-green  { color: #10b981; }
+.cb-gold   { color: #c9a84c; }
+.cb-orange { color: #f59e0b; }
+.cb-red    { color: #ef4444; }
+.cb-note {
+    font-size: 0.7rem;
+    color: rgba(255,255,255,0.25);
+    margin-top: 0.25rem;
+    font-family: 'DM Mono', monospace;
+}
 
-    /* ── TWO COL GRID ── */
-    .two-col {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1.25rem;
-    }
+/* ── TABS ── */
+.ap-tabs {
+    display: flex;
+    gap: 0.2rem;
+    background: #0e1318;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 0.3rem;
+    margin-bottom: 2rem;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+.ap-tabs::-webkit-scrollbar { display: none; }
 
-    /* ── TABS ── */
-    .admin-tabs {
-        display: flex;
-        gap: 0.25rem;
-        background: #161b22;
-        border: 1px solid #21262d;
-        border-radius: 8px;
-        padding: 0.3rem;
-        margin-bottom: 1.75rem;
-        overflow-x: auto;
-    }
+.ap-tab {
+    padding: 0.6rem 1.25rem;
+    border-radius: 7px;
+    font-size: 0.8375rem;
+    font-weight: 500;
+    color: rgba(255,255,255,0.35);
+    cursor: pointer;
+    border: none;
+    background: none;
+    font-family: 'Outfit', sans-serif;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
 
-    .admin-tab {
-        padding: 0.55rem 1.25rem;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: rgba(255,255,255,0.4);
-        cursor: pointer;
-        border: none;
-        background: none;
-        font-family: 'Outfit', sans-serif;
-        white-space: nowrap;
-        transition: all 0.2s;
-    }
+.ap-tab.active {
+    background: rgba(201,168,76,0.12);
+    color: #c9a84c;
+    border: 1px solid rgba(201,168,76,0.2);
+}
 
-    .admin-tab.active {
-        background: #0f3460;
-        color: white;
-    }
+.ap-tab:hover:not(.active) {
+    color: rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.04);
+}
 
-    .admin-tab:hover:not(.active) {
-        color: rgba(255,255,255,0.7);
-        background: rgba(255,255,255,0.05);
-    }
+.tab-badge {
+    background: rgba(239,68,68,0.2);
+    color: #fca5a5;
+    font-size: 0.6rem;
+    font-weight: 700;
+    padding: 0.1rem 0.45rem;
+    border-radius: 100px;
+    border: 1px solid rgba(239,68,68,0.25);
+}
 
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+.tab-pane { display: none; animation: fadeUp 0.3s ease; }
+.tab-pane.active { display: block; }
 
-    /* ── ALERT BANNER ── */
-    .alert-banner {
-        background: rgba(231,76,60,0.08);
-        border: 1px solid rgba(231,76,60,0.2);
-        border-radius: 10px;
-        padding: 1rem 1.25rem;
-        display: flex;
-        align-items: center;
-        gap: 0.875rem;
-        margin-bottom: 1.5rem;
-        font-size: 0.875rem;
-        color: #e74c3c;
-    }
+/* ── SECTION HEADER ── */
+.s-hd {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
 
-    /* ── AI INSIGHTS ── */
-    .insights-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-    }
+.s-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.375rem;
+    font-weight: 600;
+    color: #f8f4ed;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
 
-    .insight-card {
-        background: #161b22;
-        border: 1px solid #21262d;
-        border-radius: 12px;
-        padding: 1.25rem;
-        transition: all 0.25s;
-    }
+.s-title::before {
+    content: '';
+    width: 3px; height: 18px;
+    background: #c9a84c;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
 
-    .insight-card:hover {
-        border-color: rgba(201,168,76,0.3);
-        background: #1a2030;
-    }
+.s-count {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.3);
+    background: rgba(255,255,255,0.06);
+    padding: 0.2rem 0.65rem;
+    border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+}
 
-    .insight-icon {
-        font-size: 1.75rem;
-        margin-bottom: 0.75rem;
-    }
+/* ── TABLE CARD ── */
+.t-card {
+    background: #0e1318;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
 
-    .insight-title {
-        font-size: 0.875rem;
-        font-weight: 600;
-        color: white;
-        margin-bottom: 0.4rem;
-    }
+.t-card-top {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
 
-    .insight-body {
-        font-size: 0.8rem;
-        color: rgba(255,255,255,0.4);
-        line-height: 1.65;
-    }
+/* ── TABLE ── */
+.at { width: 100%; border-collapse: collapse; }
 
-    .insight-value {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.75rem;
-        font-weight: 600;
-        color: #e8c97a;
-        margin-bottom: 0.2rem;
-    }
+.at th {
+    text-align: left;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.25);
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    white-space: nowrap;
+}
 
-    /* ── SCROLLBAR ── */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #0d1117; }
-    ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
+.at td {
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.65);
+    vertical-align: middle;
+}
 
-    @keyframes fadeUp {
-        from { opacity:0; transform:translateY(12px); }
-        to   { opacity:1; transform:translateY(0); }
-    }
+.at tr:last-child td { border-bottom: none; }
+.at tbody tr:hover td { background: rgba(201,168,76,0.03); }
 
-    @media (max-width: 1100px) {
-        .stats-grid   { grid-template-columns: repeat(2, 1fr); }
-        .charts-row   { grid-template-columns: 1fr; }
-        .two-col      { grid-template-columns: 1fr; }
-        .insights-grid { grid-template-columns: 1fr 1fr; }
-    }
+.td-main { color: #f8f4ed !important; font-weight: 600; }
+.td-dim  { color: rgba(255,255,255,0.28) !important; font-size: 0.775rem !important; }
+.td-mono { font-family: 'DM Mono', monospace !important; font-size: 0.75rem !important; color: rgba(255,255,255,0.35) !important; }
 
-    @media (max-width: 640px) {
-        .stats-grid    { grid-template-columns: 1fr 1fr; }
-        .insights-grid { grid-template-columns: 1fr; }
-        .admin-tabs { gap: 0; }
-    }
+.td-gold {
+    font-family: 'Cormorant Garamond', serif !important;
+    font-size: 1.125rem !important;
+    color: #c9a84c !important;
+    font-weight: 600;
+}
+
+.td-green {
+    font-family: 'Cormorant Garamond', serif !important;
+    font-size: 1.125rem !important;
+    color: #10b981 !important;
+    font-weight: 600;
+}
+
+/* ── BADGES ── */
+.bx {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    padding: 0.22rem 0.6rem;
+    border-radius: 4px;
+}
+
+.bx-green    { background: rgba(16,185,129,0.1);  color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
+.bx-gold     { background: rgba(201,168,76,0.1);  color: #c9a84c; border: 1px solid rgba(201,168,76,0.2); }
+.bx-red      { background: rgba(239,68,68,0.1);   color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+.bx-blue     { background: rgba(59,130,246,0.1);  color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+.bx-dim      { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.35); border: 1px solid rgba(255,255,255,0.08); }
+.bx-orange   { background: rgba(245,158,11,0.1);  color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
+
+/* ── ACTION BUTTONS ── */
+.ab {
+    padding: 0.32rem 0.875rem;
+    border-radius: 6px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    white-space: nowrap;
+}
+
+.ab-green  { background: rgba(16,185,129,0.1);  color: #10b981; border: 1px solid rgba(16,185,129,0.2); }
+.ab-green:hover  { background: rgba(16,185,129,0.2); }
+.ab-red    { background: rgba(239,68,68,0.1);   color: #ef4444; border: 1px solid rgba(239,68,68,0.2); }
+.ab-red:hover    { background: rgba(239,68,68,0.2); }
+.ab-gold   { background: rgba(201,168,76,0.1);  color: #c9a84c; border: 1px solid rgba(201,168,76,0.2); }
+.ab-gold:hover   { background: rgba(201,168,76,0.2); }
+.ab-blue   { background: rgba(59,130,246,0.1);  color: #60a5fa; border: 1px solid rgba(59,130,246,0.2); }
+.ab-blue:hover   { background: rgba(59,130,246,0.2); }
+
+/* ── TAB SEARCH ── */
+.tab-search-wrap {
+    position: relative;
+    max-width: 360px;
+}
+
+.tab-search {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 0.55rem 0.875rem 0.55rem 2.25rem;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.8375rem;
+    color: #f8f4ed;
+    outline: none;
+    transition: all 0.2s;
+}
+
+.tab-search::placeholder { color: rgba(255,255,255,0.2); }
+.tab-search:focus { border-color: rgba(201,168,76,0.3); background: rgba(201,168,76,0.04); }
+
+.tab-search-icon {
+    position: absolute;
+    left: 0.75rem; top: 50%; transform: translateY(-50%);
+    color: rgba(255,255,255,0.2);
+    font-size: 0.8rem;
+    pointer-events: none;
+}
+
+/* ── CHARTS ── */
+.charts-row {
+    display: grid;
+    grid-template-columns: 5fr 3fr;
+    gap: 1.25rem;
+    margin-bottom: 2rem;
+}
+
+.chart-card {
+    background: #0e1318;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 1.5rem;
+}
+
+.chart-hd {
+    font-size: 0.775rem;
+    font-weight: 600;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 1.25rem;
+    letter-spacing: 0.04em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ── EMPTY STATE ── */
+.empty-row {
+    padding: 3rem;
+    text-align: center;
+    color: rgba(255,255,255,0.2);
+    font-size: 0.875rem;
+}
+
+/* ── WARNING PIPS ── */
+.pip-row { display: flex; gap: 0.35rem; align-items: center; }
+.pip {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    transition: background 0.2s;
+}
+.pip.on { background: #ef4444; border-color: #dc2626; }
+
+/* ── INSIGHTS GRID ── */
+.insights-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.ig-card {
+    background: #0e1318;
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 1.375rem;
+    transition: all 0.25s;
+}
+
+.ig-card:hover {
+    border-color: rgba(201,168,76,0.2);
+    background: #111620;
+}
+
+.ig-icon { font-size: 1.75rem; margin-bottom: 0.75rem; }
+.ig-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: #c9a84c;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+}
+.ig-title { font-size: 0.875rem; font-weight: 600; color: #f8f4ed; margin-bottom: 0.35rem; }
+.ig-body  { font-size: 0.775rem; color: rgba(255,255,255,0.3); line-height: 1.65; }
+
+/* ── KYC MODAL ── */
+.modal-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 1000;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    align-items: center; justify-content: center;
+}
+.modal-overlay.open { display: flex; }
+
+.modal-box {
+    background: #0e1318;
+    border: 1px solid rgba(201,168,76,0.2);
+    border-radius: 18px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 500px;
+    margin: 1rem;
+    animation: modalIn 0.25s ease;
+}
+
+@keyframes modalIn {
+    from { opacity:0; transform:scale(0.95) translateY(10px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+}
+
+.modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #f8f4ed;
+    margin-bottom: 0.35rem;
+}
+
+.modal-sub { font-size: 0.8125rem; color: rgba(255,255,255,0.35); margin-bottom: 1.5rem; }
+
+.modal-textarea {
+    width: 100%;
+    padding: 0.875rem 1rem;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    color: #f8f4ed;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.875rem;
+    resize: vertical;
+    min-height: 100px;
+    outline: none;
+    margin-bottom: 1.25rem;
+    transition: border-color 0.2s;
+}
+
+.modal-textarea:focus { border-color: rgba(201,168,76,0.35); }
+.modal-textarea::placeholder { color: rgba(255,255,255,0.2); }
+
+.modal-footer { display: flex; gap: 0.75rem; }
+.modal-footer button { flex: 1; padding: 0.75rem; border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 0.875rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; }
+.modal-cancel { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.5); border: 1px solid rgba(255,255,255,0.08) !important; }
+.modal-cancel:hover { background: rgba(255,255,255,0.1); }
+.modal-confirm { background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.25) !important; }
+.modal-confirm:hover { background: rgba(239,68,68,0.22); }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+@keyframes fadeUp {
+    from { opacity:0; transform:translateY(14px); }
+    to   { opacity:1; transform:translateY(0); }
+}
+
+@media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(4,1fr); } }
+@media (max-width: 960px)  {
+    .stats-grid { grid-template-columns: repeat(2,1fr); }
+    .charts-row { grid-template-columns: 1fr; }
+    .commission-bar { grid-template-columns: repeat(2,1fr); }
+    .insights-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px)  {
+    .stats-grid { grid-template-columns: repeat(2,1fr); }
+    .insights-grid { grid-template-columns: 1fr; }
+    .ap-header { flex-direction: column; }
+    .commission-bar { grid-template-columns: 1fr 1fr; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="admin-page">
-    <div class="admin-inner">
+<div class="ap">
+<div class="ap-inner">
 
-        <!-- ── HEADER ── -->
-        <div class="admin-header">
-            <div class="admin-header-left">
-                <div class="admin-eyebrow">✦ Trivasta Command Centre</div>
-                <h1 class="admin-title">Admin <em>Dashboard</em></h1>
-                <div class="admin-title-sub">
-                    Full platform overview · Staff access only
-                </div>
-            </div>
-            <div class="admin-live-badge">
-                <div class="live-dot"></div>
-                Live Data
-            </div>
+    <!-- ── HEADER ── -->
+    <div class="ap-header">
+        <div class="ap-header-left">
+            <div class="ap-eyebrow">Trivasta Command Centre</div>
+            <h1 class="ap-title">Admin <em>Dashboard</em></h1>
+            <div class="ap-title-sub">staff access only · {{ request.user.username }}</div>
         </div>
+        <div class="ap-header-right">
+            <div class="live-pill"><div class="live-dot"></div>Live Data</div>
+        </div>
+    </div>
 
-        <!-- Alert if pending approvals -->
+    <!-- ── GLOBAL SEARCH ── -->
+    <div class="search-bar-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-bar" id="globalSearch"
+            placeholder="Search agencies, bookings, users, trips… (type anything)"
+            autocomplete="off">
+        <div class="search-results-panel" id="searchPanel">
+            <div class="search-empty" id="searchEmpty">Start typing to search across the platform…</div>
+            <div id="searchResults"></div>
+        </div>
+    </div>
+
+    <!-- ── ALERT BANNERS ── -->
+    <div class="alert-row">
         {% if pending_agencies > 0 %}
-        <div class="alert-banner">
-            🚨 <strong>{{ pending_agencies }} agency{{ pending_agencies|pluralize:" is,s are" }} awaiting approval</strong>
-            — review them in the Agencies tab below.
+        <div class="alert-strip alert-danger">
+            🚨 <strong>{{ pending_agencies }} agenc{{ pending_agencies|pluralize:"y,ies" }} awaiting approval</strong>
+            — check the Agencies tab.
         </div>
         {% endif %}
-
-        <!-- ── STATS ── -->
-        <div class="stats-grid">
-            <div class="stat-card" style="--accent:#e8c97a;">
-                <div class="stat-card-icon">💰</div>
-                <div class="stat-card-num">₹{{ total_revenue|floatformat:0 }}</div>
-                <div class="stat-card-label">Total Revenue</div>
-                <div class="stat-card-delta">↑ GST collected: ₹{{ total_gst|floatformat:0 }}</div>
-            </div>
-            <div class="stat-card" style="--accent:#27ae60;">
-                <div class="stat-card-icon">✅</div>
-                <div class="stat-card-num">{{ total_bookings }}</div>
-                <div class="stat-card-label">Confirmed Bookings</div>
-            </div>
-            <div class="stat-card" style="--accent:#3498db;">
-                <div class="stat-card-icon">👤</div>
-                <div class="stat-card-num">{{ total_users }}</div>
-                <div class="stat-card-label">Registered Users</div>
-            </div>
-            <div class="stat-card" style="--accent:#9b59b6;">
-                <div class="stat-card-icon">🏢</div>
-                <div class="stat-card-num">{{ total_agencies }}</div>
-                <div class="stat-card-label">Approved Agencies
-                    {% if pending_agencies > 0 %}
-                    <span style="display:block; font-size:0.72rem; color:#f39c12; margin-top:0.2rem;">
-                        +{{ pending_agencies }} pending
-                    </span>
-                    {% endif %}
-                </div>
-            </div>
-            <div class="stat-card" style="--accent:#0f3460;">
-                <div class="stat-card-icon">🗺️</div>
-                <div class="stat-card-num">{{ total_trips }}</div>
-                <div class="stat-card-label">Trips Created</div>
-            </div>
-            <div class="stat-card" style="--accent:#e67e22;">
-                <div class="stat-card-icon">💬</div>
-                <div class="stat-card-num">{{ active_chats }}</div>
-                <div class="stat-card-label">Active Chats</div>
-            </div>
-            <div class="stat-card" style="--accent:#e74c3c;">
-                <div class="stat-card-icon">⚠️</div>
-                <div class="stat-card-num">{{ warned_agencies|length }}</div>
-                <div class="stat-card-label">Agencies with Warnings</div>
-            </div>
-            <div class="stat-card" style="--accent:#1abc9c;">
-                <div class="stat-card-icon">📊</div>
-                <div class="stat-card-num">
-                    {% if total_bookings and total_trips %}
-                        {{ total_bookings|floatformat:0 }}/{{ total_trips }}
-                    {% else %}—{% endif %}
-                </div>
-                <div class="stat-card-label">Booking / Trip Ratio</div>
-            </div>
+        {% if kyc_pending_list %}
+        <div class="alert-strip alert-warning">
+            🏦 <strong>{{ kyc_pending_list|length }} KYC application{{ kyc_pending_list|length|pluralize }} pending review</strong>
+            — check the KYC & Payouts tab.
         </div>
-
-        <!-- ── TABS ── -->
-        <div class="admin-tabs">
-            <button class="admin-tab active" onclick="adminTab('overview', this)">📊 Overview</button>
-            <button class="admin-tab" onclick="adminTab('agencies', this)">🏢 Agencies</button>
-            <button class="admin-tab" onclick="adminTab('bookings', this)">✅ Bookings</button>
-            <button class="admin-tab" onclick="adminTab('trips', this)">🗺️ Trips</button>
-            <button class="admin-tab" onclick="adminTab('warnings', this)">⚠️ Warnings</button>
-            <button class="admin-tab" onclick="adminTab('insights', this)">🤖 AI Insights</button>
+        {% endif %}
+        {% if payouts_failed_count > 0 %}
+        <div class="alert-strip alert-info">
+            ❌ <strong>{{ payouts_failed_count }} payout{{ payouts_failed_count|pluralize }} failed</strong>
+            — retry them in the KYC & Payouts tab.
         </div>
+        {% endif %}
+    </div>
 
-        <!-- ══════════════════════════════════════════ -->
-        <!-- TAB: OVERVIEW                              -->
-        <!-- ══════════════════════════════════════════ -->
-        <div class="tab-content active" id="tab-overview">
-
-            <!-- Charts -->
-            <div class="charts-row">
-                <div class="chart-card">
-                    <div class="chart-title">📈 Monthly Revenue (last 6 months)</div>
-                    <canvas id="revenueChart" class="chart-canvas" height="120"></canvas>
-                </div>
-                <div class="chart-card">
-                    <div class="chart-title">🗺️ Trip Status Distribution</div>
-                    <canvas id="statusChart" class="chart-canvas" height="120"></canvas>
-                </div>
-            </div>
-
-            <!-- Top agencies -->
-            <div class="admin-section">
-                <div class="section-hd">
-                    <h2 class="section-title">
-                        Top Agencies by Revenue
-                        <span class="section-count">{{ top_agencies|length }}</span>
-                    </h2>
-                </div>
-                <div class="table-card">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Agency</th>
-                                <th>Plan</th>
-                                <th>Location</th>
-                                <th>Bookings</th>
-                                <th>Revenue</th>
-                                <th>Warnings</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for agency in top_agencies %}
-                            <tr>
-                                <td class="td-muted">{{ forloop.counter }}</td>
-                                <td>
-                                    <div class="td-main">{{ agency.name }}</div>
-                                    <div class="td-muted">{{ agency.email }}</div>
-                                </td>
-                                <td>
-                                    <span class="badge badge-{{ agency.plan }}">
-                                        {{ agency.plan|capfirst }}
-                                    </span>
-                                </td>
-                                <td class="td-muted">{{ agency.location|default:"—" }}</td>
-                                <td>{{ agency.total_bookings_count|default:0 }}</td>
-                                <td class="td-amount">₹{{ agency.total_revenue|default:0|floatformat:0 }}</td>
-                                <td>
-                                    {% with wc=agency.warnings.count %}
-                                    {% if wc > 0 %}
-                                    <span class="badge badge-warn">⚠️ {{ wc }}</span>
-                                    {% else %}
-                                    <span style="color:rgba(255,255,255,0.2);">—</span>
-                                    {% endif %}
-                                    {% endwith %}
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="7" class="pending-empty">No agency data yet.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
+    <!-- ── STATS ── -->
+    <div class="stats-grid">
+        <div class="sc" style="--ac:#c9a84c; animation-delay:0s">
+            <div class="sc-icon">💰</div>
+            <div class="sc-num">₹{{ total_revenue|floatformat:0 }}</div>
+            <div class="sc-label">Total Revenue</div>
+            <div class="sc-sub">GST: ₹{{ total_gst|floatformat:0 }}</div>
         </div>
-
-        <!-- ══════════════════════════════════════════ -->
-        <!-- TAB: AGENCIES                              -->
-        <!-- ══════════════════════════════════════════ -->
-        <div class="tab-content" id="tab-agencies">
-
-            <!-- Pending approvals -->
-            <div class="admin-section">
-                <div class="section-hd">
-                    <h2 class="section-title">
-                        Pending Approvals
-                        <span class="section-count">{{ pending_agency_list|length }}</span>
-                    </h2>
-                </div>
-                <div class="pending-card">
-                    {% if pending_agency_list %}
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Agency</th>
-                                <th>Email</th>
-                                <th>Phone</th>
-                                <th>Location</th>
-                                <th>Plan Requested</th>
-                                <th>Registered</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for agency in pending_agency_list %}
-                            <tr>
-                                <td class="td-main">{{ agency.name }}</td>
-                                <td class="td-muted">{{ agency.email }}</td>
-                                <td class="td-muted">{{ agency.phone|default:"—" }}</td>
-                                <td class="td-muted">{{ agency.location|default:"—" }}</td>
-                                <td>
-                                    <span class="badge badge-{{ agency.plan }}">{{ agency.plan|capfirst }}</span>
-                                </td>
-                                <td class="td-muted">{{ agency.created_at|date:"N j, Y" }}</td>
-                                <td>
-                                    <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
-                                        <a href="{% url 'admin_approve_agency' agency.id %}"
-                                           class="action-btn btn-approve">✓ Approve</a>
-                                        <a href="{% url 'admin_reject_agency' agency.id %}"
-                                           class="action-btn btn-reject"
-                                           onclick="return confirm('Reject {{ agency.name }}?')">✗ Reject</a>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                    {% else %}
-                    <div class="pending-empty">
-                        ✅ No pending approvals — all agencies reviewed.
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
+        <div class="sc" style="--ac:#10b981; animation-delay:0.05s">
+            <div class="sc-icon">✅</div>
+            <div class="sc-num">{{ total_bookings }}</div>
+            <div class="sc-label">Confirmed Bookings</div>
         </div>
-
-        <!-- ══════════════════════════════════════════ -->
-        <!-- TAB: BOOKINGS                              -->
-        <!-- ══════════════════════════════════════════ -->
-        <div class="tab-content" id="tab-bookings">
-
-            <div class="admin-section">
-                <div class="section-hd">
-                    <h2 class="section-title">
-                        Recent Bookings
-                        <span class="section-count">{{ recent_bookings|length }}</span>
-                    </h2>
-                </div>
-                <div class="table-card">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Ref</th>
-                                <th>Traveler</th>
-                                <th>Destination</th>
-                                <th>Agency</th>
-                                <th>Base</th>
-                                <th>GST</th>
-                                <th>Total</th>
-                                <th>Date</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for booking in recent_bookings %}
-                            <tr>
-                                <td class="td-muted">#TRV{{ booking.id|stringformat:"05d" }}</td>
-                                <td>
-                                    <div class="td-main">{{ booking.user.username }}</div>
-                                    <div class="td-muted">{{ booking.user.email }}</div>
-                                </td>
-                                <td>
-                                    <div class="td-main">{{ booking.offer.trip.destination }}</div>
-                                    <div class="td-muted">{{ booking.offer.trip.days }} days</div>
-                                </td>
-                                <td class="td-muted">{{ booking.offer.agency.name }}</td>
-                                <td class="td-muted">₹{{ booking.base_amount }}</td>
-                                <td class="td-muted">₹{{ booking.gst_amount|default:0 }}</td>
-                                <td class="td-amount">₹{{ booking.total_amount }}</td>
-                                <td class="td-muted">{{ booking.created_at|date:"N j, Y" }}</td>
-                                <td><span class="badge badge-paid">✅ Paid</span></td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="9" class="pending-empty">No bookings yet.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
+        <div class="sc" style="--ac:#60a5fa; animation-delay:0.1s">
+            <div class="sc-icon">👤</div>
+            <div class="sc-num">{{ total_users }}</div>
+            <div class="sc-label">Registered Users</div>
         </div>
-
-        <!-- ══════════════════════════════════════════ -->
-        <!-- TAB: TRIPS                                 -->
-        <!-- ══════════════════════════════════════════ -->
-        <div class="tab-content" id="tab-trips">
-
-            <div class="admin-section">
-                <div class="section-hd">
-                    <h2 class="section-title">
-                        Recent Trip Requests
-                        <span class="section-count">{{ recent_trips|length }}</span>
-                    </h2>
-                </div>
-                <div class="table-card">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Destination</th>
-                                <th>From</th>
-                                <th>User</th>
-                                <th>Days</th>
-                                <th>Budget</th>
-                                <th>People</th>
-                                <th>Style</th>
-                                <th>Mode</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for trip in recent_trips %}
-                            <tr>
-                                <td class="td-main">{{ trip.destination }}</td>
-                                <td class="td-muted">{{ trip.origin|default:"—" }}</td>
-                                <td class="td-muted">{{ trip.user.username }}</td>
-                                <td>{{ trip.days }}</td>
-                                <td class="td-amount" style="font-size:0.9rem !important;">₹{{ trip.budget }}</td>
-                                <td>{{ trip.num_people|default:1 }}</td>
-                                <td>
-                                    <span class="badge badge-professional">
-                                        {{ trip.travel_type|capfirst }}
-                                    </span>
-                                </td>
-                                <td class="td-muted">
-                                    {% if trip.travel_mode == 'flight' %}✈️
-                                    {% elif trip.travel_mode == 'train' %}🚂
-                                    {% elif trip.travel_mode == 'bus' %}🚌
-                                    {% elif trip.travel_mode == 'car' %}🚗
-                                    {% else %}🚀{% endif %}
-                                    {{ trip.travel_mode|capfirst|default:"Any" }}
-                                </td>
-                                <td class="td-muted">{{ trip.created_at|date:"N j, Y" }}</td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="9" class="pending-empty">No trips yet.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-        </div>
-
-        <!-- ══════════════════════════════════════════ -->
-        <!-- TAB: WARNINGS                              -->
-        <!-- ══════════════════════════════════════════ -->
-        <div class="tab-content" id="tab-warnings">
-
-            <div class="admin-section">
-                <div class="section-hd">
-                    <h2 class="section-title">
-                        Agencies with Violations
-                        <span class="section-count">{{ warned_agencies|length }}</span>
-                    </h2>
-                </div>
-
-                {% if warned_agencies %}
-                <div class="table-card">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Agency</th>
-                                <th>Current Plan</th>
-                                <th>Warnings</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for agency in warned_agencies %}
-                            <tr>
-                                <td>
-                                    <div class="td-main">{{ agency.name }}</div>
-                                    <div class="td-muted">{{ agency.email }}</div>
-                                </td>
-                                <td>
-                                    <span class="badge badge-{{ agency.plan }}">
-                                        {{ agency.plan|capfirst }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <div style="display:flex; gap:0.35rem; align-items:center;">
-                                        {% for i in "123" %}
-                                        <div style="
-                                            width:10px; height:10px; border-radius:50%;
-                                            background:{% if forloop.counter <= agency.warning_count %}#e74c3c{% else %}rgba(255,255,255,0.1){% endif %};
-                                        "></div>
-                                        {% endfor %}
-                                        <span style="font-size:0.8rem; color:rgba(255,255,255,0.5); margin-left:0.4rem;">
-                                            {{ agency.warning_count }}/3
-                                        </span>
-                                    </div>
-                                </td>
-                                <td>
-                                    {% if agency.warning_count >= 3 %}
-                                    <span class="badge badge-rejected">Plan Downgraded</span>
-                                    {% elif agency.warning_count == 2 %}
-                                    <span class="badge badge-warn">Final Warning</span>
-                                    {% else %}
-                                    <span class="badge badge-pending">Warning Issued</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <a href="{% url 'admin_reset_warnings' agency.id %}"
-                                       class="action-btn btn-reset"
-                                       onclick="return confirm('Reset all warnings for {{ agency.name }}?')">
-                                        ↺ Reset Warnings
-                                    </a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="table-card">
-                    <div class="pending-empty">✅ No agencies have warnings. Platform is clean.</div>
-                </div>
+        <div class="sc" style="--ac:#a78bfa; animation-delay:0.15s">
+            <div class="sc-icon">🏢</div>
+            <div class="sc-num">{{ total_agencies }}</div>
+            <div class="sc-label">Approved Agencies
+                {% if pending_agencies > 0 %}
+                <span style="display:block; font-size:0.65rem; color:#f59e0b; margin-top:0.2rem; font-family:'DM Mono',monospace;">+{{ pending_agencies }} pending</span>
                 {% endif %}
             </div>
-
         </div>
+        <div class="sc" style="--ac:#0f3460; animation-delay:0.2s">
+            <div class="sc-icon">🗺️</div>
+            <div class="sc-num">{{ total_trips }}</div>
+            <div class="sc-label">Trips Created</div>
+        </div>
+        <div class="sc" style="--ac:#f59e0b; animation-delay:0.25s">
+            <div class="sc-icon">💬</div>
+            <div class="sc-num">{{ active_chats }}</div>
+            <div class="sc-label">Active Chats</div>
+        </div>
+        <div class="sc" style="--ac:#ef4444; animation-delay:0.3s">
+            <div class="sc-icon">⚠️</div>
+            <div class="sc-num">{{ warned_agencies|length }}</div>
+            <div class="sc-label">Agencies with Warnings</div>
+        </div>
+        <div class="sc" style="--ac:#10b981; animation-delay:0.35s">
+            <div class="sc-icon">🏦</div>
+            <div class="sc-num">{{ kyc_pending_list|length }}</div>
+            <div class="sc-label">KYC Pending</div>
+            <div class="sc-sub">{{ payouts_failed_count }} payout{{ payouts_failed_count|pluralize }} failed</div>
+        </div>
+    </div>
 
-        <!-- ══════════════════════════════════════════ -->
-        <!-- TAB: AI INSIGHTS                           -->
-        <!-- ══════════════════════════════════════════ -->
-        <div class="tab-content" id="tab-insights">
+    <!-- ── COMMISSION HIGHLIGHT BAR ── -->
+    <div class="commission-bar">
+        <div class="cb-item">
+            <div class="cb-label">Total Trivasta Commission (10%)</div>
+            <div class="cb-value cb-gold">₹{{ total_commission|floatformat:0 }}</div>
+            <div class="cb-note">earned across all bookings</div>
+        </div>
+        <div class="cb-item">
+            <div class="cb-label">Paid Out to Agencies</div>
+            <div class="cb-value cb-green">₹{{ total_agency_paid|floatformat:0 }}</div>
+            <div class="cb-note">{{ payouts_paid_count }} transfers completed</div>
+        </div>
+        <div class="cb-item">
+            <div class="cb-label">Pending Payouts</div>
+            <div class="cb-value cb-orange">₹{{ total_payout_pending|floatformat:0 }}</div>
+            <div class="cb-note">{{ payouts_pending_count }} awaiting KYC/transfer</div>
+        </div>
+        <div class="cb-item">
+            <div class="cb-label">Failed Payouts</div>
+            <div class="cb-value cb-red">{{ payouts_failed_count }}</div>
+            <div class="cb-note">retry in KYC & Payouts tab</div>
+        </div>
+    </div>
 
-            <div class="insights-grid">
+    <!-- ── TABS ── -->
+    <div class="ap-tabs">
+        <button class="ap-tab active" onclick="apTab('overview',this)">📊 Overview</button>
+        <button class="ap-tab" onclick="apTab('agencies',this)">
+            🏢 Agencies
+            {% if pending_agencies > 0 %}<span class="tab-badge">{{ pending_agencies }}</span>{% endif %}
+        </button>
+        <button class="ap-tab" onclick="apTab('bookings',this)">✅ Bookings</button>
+        <button class="ap-tab" onclick="apTab('trips',this)">🗺️ Trips</button>
+        <button class="ap-tab" onclick="apTab('kyc',this)">
+            🏦 KYC & Payouts
+            {% if kyc_pending_list %}<span class="tab-badge">{{ kyc_pending_list|length }}</span>{% endif %}
+        </button>
+        <button class="ap-tab" onclick="apTab('warnings',this)">⚠️ Warnings</button>
+        <button class="ap-tab" onclick="apTab('insights',this)">🤖 Insights</button>
+    </div>
 
-                <div class="insight-card">
-                    <div class="insight-icon">💰</div>
-                    <div class="insight-value">
-                        {% if total_bookings %}
-                            ₹{% widthratio total_revenue total_bookings 1 %}
-                        {% else %}—{% endif %}
-                    </div>
-                    <div class="insight-title">Avg Revenue per Booking</div>
-                    <div class="insight-body">
-                        Based on {{ total_bookings }} confirmed bookings totalling ₹{{ total_revenue|floatformat:0 }}.
-                    </div>
-                </div>
-
-                <div class="insight-card">
-                    <div class="insight-icon">📊</div>
-                    <div class="insight-value">
-                        {% if total_trips %}
-                            {% widthratio total_bookings total_trips 100 %}%
-                        {% else %}—{% endif %}
-                    </div>
-                    <div class="insight-title">Trip-to-Booking Conversion</div>
-                    <div class="insight-body">
-                        {{ total_bookings }} bookings from {{ total_trips }} trips.
-                        Higher means agencies are converting well.
-                    </div>
-                </div>
-
-                <div class="insight-card">
-                    <div class="insight-icon">🏢</div>
-                    <div class="insight-value">
-                        {% if total_agencies %}
-                            {% widthratio total_bookings total_agencies 1 %}
-                        {% else %}—{% endif %}
-                    </div>
-                    <div class="insight-title">Avg Bookings per Agency</div>
-                    <div class="insight-body">
-                        {{ total_agencies }} active agencies sharing {{ total_bookings }} bookings.
-                    </div>
-                </div>
-
-                <div class="insight-card">
-                    <div class="insight-icon">🔒</div>
-                    <div class="insight-value">{{ warned_agencies|length }}</div>
-                    <div class="insight-title">Privacy Violation Agencies</div>
-                    <div class="insight-body">
-                        Agencies that attempted to share contact details before payment.
-                        {% if warned_agencies|length == 0 %}Platform is clean.{% endif %}
-                    </div>
-                </div>
-
-                <div class="insight-card">
-                    <div class="insight-icon">💬</div>
-                    <div class="insight-value">{{ active_chats }}</div>
-                    <div class="insight-title">Active Negotiations</div>
-                    <div class="insight-body">
-                        Live chat rooms currently open between users and agencies.
-                    </div>
-                </div>
-
-                <div class="insight-card">
-                    <div class="insight-icon">🧾</div>
-                    <div class="insight-value">₹{{ total_gst|floatformat:0 }}</div>
-                    <div class="insight-title">Total GST Collected</div>
-                    <div class="insight-body">
-                        18% GST collected across all bookings.
-                        Trivasta platform fee is ₹0 — all revenue is GST-inclusive.
-                    </div>
-                </div>
-
+    <!-- ════════════════════════════════════ -->
+    <!-- TAB: OVERVIEW                        -->
+    <!-- ════════════════════════════════════ -->
+    <div class="tab-pane active" id="tab-overview">
+        <div class="charts-row">
+            <div class="chart-card">
+                <div class="chart-hd">📈 Monthly Revenue — last 6 months</div>
+                <canvas id="revenueChart" height="110"></canvas>
             </div>
-
+            <div class="chart-card">
+                <div class="chart-hd">🗺️ Trip Status Distribution</div>
+                <canvas id="statusChart" height="110"></canvas>
+            </div>
         </div>
 
+        <div class="s-hd">
+            <h2 class="s-title">Top Agencies by Revenue <span class="s-count">{{ top_agencies|length }}</span></h2>
+        </div>
+        <div class="t-card">
+            <table class="at">
+                <thead><tr>
+                    <th>#</th><th>Agency</th><th>Plan</th><th>Location</th>
+                    <th>Bookings</th><th>Revenue</th><th>Warnings</th>
+                </tr></thead>
+                <tbody>
+                {% for a in top_agencies %}
+                <tr>
+                    <td class="td-dim">{{ forloop.counter }}</td>
+                    <td><div class="td-main">{{ a.name }}</div><div class="td-dim">{{ a.email }}</div></td>
+                    <td>
+                        {% if a.plan == 'enterprise' %}<span class="bx bx-gold">Enterprise</span>
+                        {% elif a.plan == 'professional' %}<span class="bx bx-blue">Professional</span>
+                        {% else %}<span class="bx bx-dim">Starter</span>{% endif %}
+                    </td>
+                    <td class="td-dim">{{ a.location|default:"—" }}</td>
+                    <td>{{ a.total_bookings_count|default:0 }}</td>
+                    <td class="td-gold">₹{{ a.total_revenue|default:0|floatformat:0 }}</td>
+                    <td>{% with wc=a.warnings.count %}{% if wc > 0 %}<span class="bx bx-red">⚠ {{ wc }}</span>{% else %}<span style="color:rgba(255,255,255,0.15)">—</span>{% endif %}{% endwith %}</td>
+                </tr>
+                {% empty %}<tr><td colspan="7" class="empty-row">No agency data yet.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════ -->
+    <!-- TAB: AGENCIES                        -->
+    <!-- ════════════════════════════════════ -->
+    <div class="tab-pane" id="tab-agencies">
+        <div class="s-hd">
+            <h2 class="s-title">Pending Approvals <span class="s-count">{{ pending_agency_list|length }}</span></h2>
+            <div class="tab-search-wrap">
+                <span class="tab-search-icon">🔍</span>
+                <input type="text" class="tab-search" placeholder="Filter agencies…"
+                    oninput="filterTable('agencyTable', this.value)">
+            </div>
+        </div>
+        <div class="t-card">
+            <table class="at" id="agencyTable">
+                <thead><tr>
+                    <th>Agency</th><th>Email</th><th>Phone</th><th>Location</th>
+                    <th>Plan</th><th>Registered</th><th>Actions</th>
+                </tr></thead>
+                <tbody>
+                {% for a in pending_agency_list %}
+                <tr>
+                    <td class="td-main">{{ a.name }}</td>
+                    <td class="td-dim">{{ a.email }}</td>
+                    <td class="td-dim">{{ a.phone|default:"—" }}</td>
+                    <td class="td-dim">{{ a.location|default:"—" }}</td>
+                    <td>
+                        {% if a.plan == 'enterprise' %}<span class="bx bx-gold">Enterprise</span>
+                        {% elif a.plan == 'professional' %}<span class="bx bx-blue">Pro</span>
+                        {% else %}<span class="bx bx-dim">Starter</span>{% endif %}
+                    </td>
+                    <td class="td-dim">{{ a.created_at|date:"N j, Y" }}</td>
+                    <td>
+                        <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                            <a href="{% url 'admin_approve_agency' a.id %}" class="ab ab-green">✓ Approve</a>
+                            <a href="{% url 'admin_reject_agency' a.id %}" class="ab ab-red"
+                               onclick="return confirm('Reject {{ a.name }}?')">✗ Reject</a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}<tr><td colspan="7" class="empty-row">✅ All agencies reviewed — no pending approvals.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════ -->
+    <!-- TAB: BOOKINGS                        -->
+    <!-- ════════════════════════════════════ -->
+    <div class="tab-pane" id="tab-bookings">
+        <div class="s-hd">
+            <h2 class="s-title">Recent Bookings <span class="s-count">{{ recent_bookings|length }}</span></h2>
+            <div class="tab-search-wrap">
+                <span class="tab-search-icon">🔍</span>
+                <input type="text" class="tab-search" placeholder="Filter by traveler, destination…"
+                    oninput="filterTable('bookingsTable', this.value)">
+            </div>
+        </div>
+        <div class="t-card">
+            <table class="at" id="bookingsTable">
+                <thead><tr>
+                    <th>Ref</th><th>Traveler</th><th>Destination / Package</th><th>Agency</th>
+                    <th>Base</th><th>GST</th><th>Total</th><th>Commission</th><th>Date</th><th>Status</th>
+                </tr></thead>
+                <tbody>
+                {% for b in recent_bookings %}
+                <tr>
+                    <td class="td-mono">#TRV{{ b.id|stringformat:"05d" }}</td>
+                    <td><div class="td-main">{{ b.user.username }}</div><div class="td-dim">{{ b.user.email }}</div></td>
+                    <td>
+                        {% if b.package %}<div class="td-main">{{ b.package.title }}</div><div class="td-dim">📦 {{ b.package.destination }}</div>
+                        {% elif b.offer %}<div class="td-main">{{ b.offer.trip.destination }}</div><div class="td-dim">✈️ {{ b.offer.trip.days }} days</div>
+                        {% endif %}
+                    </td>
+                    <td class="td-dim">
+                        {% if b.package %}{{ b.package.agency.name }}
+                        {% elif b.offer %}{{ b.offer.agency.name }}{% endif %}
+                    </td>
+                    <td class="td-dim">₹{{ b.base_amount }}</td>
+                    <td class="td-dim">₹{{ b.gst_amount|default:0 }}</td>
+                    <td class="td-gold">₹{{ b.total_amount }}</td>
+                    <td style="color:#10b981; font-family:'DM Mono',monospace; font-size:0.8rem;">₹{{ b.commission_amount|default:0 }}</td>
+                    <td class="td-dim">{{ b.created_at|date:"N j" }}</td>
+                    <td><span class="bx bx-green">✅ Paid</span></td>
+                </tr>
+                {% empty %}<tr><td colspan="10" class="empty-row">No bookings yet.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════ -->
+    <!-- TAB: TRIPS                           -->
+    <!-- ════════════════════════════════════ -->
+    <div class="tab-pane" id="tab-trips">
+        <div class="s-hd">
+            <h2 class="s-title">Trip Requests <span class="s-count">{{ recent_trips|length }}</span></h2>
+            <div class="tab-search-wrap">
+                <span class="tab-search-icon">🔍</span>
+                <input type="text" class="tab-search" placeholder="Filter by destination, user…"
+                    oninput="filterTable('tripsTable', this.value)">
+            </div>
+        </div>
+        <div class="t-card">
+            <table class="at" id="tripsTable">
+                <thead><tr>
+                    <th>Destination</th><th>From</th><th>User</th><th>Days</th>
+                    <th>Budget</th><th>People</th><th>Style</th><th>Mode</th><th>Date</th>
+                </tr></thead>
+                <tbody>
+                {% for t in recent_trips %}
+                <tr>
+                    <td class="td-main">{{ t.destination }}</td>
+                    <td class="td-dim">{{ t.origin|default:"—" }}</td>
+                    <td class="td-dim">{{ t.user.username }}</td>
+                    <td>{{ t.days }}</td>
+                    <td class="td-gold" style="font-size:0.9rem !important;">₹{{ t.budget }}</td>
+                    <td>{{ t.num_people|default:1 }}</td>
+                    <td><span class="bx bx-blue">{{ t.travel_type|capfirst }}</span></td>
+                    <td class="td-dim">
+                        {% if t.travel_mode == 'flight' %}✈️{% elif t.travel_mode == 'train' %}🚂{% elif t.travel_mode == 'bus' %}🚌{% elif t.travel_mode == 'car' %}🚗{% else %}🚀{% endif %}
+                        {{ t.travel_mode|capfirst|default:"Any" }}
+                    </td>
+                    <td class="td-dim">{{ t.created_at|date:"N j" }}</td>
+                </tr>
+                {% empty %}<tr><td colspan="9" class="empty-row">No trips yet.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════ -->
+    <!-- TAB: KYC & PAYOUTS                   -->
+    <!-- ════════════════════════════════════ -->
+    <div class="tab-pane" id="tab-kyc">
+
+        <div class="s-hd" style="margin-bottom:1.25rem;">
+            <h2 class="s-title">Pending KYC Applications <span class="s-count">{{ kyc_pending_list|length }}</span></h2>
+        </div>
+        <div class="t-card" style="margin-bottom:2rem;">
+            <table class="at">
+                <thead><tr>
+                    <th>Agency</th><th>Account Holder</th><th>Bank</th>
+                    <th>IFSC</th><th>PAN</th><th>Account Type</th><th>Submitted</th><th>Actions</th>
+                </tr></thead>
+                <tbody>
+                {% for bank in kyc_pending_list %}
+                <tr>
+                    <td><div class="td-main">{{ bank.agency.name }}</div><div class="td-dim">{{ bank.agency.email }}</div></td>
+                    <td class="td-main">{{ bank.account_holder_name }}</td>
+                    <td class="td-dim">{{ bank.bank_name|default:"—" }}</td>
+                    <td class="td-mono">{{ bank.ifsc_code }}</td>
+                    <td class="td-mono">{{ bank.pan_number }}</td>
+                    <td><span class="bx bx-dim">{{ bank.account_type|capfirst }}</span></td>
+                    <td class="td-dim">{{ bank.created_at|date:"N j, Y" }}</td>
+                    <td>
+                        <div style="display:flex; gap:0.4rem; flex-wrap:wrap;">
+                            <form method="POST" action="{% url 'admin_verify_kyc' bank.agency.id %}" style="display:inline;">
+                                {% csrf_token %}
+                                <input type="hidden" name="action" value="verify">
+                                <button type="submit" class="ab ab-green"
+                                    onclick="return confirm('Verify KYC for {{ bank.agency.name }}? This creates their Razorpay linked account.')">
+                                    ✓ Verify
+                                </button>
+                            </form>
+                            <button class="ab ab-red"
+                                onclick="openRejectModal({{ bank.agency.id }}, '{{ bank.agency.name|escapejs }}')">
+                                ✗ Reject
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}<tr><td colspan="8" class="empty-row">✅ No pending KYC applications.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="s-hd">
+            <h2 class="s-title">Payout Records <span class="s-count">{{ all_payouts|length }}</span></h2>
+            <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap;">
+                <span class="bx bx-green">✅ {{ payouts_paid_count }} paid</span>
+                <span class="bx bx-orange">⏳ {{ payouts_pending_count }} pending</span>
+                <span class="bx bx-red">❌ {{ payouts_failed_count }} failed</span>
+                <div class="tab-search-wrap" style="margin-left:0.5rem;">
+                    <span class="tab-search-icon">🔍</span>
+                    <input type="text" class="tab-search" placeholder="Filter payouts…"
+                        oninput="filterTable('payoutsTable', this.value)">
+                </div>
+            </div>
+        </div>
+        <div class="t-card">
+            <table class="at" id="payoutsTable">
+                <thead><tr>
+                    <th>#</th><th>Agency</th><th>Booking</th><th>Total Paid</th>
+                    <th>Commission (10%)</th><th>Agency Payout</th><th>Transfer ID</th>
+                    <th>Status</th><th>Date</th><th>Action</th>
+                </tr></thead>
+                <tbody>
+                {% for p in all_payouts %}
+                <tr>
+                    <td class="td-mono">#{{ p.id }}</td>
+                    <td>
+                        <div class="td-main">{{ p.agency.name }}</div>
+                        <div class="td-dim">
+                            {% if p.agency.bank_details.kyc_status == 'verified' %}<span style="color:#10b981; font-size:0.65rem;">✅ KYC</span>
+                            {% else %}<span style="color:#f59e0b; font-size:0.65rem;">⚠ No KYC</span>{% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <div style="font-weight:600; color:#f8f4ed;">#{{ p.booking.id }}</div>
+                        <div class="td-dim">
+                            {% if p.booking.package %}{{ p.booking.package.title|truncatechars:18 }}
+                            {% elif p.booking.offer %}{{ p.booking.offer.trip.destination }}{% endif %}
+                        </div>
+                    </td>
+                    <td class="td-gold">₹{{ p.total_amount|floatformat:0 }}</td>
+                    <td style="color:#c9a84c; font-family:'DM Mono',monospace; font-size:0.85rem; font-weight:600;">₹{{ p.trivasta_commission|floatformat:0 }}</td>
+                    <td class="td-green">₹{{ p.agency_payout_amount|floatformat:0 }}</td>
+                    <td class="td-mono">{{ p.razorpay_transfer_id|default:"—" }}</td>
+                    <td>
+                        {% if p.status == 'paid' %}<span class="bx bx-green">✅ Paid</span>
+                        {% elif p.status == 'pending' %}<span class="bx bx-orange">⏳ Pending</span>
+                        {% elif p.status == 'processing' %}<span class="bx bx-blue">🔄 Processing</span>
+                        {% elif p.status == 'failed' %}
+                            <span class="bx bx-red">❌ Failed</span>
+                            {% if p.failure_reason %}<div style="font-size:0.62rem; color:rgba(239,68,68,0.6); margin-top:0.2rem; max-width:120px; line-height:1.3;">{{ p.failure_reason|truncatechars:40 }}</div>{% endif %}
+                        {% endif %}
+                    </td>
+                    <td class="td-dim">{{ p.created_at|date:"N j" }}</td>
+                    <td>
+                        {% if p.status != 'paid' %}
+                        <form method="POST" action="{% url 'admin_retry_payout' p.id %}" style="display:inline;">
+                            {% csrf_token %}
+                            <button type="submit" class="ab ab-gold"
+                                onclick="return confirm('Retry payout for Booking #{{ p.booking.id }}?')">
+                                ↺ Retry
+                            </button>
+                        </form>
+                        {% else %}
+                        <span style="color:rgba(255,255,255,0.15); font-size:0.8rem;">—</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}<tr><td colspan="10" class="empty-row">No payout records yet.</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════ -->
+    <!-- TAB: WARNINGS                        -->
+    <!-- ════════════════════════════════════ -->
+    <div class="tab-pane" id="tab-warnings">
+        <div class="s-hd">
+            <h2 class="s-title">Agencies with Violations <span class="s-count">{{ warned_agencies|length }}</span></h2>
+        </div>
+        {% if warned_agencies %}
+        <div class="t-card">
+            <table class="at">
+                <thead><tr><th>Agency</th><th>Plan</th><th>Violations</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody>
+                {% for a in warned_agencies %}
+                <tr>
+                    <td><div class="td-main">{{ a.name }}</div><div class="td-dim">{{ a.email }}</div></td>
+                    <td>
+                        {% if a.plan == 'enterprise' %}<span class="bx bx-gold">Enterprise</span>
+                        {% elif a.plan == 'professional' %}<span class="bx bx-blue">Pro</span>
+                        {% else %}<span class="bx bx-dim">Starter</span>{% endif %}
+                    </td>
+                    <td>
+                        <div class="pip-row">
+                            {% for i in "123" %}
+                            <div class="pip {% if forloop.counter <= a.warning_count %}on{% endif %}"></div>
+                            {% endfor %}
+                            <span style="font-size:0.75rem; color:rgba(255,255,255,0.35); margin-left:0.5rem;">{{ a.warning_count }}/3</span>
+                        </div>
+                    </td>
+                    <td>
+                        {% if a.warning_count >= 3 %}<span class="bx bx-red">Plan Downgraded</span>
+                        {% elif a.warning_count == 2 %}<span class="bx bx-orange">Final Warning</span>
+                        {% else %}<span class="bx bx-gold">Warning Issued</span>{% endif %}
+                    </td>
+                    <td>
+                        <a href="{% url 'admin_reset_warnings' a.id %}" class="ab ab-gold"
+                           onclick="return confirm('Reset all warnings for {{ a.name }}?')">↺ Reset</a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="t-card"><div class="empty-row">✅ No agencies have warnings. Platform is clean.</div></div>
+        {% endif %}
+    </div>
+
+    <!-- ════════════════════════════════════ -->
+    <!-- TAB: INSIGHTS                        -->
+    <!-- ════════════════════════════════════ -->
+    <div class="tab-pane" id="tab-insights">
+        <div class="insights-grid">
+            <div class="ig-card">
+                <div class="ig-icon">💰</div>
+                <div class="ig-value">{% if total_bookings %}₹{% widthratio total_revenue total_bookings 1 %}{% else %}—{% endif %}</div>
+                <div class="ig-title">Avg Revenue per Booking</div>
+                <div class="ig-body">Based on {{ total_bookings }} confirmed bookings totalling ₹{{ total_revenue|floatformat:0 }}.</div>
+            </div>
+            <div class="ig-card">
+                <div class="ig-icon">📊</div>
+                <div class="ig-value">{% if total_trips %}{% widthratio total_bookings total_trips 100 %}%{% else %}—{% endif %}</div>
+                <div class="ig-title">Trip-to-Booking Conversion</div>
+                <div class="ig-body">{{ total_bookings }} bookings from {{ total_trips }} trips. Higher = agencies converting well.</div>
+            </div>
+            <div class="ig-card">
+                <div class="ig-icon">🏢</div>
+                <div class="ig-value">{% if total_agencies %}{% widthratio total_bookings total_agencies 1 %}{% else %}—{% endif %}</div>
+                <div class="ig-title">Avg Bookings per Agency</div>
+                <div class="ig-body">{{ total_agencies }} active agencies sharing {{ total_bookings }} bookings.</div>
+            </div>
+            <div class="ig-card">
+                <div class="ig-icon">💸</div>
+                <div class="ig-value">₹{{ total_commission|floatformat:0 }}</div>
+                <div class="ig-title">Total Trivasta Commission</div>
+                <div class="ig-body">10% taken on every booking base amount. This is Trivasta's gross earnings.</div>
+            </div>
+            <div class="ig-card">
+                <div class="ig-icon">🔒</div>
+                <div class="ig-value">{{ warned_agencies|length }}</div>
+                <div class="ig-title">Privacy Violations</div>
+                <div class="ig-body">Agencies caught sharing contacts before payment. {% if warned_agencies|length == 0 %}Platform is clean.{% endif %}</div>
+            </div>
+            <div class="ig-card">
+                <div class="ig-icon">🧾</div>
+                <div class="ig-value">₹{{ total_gst|floatformat:0 }}</div>
+                <div class="ig-title">Total GST Collected</div>
+                <div class="ig-body">5% GST collected on all bookings across the platform.</div>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /ap-inner -->
+</div><!-- /ap -->
+
+<!-- ── KYC REJECT MODAL ── -->
+<div class="modal-overlay" id="rejectModal">
+    <div class="modal-box">
+        <div class="modal-title">Reject KYC — <span id="modalAgencyName"></span></div>
+        <div class="modal-sub">The agency will be notified and can resubmit corrected details.</div>
+        <form id="rejectForm" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="reject">
+            <textarea name="rejection_reason" class="modal-textarea"
+                placeholder="Reason for rejection (e.g. IFSC code invalid, PAN mismatch, account number incorrect)…"
+                required></textarea>
+            <div class="modal-footer">
+                <button type="button" class="modal-cancel" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="modal-confirm">✗ Reject KYC</button>
+            </div>
+        </form>
     </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <script>
-    // ── Tab switching ─────────────────────────────────────────
-    function adminTab(name, btn) {
-        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.admin-tab').forEach(b => b.classList.remove('active'));
-        document.getElementById('tab-' + name).classList.add('active');
-        btn.classList.add('active');
+// ── Tab switching ──────────────────────────────────────────────────────────
+function apTab(name, btn) {
+    document.querySelectorAll('.tab-pane').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.ap-tab').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+}
+
+// ── Table filter ───────────────────────────────────────────────────────────
+function filterTable(tableId, q) {
+    const rows = document.querySelectorAll(`#${tableId} tbody tr`);
+    const t = q.toLowerCase().trim();
+    rows.forEach(row => {
+        row.style.display = (!t || row.textContent.toLowerCase().includes(t)) ? '' : 'none';
+    });
+}
+
+// ── Global search ──────────────────────────────────────────────────────────
+const searchData = {
+    agencies: [
+        {% for a in top_agencies %}
+        { type:'agency', icon:'🏢', main:'{{ a.name|escapejs }}', sub:'{{ a.email|escapejs }} · {{ a.plan }}', url:'#' },
+        {% endfor %}
+        {% for a in pending_agency_list %}
+        { type:'agency', icon:'⏳', main:'{{ a.name|escapejs }}', sub:'Pending · {{ a.email|escapejs }}', url:'#' },
+        {% endfor %}
+    ],
+    bookings: [
+        {% for b in recent_bookings %}
+        { type:'booking', icon:'✅', main:'#TRV{{ b.id|stringformat:"05d" }} — {{ b.user.username|escapejs }}',
+          sub:'₹{{ b.total_amount }}{% if b.package %} · {{ b.package.title|escapejs }}{% elif b.offer %} · {{ b.offer.trip.destination|escapejs }}{% endif %}', url:'#' },
+        {% endfor %}
+    ],
+    trips: [
+        {% for t in recent_trips %}
+        { type:'trip', icon:'🗺️', main:'{{ t.destination|escapejs }}', sub:'{{ t.user.username|escapejs }} · ₹{{ t.budget }} · {{ t.days }} days', url:'#' },
+        {% endfor %}
+    ],
+};
+
+const allResults = [...searchData.agencies, ...searchData.bookings, ...searchData.trips];
+const input  = document.getElementById('globalSearch');
+const panel  = document.getElementById('searchPanel');
+const resDiv = document.getElementById('searchResults');
+const emptyDiv = document.getElementById('searchEmpty');
+
+input.addEventListener('input', () => {
+    const q = input.value.trim().toLowerCase();
+    panel.classList.toggle('open', input.value.length > 0);
+    if (!q) { emptyDiv.style.display = ''; resDiv.innerHTML = ''; return; }
+    emptyDiv.style.display = 'none';
+
+    const filtered = allResults.filter(r =>
+        r.main.toLowerCase().includes(q) || r.sub.toLowerCase().includes(q)
+    );
+
+    if (!filtered.length) {
+        resDiv.innerHTML = `<div class="search-empty">No results for "<strong>${q}</strong>"</div>`;
+        return;
     }
 
-    // ── Chart defaults ────────────────────────────────────────
-    Chart.defaults.color = 'rgba(255,255,255,0.4)';
-    Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+    const groups = { agency: [], booking: [], trip: [] };
+    filtered.forEach(r => groups[r.type]?.push(r));
 
-    // ── Revenue chart ─────────────────────────────────────────
-    const revenueLabels = {{ revenue_labels|safe }};
-    const revenueData   = {{ revenue_data|safe }};
-    const bookingCounts = {{ booking_counts|safe }};
+    const labels = { agency: '🏢 Agencies', booking: '✅ Bookings', trip: '🗺️ Trips' };
+    let html = '';
+    for (const [type, items] of Object.entries(groups)) {
+        if (!items.length) continue;
+        html += `<div class="search-group-label">${labels[type]}</div>`;
+        items.slice(0, 4).forEach(r => {
+            html += `<div class="search-result-item">
+                <div class="sri-icon">${r.icon}</div>
+                <div><div class="sri-main">${highlight(r.main, q)}</div><div class="sri-sub">${highlight(r.sub, q)}</div></div>
+            </div>`;
+        });
+    }
+    resDiv.innerHTML = html;
+});
 
-    new Chart(document.getElementById('revenueChart'), {
-        type: 'bar',
-        data: {
-            labels: revenueLabels,
-            datasets: [
-                {
-                    label: 'Revenue (₹)',
-                    data: revenueData,
-                    backgroundColor: 'rgba(15,52,96,0.7)',
-                    borderColor: '#0f3460',
-                    borderWidth: 2,
-                    borderRadius: 6,
-                    yAxisID: 'y',
-                },
-                {
-                    label: 'Bookings',
-                    data: bookingCounts,
-                    type: 'line',
-                    borderColor: '#e8c97a',
-                    backgroundColor: 'rgba(201,168,76,0.1)',
-                    borderWidth: 2,
-                    pointBackgroundColor: '#e8c97a',
-                    pointRadius: 4,
-                    tension: 0.4,
-                    fill: true,
-                    yAxisID: 'y1',
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            interaction: { intersect: false, mode: 'index' },
-            plugins: {
-                legend: {
-                    labels: { color: 'rgba(255,255,255,0.5)', font: { family: 'Outfit' } }
-                },
-                tooltip: {
-                    backgroundColor: '#161b22',
-                    borderColor: '#30363d',
-                    borderWidth: 1,
-                    titleColor: 'white',
-                    bodyColor: 'rgba(255,255,255,0.6)',
-                    callbacks: {
-                        label: ctx => ctx.datasetIndex === 0
-                            ? ` ₹${ctx.parsed.y.toLocaleString('en-IN')}`
-                            : ` ${ctx.parsed.y} bookings`
-                    }
-                }
+function highlight(text, q) {
+    if (!q) return text;
+    const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')})`, 'gi');
+    return text.replace(re, '<mark style="background:rgba(201,168,76,0.25);color:#c9a84c;border-radius:2px;padding:0 1px;">$1</mark>');
+}
+
+document.addEventListener('click', e => {
+    if (!e.target.closest('.search-bar-wrap')) panel.classList.remove('open');
+});
+
+input.addEventListener('focus', () => {
+    if (input.value.length > 0) panel.classList.add('open');
+});
+
+// ── KYC Modal ──────────────────────────────────────────────────────────────
+function openRejectModal(agencyId, agencyName) {
+    document.getElementById('modalAgencyName').textContent = agencyName;
+    document.getElementById('rejectForm').action = `/marketplace/admin/kyc/${agencyId}/verify/`;
+    document.getElementById('rejectModal').classList.add('open');
+}
+
+function closeModal() {
+    document.getElementById('rejectModal').classList.remove('open');
+}
+
+document.getElementById('rejectModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
+
+// ── Chart defaults ─────────────────────────────────────────────────────────
+Chart.defaults.color = 'rgba(255,255,255,0.35)';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.05)';
+
+const revenueLabels = {{ revenue_labels|safe }};
+const revenueData   = {{ revenue_data|safe }};
+const bookingCounts = {{ booking_counts|safe }};
+
+new Chart(document.getElementById('revenueChart'), {
+    type: 'bar',
+    data: {
+        labels: revenueLabels,
+        datasets: [
+            {
+                label: 'Revenue (₹)',
+                data: revenueData,
+                backgroundColor: 'rgba(15,52,96,0.65)',
+                borderColor: '#0f3460',
+                borderWidth: 2,
+                borderRadius: 6,
+                yAxisID: 'y',
             },
-            scales: {
-                x: { grid: { color: 'rgba(255,255,255,0.04)' } },
-                y: {
-                    type: 'linear',
-                    position: 'left',
-                    grid: { color: 'rgba(255,255,255,0.04)' },
-                    ticks: {
-                        callback: v => '₹' + (v/1000).toFixed(0) + 'k'
-                    }
-                },
-                y1: {
-                    type: 'linear',
-                    position: 'right',
-                    grid: { drawOnChartArea: false },
+            {
+                label: 'Bookings',
+                data: bookingCounts,
+                type: 'line',
+                borderColor: '#c9a84c',
+                backgroundColor: 'rgba(201,168,76,0.08)',
+                borderWidth: 2,
+                pointBackgroundColor: '#c9a84c',
+                pointRadius: 4,
+                tension: 0.4,
+                fill: true,
+                yAxisID: 'y1',
+            }
+        ]
+    },
+    options: {
+        responsive: true,
+        interaction: { intersect: false, mode: 'index' },
+        plugins: {
+            legend: { labels: { color: 'rgba(255,255,255,0.4)', font: { family: 'Outfit' }, boxWidth: 12 } },
+            tooltip: {
+                backgroundColor: '#0e1318',
+                borderColor: 'rgba(201,168,76,0.2)',
+                borderWidth: 1,
+                titleColor: '#f8f4ed',
+                bodyColor: 'rgba(255,255,255,0.5)',
+                callbacks: {
+                    label: ctx => ctx.datasetIndex === 0
+                        ? ` ₹${ctx.parsed.y.toLocaleString('en-IN')}`
+                        : ` ${ctx.parsed.y} bookings`
                 }
             }
-        }
-    });
-
-    // ── Status doughnut chart ─────────────────────────────────
-    const statusLabels = {{ status_labels|safe }};
-    const statusCounts = {{ status_counts|safe }};
-
-    const statusColors = [
-        '#27ae60','#3498db','#9b59b6','#e8c97a',
-        '#e67e22','#0f3460','#e74c3c','#1abc9c'
-    ];
-
-    new Chart(document.getElementById('statusChart'), {
-        type: 'doughnut',
-        data: {
-            labels: statusLabels,
-            datasets: [{
-                data: statusCounts,
-                backgroundColor: statusColors.slice(0, statusLabels.length),
-                borderColor: '#161b22',
-                borderWidth: 3,
-                hoverOffset: 8,
-            }]
         },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'bottom',
-                    labels: {
-                        color: 'rgba(255,255,255,0.5)',
-                        font: { family: 'Outfit', size: 11 },
-                        padding: 12,
-                        usePointStyle: true,
-                    }
-                },
-                tooltip: {
-                    backgroundColor: '#161b22',
-                    borderColor: '#30363d',
-                    borderWidth: 1,
-                    titleColor: 'white',
-                    bodyColor: 'rgba(255,255,255,0.6)',
-                }
+        scales: {
+            x: { grid: { color: 'rgba(255,255,255,0.03)' } },
+            y: {
+                type: 'linear', position: 'left',
+                grid: { color: 'rgba(255,255,255,0.03)' },
+                ticks: { callback: v => '₹' + (v >= 1000 ? (v/1000).toFixed(0)+'k' : v) }
             },
-            cutout: '65%',
+            y1: { type: 'linear', position: 'right', grid: { drawOnChartArea: false } }
         }
-    });
+    }
+});
+
+const statusLabels = {{ status_labels|safe }};
+const statusCounts = {{ status_counts|safe }};
+
+new Chart(document.getElementById('statusChart'), {
+    type: 'doughnut',
+    data: {
+        labels: statusLabels,
+        datasets: [{
+            data: statusCounts,
+            backgroundColor: ['#10b981','#60a5fa','#a78bfa','#c9a84c','#f59e0b','#0f3460','#ef4444','#1abc9c'],
+            borderColor: '#080c10',
+            borderWidth: 3,
+            hoverOffset: 8,
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: { color: 'rgba(255,255,255,0.4)', font: { family: 'Outfit', size: 11 }, padding: 12, usePointStyle: true }
+            },
+            tooltip: {
+                backgroundColor: '#0e1318',
+                borderColor: 'rgba(201,168,76,0.2)',
+                borderWidth: 1,
+                titleColor: '#f8f4ed',
+                bodyColor: 'rgba(255,255,255,0.5)',
+            }
+        },
+        cutout: '68%',
+    }
+});
 </script>
 {% endblock %}

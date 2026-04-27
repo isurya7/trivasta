@@ -14,18 +14,17 @@ from django.conf import settings
 import json
 import razorpay
 
-from .models import Profile
+from .models import Profile, ContactMessage
 from trips.models import Trip
 from marketplace.models import (
     Agency, Booking, Offer, ChatRoom, AgencyWarning,
     TripStatus, Package, SupportTicket, SupportMessage, RefundRequest,
+    AgencyBankDetails, PayoutRecord,
 )
+from marketplace.payment_service import create_agency_linked_account, transfer_to_agency
 
 razorpay_client = razorpay.Client(
-    auth=(
-        __import__('django.conf', fromlist=['settings']).settings.RAZORPAY_KEY_ID,
-        __import__('django.conf', fromlist=['settings']).settings.RAZORPAY_KEY_SECRET,
-    )
+    auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
 )
 
 
@@ -122,6 +121,7 @@ def dashboard_view(request):
 
 @staff_member_required
 def trivasta_admin(request):
+    # ── Existing queries (unchanged) ─────────────────────────────
     total_revenue    = Booking.objects.filter(is_paid=True).aggregate(s=Sum('total_amount'))['s'] or 0
     total_gst        = Booking.objects.filter(is_paid=True).aggregate(s=Sum('gst_amount'))['s'] or 0
     total_bookings   = Booking.objects.filter(is_paid=True).count()
@@ -130,7 +130,7 @@ def trivasta_admin(request):
     total_agencies   = Agency.objects.filter(status='approved').count()
     pending_agencies = Agency.objects.filter(status='pending').count()
     active_chats     = ChatRoom.objects.filter(is_active=True).count()
-
+ 
     six_months_ago = timezone.now() - timedelta(days=180)
     monthly_revenue = (
         Booking.objects.filter(is_paid=True, created_at__gte=six_months_ago)
@@ -138,62 +138,116 @@ def trivasta_admin(request):
         .values('month').annotate(total=Sum('total_amount'), count=Count('id'))
         .order_by('month')
     )
-
+ 
     revenue_labels = [r['month'].strftime('%b %Y') for r in monthly_revenue]
     revenue_data   = [int(r['total']) for r in monthly_revenue]
     booking_counts = [r['count'] for r in monthly_revenue]
-
+ 
     top_agencies = (
         Agency.objects.filter(status='approved').annotate(
             total_revenue=Sum('offer__booking__total_amount', filter=Q(offer__booking__is_paid=True)),
             total_bookings_count=Count('offer__booking', filter=Q(offer__booking__is_paid=True)),
         ).order_by('-total_revenue')[:8]
     )
-
+ 
     recent_bookings = (
         Booking.objects.filter(is_paid=True)
-        .select_related('user', 'offer__agency', 'offer__trip')
+        .select_related('user', 'offer__agency', 'offer__trip', 'package__agency')
         .order_by('-created_at')[:10]
     )
-
+ 
     pending_agency_list = Agency.objects.filter(status='pending').order_by('-created_at')
     warned_agencies = (
         Agency.objects.annotate(warning_count=Count('warnings'))
         .filter(warning_count__gt=0).order_by('-warning_count')[:5]
     )
-
+ 
     status_dist   = TripStatus.objects.values('status').annotate(count=Count('id')).order_by('-count')
     status_labels = [s['status'].replace('_', ' ').title() for s in status_dist]
     status_counts = [s['count'] for s in status_dist]
     recent_trips  = Trip.objects.select_related('user').order_by('-created_at')[:10]
-
+ 
     open_tickets      = SupportTicket.objects.filter(status='open').count()
     escalated_tickets = SupportTicket.objects.filter(status='escalated').count()
     pending_refunds   = RefundRequest.objects.filter(status='pending').count()
-
-    # Contact form messages for admin
+ 
     from .models import ContactMessage
     contact_messages = ContactMessage.objects.order_by('-created_at')[:20]
-
+ 
+    # ── NEW: KYC context ─────────────────────────────────────────
+    # Agencies that have submitted bank details and are waiting for admin to verify
+    from marketplace.models import AgencyBankDetails, PayoutRecord
+ 
+    kyc_pending_list = AgencyBankDetails.objects.filter(
+        kyc_status='submitted'
+    ).select_related('agency').order_by('-created_at')
+ 
+    # ── NEW: Payout context ───────────────────────────────────────
+    # All payout records so admin can see status of every transfer
+    all_payouts = PayoutRecord.objects.select_related(
+        'agency',
+        'booking',
+        'booking__package',
+        'booking__offer__trip',
+    ).order_by('-created_at')[:100]
+ 
+    # Counts by status for the summary pills in the KYC tab
+    payouts_paid_count    = PayoutRecord.objects.filter(status='paid').count()
+    payouts_pending_count = PayoutRecord.objects.filter(status='pending').count()
+    payouts_failed_count  = PayoutRecord.objects.filter(status='failed').count()
+ 
+    # Commission totals for the highlight bar at the top of the dashboard
+    total_commission = PayoutRecord.objects.aggregate(
+        t=Sum('trivasta_commission')
+    )['t'] or 0
+ 
+    total_agency_paid = PayoutRecord.objects.filter(status='paid').aggregate(
+        t=Sum('agency_payout_amount')
+    )['t'] or 0
+ 
+    # Pending = not yet paid (pending OR failed — both need action)
+    total_payout_pending = PayoutRecord.objects.filter(
+        status__in=['pending', 'failed']
+    ).aggregate(t=Sum('agency_payout_amount'))['t'] or 0
+ 
+    # ── Return everything ─────────────────────────────────────────
     return render(request, 'users/trivasta_admin.html', {
-        'total_revenue': total_revenue, 'total_gst': total_gst,
-        'total_bookings': total_bookings, 'total_trips': total_trips,
-        'total_users': total_users, 'total_agencies': total_agencies,
-        'pending_agencies': pending_agencies, 'active_chats': active_chats,
-        'revenue_labels': json.dumps(revenue_labels),
-        'revenue_data': json.dumps(revenue_data),
-        'booking_counts': json.dumps(booking_counts),
-        'status_labels': json.dumps(status_labels),
-        'status_counts': json.dumps(status_counts),
-        'top_agencies': top_agencies, 'recent_bookings': recent_bookings,
+        # Existing context (unchanged)
+        'total_revenue':      total_revenue,
+        'total_gst':          total_gst,
+        'total_bookings':     total_bookings,
+        'total_trips':        total_trips,
+        'total_users':        total_users,
+        'total_agencies':     total_agencies,
+        'pending_agencies':   pending_agencies,
+        'active_chats':       active_chats,
+        'revenue_labels':     json.dumps(revenue_labels),
+        'revenue_data':       json.dumps(revenue_data),
+        'booking_counts':     json.dumps(booking_counts),
+        'status_labels':      json.dumps(status_labels),
+        'status_counts':      json.dumps(status_counts),
+        'top_agencies':       top_agencies,
+        'recent_bookings':    recent_bookings,
         'pending_agency_list': pending_agency_list,
-        'warned_agencies': warned_agencies, 'recent_trips': recent_trips,
-        'open_tickets': open_tickets, 'escalated_tickets': escalated_tickets,
-        'pending_refunds': pending_refunds,
-        'contact_messages': contact_messages,
+        'warned_agencies':    warned_agencies,
+        'recent_trips':       recent_trips,
+        'open_tickets':       open_tickets,
+        'escalated_tickets':  escalated_tickets,
+        'pending_refunds':    pending_refunds,
+        'contact_messages':   contact_messages,
+ 
+        # NEW: KYC & Payouts
+        'kyc_pending_list':      kyc_pending_list,
+        'all_payouts':           all_payouts,
+        'payouts_paid_count':    payouts_paid_count,
+        'payouts_pending_count': payouts_pending_count,
+        'payouts_failed_count':  payouts_failed_count,
+        'total_commission':      total_commission,
+        'total_agency_paid':     total_agency_paid,
+        'total_payout_pending':  total_payout_pending,
     })
-
-
+ 
+ 
 @staff_member_required
 def admin_approve_agency(request, agency_id):
     agency        = get_object_or_404(Agency, pk=agency_id)
@@ -201,8 +255,8 @@ def admin_approve_agency(request, agency_id):
     agency.save(update_fields=['status'])
     messages.success(request, f'{agency.name} approved.')
     return redirect('trivasta_admin')
-
-
+ 
+ 
 @staff_member_required
 def admin_reject_agency(request, agency_id):
     agency        = get_object_or_404(Agency, pk=agency_id)
@@ -210,13 +264,91 @@ def admin_reject_agency(request, agency_id):
     agency.save(update_fields=['status'])
     messages.success(request, f'{agency.name} rejected.')
     return redirect('trivasta_admin')
-
-
+ 
+ 
 @staff_member_required
 def admin_reset_warnings(request, agency_id):
     agency = get_object_or_404(Agency, pk=agency_id)
     AgencyWarning.objects.filter(agency=agency).delete()
     messages.success(request, f'Warnings cleared for {agency.name}.')
+    return redirect('trivasta_admin')
+ 
+ 
+@staff_member_required
+def admin_verify_kyc(request, agency_id):
+    """Admin verifies agency KYC and creates Razorpay linked account."""
+    from .payment_service import create_agency_linked_account
+    agency = get_object_or_404(Agency, pk=agency_id)
+ 
+    try:
+        bank = agency.bank_details
+    except Exception:
+        messages.error(request, "This agency has no bank details submitted.")
+        return redirect('trivasta_admin')
+ 
+    if request.method == 'POST':
+        action = request.POST.get('action')
+ 
+        if action == 'verify':
+            account_id, error = create_agency_linked_account(agency)
+ 
+            if error:
+                messages.warning(
+                    request,
+                    f"Razorpay account creation failed ({error}). Marking verified manually."
+                )
+ 
+            bank.kyc_status      = 'verified'
+            bank.kyc_verified_at = timezone.now()
+            bank.kyc_verified_by = request.user
+            bank.save(update_fields=['kyc_status', 'kyc_verified_at', 'kyc_verified_by'])
+ 
+            agency.status = 'approved'
+            agency.save(update_fields=['status'])
+ 
+            messages.success(
+                request,
+                f"KYC verified for {agency.name}. Razorpay account: {account_id or 'manual'}"
+            )
+ 
+        elif action == 'reject':
+            reason = request.POST.get('rejection_reason', '').strip()
+            bank.kyc_status           = 'rejected'
+            bank.kyc_rejection_reason = reason
+            bank.save(update_fields=['kyc_status', 'kyc_rejection_reason'])
+            messages.error(request, f"KYC rejected for {agency.name}.")
+ 
+    return redirect('trivasta_admin')
+ 
+ 
+@staff_member_required
+def admin_retry_payout(request, payout_id):
+    """Admin manually retries a failed or pending payout."""
+    from .models import PayoutRecord
+    from .payment_service import transfer_to_agency
+ 
+    payout = get_object_or_404(PayoutRecord, pk=payout_id)
+ 
+    if payout.status == 'paid':
+        messages.info(request, "This payout is already completed.")
+        return redirect('trivasta_admin')
+ 
+    amounts = {
+        'total_amount':        payout.total_amount,
+        'base_amount':         payout.base_amount,
+        'gst_amount':          payout.gst_amount,
+        'trivasta_commission': payout.trivasta_commission,
+        'agency_payout':       payout.agency_payout_amount,
+        'discount_amount':     payout.discount_amount,
+    }
+ 
+    _, error = transfer_to_agency(payout.booking, amounts)
+ 
+    if error:
+        messages.error(request, f"Retry failed: {error}")
+    else:
+        messages.success(request, f"Payout retried successfully for Booking #{payout.booking.id}")
+ 
     return redirect('trivasta_admin')
 
 

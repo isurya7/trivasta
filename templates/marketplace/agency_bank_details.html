@@ -1,0 +1,582 @@
+{% extends "base.html" %}
+{% block title %}Bank & KYC Details — {{ agency.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+
+    body { font-family: 'Outfit', sans-serif; }
+
+    .kyc-page {
+        min-height: calc(100vh - 68px);
+        background: var(--cream, #f8f4ed);
+        padding: 2.5rem 1.5rem 5rem;
+    }
+
+    .kyc-inner {
+        max-width: 780px;
+        margin: 0 auto;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--muted, #7a8694);
+        font-size: 0.875rem;
+        text-decoration: none;
+        margin-bottom: 1.75rem;
+        transition: color 0.2s;
+    }
+    .back-link:hover { color: var(--sea, #0f3460); }
+
+    /* ── HERO ── */
+    .kyc-hero {
+        background: linear-gradient(135deg, var(--sea, #0f3460) 0%, #0a2240 100%);
+        border-radius: 20px;
+        padding: 2.5rem 3rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .kyc-hero::before {
+        content: '';
+        position: absolute; inset: 0;
+        background-image:
+            linear-gradient(rgba(201,168,76,0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(201,168,76,0.06) 1px, transparent 1px);
+        background-size: 36px 36px;
+    }
+
+    .kyc-hero::after {
+        content: '🏦';
+        position: absolute;
+        right: 2.5rem; top: 50%;
+        transform: translateY(-50%);
+        font-size: 5rem;
+        opacity: 0.08;
+        pointer-events: none;
+    }
+
+    .kyc-hero-inner { position: relative; z-index: 1; }
+
+    .kyc-eyebrow {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #e8c97a;
+        margin-bottom: 0.5rem;
+    }
+
+    .kyc-title {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 2rem;
+        font-weight: 300;
+        color: white;
+        line-height: 1.15;
+        margin-bottom: 0.4rem;
+    }
+
+    .kyc-title em { font-style: italic; color: #e8c97a; }
+
+    .kyc-sub {
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.45);
+        line-height: 1.6;
+    }
+
+    /* ── STATUS BANNER ── */
+    .kyc-status-bar {
+        border-radius: 12px;
+        padding: 1.1rem 1.5rem;
+        margin-bottom: 1.75rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+    }
+
+    .kyc-status-bar.verified {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-left: 3px solid #059669;
+        color: #166534;
+    }
+
+    .kyc-status-bar.submitted {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-left: 3px solid #3b82f6;
+        color: #1d4ed8;
+    }
+
+    .kyc-status-bar.rejected {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-left: 3px solid #dc2626;
+        color: #991b1b;
+    }
+
+    .kyc-status-bar.pending {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        border-left: 3px solid #f59e0b;
+        color: #92400e;
+    }
+
+    /* ── FORM CARD ── */
+    .form-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 32px rgba(13,17,23,0.08);
+        overflow: hidden;
+    }
+
+    .form-section {
+        padding: 2rem 2.5rem;
+        border-bottom: 1px solid var(--cream-dark, #ede7da);
+    }
+
+    .form-section:last-child { border-bottom: none; }
+
+    .form-section-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--muted, #7a8694);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .form-section-label::before {
+        content: '';
+        width: 3px; height: 14px;
+        background: var(--gold, #c9a84c);
+        border-radius: 2px;
+        flex-shrink: 0;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .form-row.single { grid-template-columns: 1fr; }
+
+    .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+
+    .form-label {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: var(--ink, #0d1117);
+        letter-spacing: 0.02em;
+    }
+
+    .form-label .req { color: #e74c3c; margin-left: 2px; }
+
+    .form-input, .form-select {
+        width: 100%;
+        padding: 0.7rem 1rem;
+        border: 1.5px solid var(--cream-dark, #ede7da);
+        border-radius: 8px;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9rem;
+        color: var(--ink, #0d1117);
+        background: var(--cream, #f8f4ed);
+        transition: all 0.2s;
+        outline: none;
+    }
+
+    .form-input:focus, .form-select:focus {
+        border-color: var(--sea, #0f3460);
+        background: white;
+        box-shadow: 0 0 0 3px rgba(15,52,96,0.08);
+    }
+
+    .form-input::placeholder { color: rgba(0,0,0,0.3); }
+
+    .form-hint {
+        font-size: 0.72rem;
+        color: var(--muted, #7a8694);
+        margin-top: 0.2rem;
+    }
+
+    /* ── SECURITY NOTE ── */
+    .security-note {
+        background: rgba(15,52,96,0.04);
+        border: 1px solid rgba(15,52,96,0.12);
+        border-radius: 10px;
+        padding: 1rem 1.25rem;
+        display: flex;
+        gap: 0.75rem;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+        font-size: 0.8125rem;
+        color: var(--ink, #0d1117);
+        line-height: 1.6;
+    }
+
+    .security-note-icon { font-size: 1.25rem; flex-shrink: 0; }
+
+    /* ── SUBMIT ── */
+    .form-footer {
+        padding: 1.75rem 2.5rem;
+        background: var(--cream, #f8f4ed);
+        border-top: 1px solid var(--cream-dark, #ede7da);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .footer-note {
+        font-size: 0.8rem;
+        color: var(--muted, #7a8694);
+        flex: 1;
+    }
+
+    .btn-submit {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: var(--sea, #0f3460);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 2rem;
+        font-family: 'Outfit', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .btn-submit:hover {
+        background: #0a2240;
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(15,52,96,0.3);
+    }
+
+    /* ── VERIFIED STATE (read-only view) ── */
+    .verified-field {
+        padding: 0.7rem 1rem;
+        background: var(--cream, #f8f4ed);
+        border: 1.5px solid var(--cream-dark, #ede7da);
+        border-radius: 8px;
+        font-size: 0.9rem;
+        color: var(--ink, #0d1117);
+        font-weight: 500;
+    }
+
+    .verified-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.72rem;
+        font-weight: 700;
+        color: #059669;
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        padding: 0.2rem 0.65rem;
+        border-radius: 100px;
+        margin-left: 0.5rem;
+    }
+
+    /* ── HOW IT WORKS ── */
+    .steps-row {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .step-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.25rem;
+        box-shadow: 0 2px 12px rgba(13,17,23,0.06);
+        text-align: center;
+        position: relative;
+    }
+
+    .step-card::before {
+        content: attr(data-step);
+        position: absolute;
+        top: -10px; left: 50%; transform: translateX(-50%);
+        background: var(--gold, #c9a84c);
+        color: white;
+        font-size: 0.65rem;
+        font-weight: 800;
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+    }
+
+    .step-icon { font-size: 1.5rem; margin: 0.5rem 0 0.5rem; }
+
+    .step-title {
+        font-size: 0.8rem;
+        font-weight: 700;
+        color: var(--ink, #0d1117);
+        margin-bottom: 0.35rem;
+    }
+
+    .step-body {
+        font-size: 0.72rem;
+        color: var(--muted, #7a8694);
+        line-height: 1.5;
+    }
+
+    @media (max-width: 640px) {
+        .form-row { grid-template-columns: 1fr; }
+        .steps-row { grid-template-columns: 1fr; }
+        .kyc-hero { padding: 1.75rem; }
+        .form-section { padding: 1.5rem; }
+        .form-footer { flex-direction: column; align-items: stretch; }
+        .btn-submit { width: 100%; justify-content: center; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="kyc-page">
+<div class="kyc-inner">
+
+    <a href="{% url 'agency_dashboard' %}" class="back-link">← Back to Dashboard</a>
+
+    <!-- Hero -->
+    <div class="kyc-hero">
+        <div class="kyc-hero-inner">
+            <div class="kyc-eyebrow">KYC Verification</div>
+            <h1 class="kyc-title">Bank & <em>Payout Details</em></h1>
+            <p class="kyc-sub">
+                Submit your bank account details so Trivasta can transfer your earnings<br>
+                automatically after each confirmed booking via Razorpay Route.
+            </p>
+        </div>
+    </div>
+
+    <!-- KYC status banner (if already submitted) -->
+    {% if bank %}
+        {% if bank.kyc_status == 'verified' %}
+        <div class="kyc-status-bar verified">
+            ✅ <div>
+                <strong>KYC Verified</strong> — Your account is verified and payouts are active.
+                Earnings are transferred within 24 hours of each booking.
+            </div>
+        </div>
+        {% elif bank.kyc_status == 'submitted' %}
+        <div class="kyc-status-bar submitted">
+            🔍 <div>
+                <strong>Under Review</strong> — Our team is verifying your bank details.
+                This usually takes up to 24 hours. You'll be notified once approved.
+            </div>
+        </div>
+        {% elif bank.kyc_status == 'rejected' %}
+        <div class="kyc-status-bar rejected">
+            ❌ <div>
+                <strong>KYC Rejected</strong> —
+                {{ bank.kyc_rejection_reason|default:"Please resubmit with correct details." }}
+                You can update your information below and resubmit.
+            </div>
+        </div>
+        {% elif bank.kyc_status == 'pending' %}
+        <div class="kyc-status-bar pending">
+            ⏳ <div>
+                <strong>Not Submitted</strong> — Fill in your bank details below to get started.
+            </div>
+        </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- How it works -->
+    {% if not bank or bank.kyc_status != 'verified' %}
+    <div class="steps-row">
+        <div class="step-card" data-step="1">
+            <div class="step-icon">📋</div>
+            <div class="step-title">Submit Details</div>
+            <div class="step-body">Fill in your bank account, IFSC code, and PAN number below.</div>
+        </div>
+        <div class="step-card" data-step="2">
+            <div class="step-icon">🔍</div>
+            <div class="step-title">Team Verifies</div>
+            <div class="step-body">Our team reviews and verifies your KYC within 24 hours.</div>
+        </div>
+        <div class="step-card" data-step="3">
+            <div class="step-icon">💸</div>
+            <div class="step-title">Auto Payouts</div>
+            <div class="step-body">Earnings transferred automatically after every confirmed booking.</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Form -->
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-card">
+
+            <!-- Bank Account -->
+            <div class="form-section">
+                <div class="form-section-label">Bank Account Details</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Account Holder Name <span class="req">*</span></label>
+                        {% if bank and bank.kyc_status == 'verified' %}
+                            <div class="verified-field">{{ bank.account_holder_name }} <span class="verified-badge">✓ Verified</span></div>
+                        {% else %}
+                            <input type="text" name="account_holder_name" class="form-input"
+                                placeholder="As per bank records"
+                                value="{{ bank.account_holder_name|default:'' }}"
+                                {% if bank and bank.kyc_status == 'submitted' %}readonly{% endif %}
+                                required>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Bank Name</label>
+                        {% if bank and bank.kyc_status == 'verified' %}
+                            <div class="verified-field">{{ bank.bank_name|default:"—" }}</div>
+                        {% else %}
+                            <input type="text" name="bank_name" class="form-input"
+                                placeholder="e.g. HDFC Bank, SBI"
+                                value="{{ bank.bank_name|default:'' }}"
+                                {% if bank and bank.kyc_status == 'submitted' %}readonly{% endif %}>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Account Number <span class="req">*</span></label>
+                        {% if bank and bank.kyc_status == 'verified' %}
+                            <div class="verified-field">••••••{{ bank.account_number|slice:"-4:" }}</div>
+                        {% else %}
+                            <input type="text" name="account_number" class="form-input"
+                                placeholder="Enter account number"
+                                value="{{ bank.account_number|default:'' }}"
+                                {% if bank and bank.kyc_status == 'submitted' %}readonly{% endif %}
+                                required>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">IFSC Code <span class="req">*</span></label>
+                        {% if bank and bank.kyc_status == 'verified' %}
+                            <div class="verified-field">{{ bank.ifsc_code }}</div>
+                        {% else %}
+                            <input type="text" name="ifsc_code" class="form-input"
+                                placeholder="e.g. HDFC0001234"
+                                value="{{ bank.ifsc_code|default:'' }}"
+                                style="text-transform:uppercase;"
+                                maxlength="11"
+                                {% if bank and bank.kyc_status == 'submitted' %}readonly{% endif %}
+                                required>
+                            <div class="form-hint">11-character IFSC code from your cheque book</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Account Type <span class="req">*</span></label>
+                        {% if bank and bank.kyc_status == 'verified' %}
+                            <div class="verified-field">{{ bank.account_type|capfirst }}</div>
+                        {% else %}
+                            <select name="account_type" class="form-select"
+                                {% if bank and bank.kyc_status == 'submitted' %}disabled{% endif %}>
+                                <option value="current" {% if bank and bank.account_type == 'current' %}selected{% endif %}>Current</option>
+                                <option value="savings" {% if bank and bank.account_type == 'savings' %}selected{% endif %}>Savings</option>
+                            </select>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tax Details -->
+            <div class="form-section">
+                <div class="form-section-label">Tax & Business Details</div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">PAN Number <span class="req">*</span></label>
+                        {% if bank and bank.kyc_status == 'verified' %}
+                            <div class="verified-field">{{ bank.pan_number }}</div>
+                        {% else %}
+                            <input type="text" name="pan_number" class="form-input"
+                                placeholder="e.g. ABCDE1234F"
+                                value="{{ bank.pan_number|default:'' }}"
+                                style="text-transform:uppercase;"
+                                maxlength="10"
+                                {% if bank and bank.kyc_status == 'submitted' %}readonly{% endif %}
+                                required>
+                            <div class="form-hint">Business or individual PAN — used for TDS compliance</div>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">GST Number</label>
+                        {% if bank and bank.kyc_status == 'verified' %}
+                            <div class="verified-field">{{ bank.gst_number|default:"Not provided" }}</div>
+                        {% else %}
+                            <input type="text" name="gst_number" class="form-input"
+                                placeholder="Optional — 15-digit GSTIN"
+                                value="{{ bank.gst_number|default:'' }}"
+                                style="text-transform:uppercase;"
+                                maxlength="15"
+                                {% if bank and bank.kyc_status == 'submitted' %}readonly{% endif %}>
+                            <div class="form-hint">If registered under GST</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Security note -->
+            <div class="form-section">
+                <div class="security-note">
+                    <div class="security-note-icon">🔒</div>
+                    <div>
+                        Your bank details are encrypted and stored securely. They are only used
+                        to process payouts via <strong>Razorpay Route</strong> — a licensed payment
+                        aggregator regulated by the RBI. Trivasta never stores your full account
+                        number in plain text.
+                    </div>
+                </div>
+
+                {% if bank and bank.kyc_status == 'verified' %}
+                    <div style="text-align:center; color:var(--muted); font-size:0.875rem; padding:1rem 0;">
+                        ✅ Your KYC is verified. Contact support if you need to update your bank details.
+                    </div>
+                {% elif bank and bank.kyc_status == 'submitted' %}
+                    <div style="text-align:center; color:var(--muted); font-size:0.875rem; padding:1rem 0;">
+                        🔍 Details submitted and under review. You cannot edit them during verification.
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Footer -->
+            {% if not bank or bank.kyc_status == 'pending' or bank.kyc_status == 'rejected' %}
+            <div class="form-footer">
+                <div class="footer-note">
+                    By submitting, you confirm these are your legitimate business bank details
+                    and consent to Trivasta verifying them for payout purposes.
+                </div>
+                <button type="submit" class="btn-submit">
+                    🏦 {% if existing %}Update & Resubmit{% else %}Submit for KYC{% endif %}
+                </button>
+            </div>
+            {% endif %}
+
+        </div>
+    </form>
+
+</div>
+</div>
+{% endblock %}

@@ -397,4 +397,187 @@ class RefundRequest(models.Model):
  
     def __str__(self):
         return f"Refund #{self.pk} — ₹{self.amount} [{self.status}]"
+ 
     
+class Coupon(models.Model):
+    DISCOUNT_TYPE_CHOICES = [
+        ('percentage', 'Percentage Off'),
+    ]
+    STATUS_CHOICES = [
+        ('active',   'Active'),
+        ('inactive', 'Inactive'),
+        ('expired',  'Expired'),
+    ]
+ 
+    code              = models.CharField(max_length=20, unique=True, db_index=True)
+    description       = models.CharField(max_length=255, blank=True)
+    discount_type     = models.CharField(max_length=15, choices=DISCOUNT_TYPE_CHOICES, default='percentage')
+    discount_value    = models.DecimalField(max_digits=5, decimal_places=2, help_text="Percentage value e.g. 10 for 10%")
+    max_discount_cap  = models.IntegerField(null=True, blank=True, help_text="Max discount in ₹ (e.g. cap 10% at ₹500)")
+    min_booking_amount= models.IntegerField(default=0, help_text="Minimum booking amount to apply coupon")
+    max_uses          = models.IntegerField(null=True, blank=True, help_text="Leave blank for unlimited")
+    used_count        = models.IntegerField(default=0, editable=False)
+    valid_from        = models.DateTimeField()
+    valid_until       = models.DateTimeField(null=True, blank=True, help_text="Leave blank for no expiry")
+    status            = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')
+ 
+    # Who created it
+    created_by_admin  = models.BooleanField(default=False)
+    created_by_agency = models.ForeignKey(
+        'Agency', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='coupons'
+    )
+ 
+    # Which agency this coupon is valid for (null = valid for all)
+    applicable_agency = models.ForeignKey(
+        'Agency', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='applicable_coupons'
+    )
+ 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+ 
+    class Meta:
+        ordering = ['-created_at']
+ 
+    def __str__(self):
+        return f"{self.code} — {self.discount_value}% off"
+ 
+    def is_valid(self):
+        from django.utils import timezone
+        now = timezone.now()
+        if self.status != 'active':
+            return False, "This coupon is no longer active."
+        if now < self.valid_from:
+            return False, "This coupon is not valid yet."
+        if self.valid_until and now > self.valid_until:
+            self.status = 'expired'
+            self.save(update_fields=['status'])
+            return False, "This coupon has expired."
+        if self.max_uses and self.used_count >= self.max_uses:
+            return False, "This coupon has reached its usage limit."
+        return True, "Valid"
+ 
+    def calculate_discount(self, base_amount):
+        """
+        Returns (discount_amount, final_amount) in INR integers.
+        Trivasta always takes 5% of ORIGINAL base_amount.
+        Discount comes from agency share — Trivasta never loses commission.
+        """
+        discount = int((self.discount_value / 100) * base_amount)
+        if self.max_discount_cap:
+            discount = min(discount, self.max_discount_cap)
+        final = base_amount - discount
+        return discount, final
+ 
+    def mark_used(self):
+        Coupon.objects.filter(pk=self.pk).update(used_count=models.F('used_count') + 1)
+ 
+ 
+class CouponUsage(models.Model):
+    """Tracks which user used which coupon on which booking."""
+    coupon     = models.ForeignKey(Coupon, on_delete=models.CASCADE, related_name='usages')
+    user       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    booking    = models.OneToOneField('Booking', on_delete=models.CASCADE, related_name='coupon_usage')
+    discount_applied = models.IntegerField(help_text="Actual discount amount in ₹")
+    created_at = models.DateTimeField(auto_now_add=True)
+ 
+    class Meta:
+        unique_together = ['coupon', 'user']  # one coupon per user
+ 
+    def __str__(self):
+        return f"{self.user.username} used {self.coupon.code} — saved ₹{self.discount_applied}"
+ 
+ 
+class AgencyBankDetails(models.Model):
+    """
+    Stores agency bank account for Razorpay Route payouts.
+    Created when agency registers. KYC verified by Trivasta admin.
+    """
+    KYC_STATUS_CHOICES = [
+        ('pending',  'Pending Submission'),
+        ('submitted','Submitted — Under Review'),
+        ('verified', 'Verified'),
+        ('rejected', 'Rejected'),
+    ]
+    ACCOUNT_TYPE_CHOICES = [
+        ('savings', 'Savings'),
+        ('current', 'Current'),
+    ]
+ 
+    agency = models.OneToOneField(
+        'Agency', on_delete=models.CASCADE, related_name='bank_details'
+    )
+ 
+    # Bank account
+    account_holder_name = models.CharField(max_length=255)
+    account_number      = models.CharField(max_length=20)
+    ifsc_code           = models.CharField(max_length=11)
+    account_type        = models.CharField(max_length=10, choices=ACCOUNT_TYPE_CHOICES, default='current')
+    bank_name           = models.CharField(max_length=100, blank=True)
+ 
+    # GST & PAN
+    pan_number          = models.CharField(max_length=10, blank=True)
+    gst_number          = models.CharField(max_length=15, blank=True)
+ 
+    # Razorpay Route linked account
+    razorpay_account_id = models.CharField(max_length=100, blank=True, null=True, help_text="Razorpay linked account ID")
+    razorpay_fund_account_id = models.CharField(max_length=100, blank=True, null=True)
+ 
+    # KYC
+    kyc_status          = models.CharField(max_length=15, choices=KYC_STATUS_CHOICES, default='pending')
+    kyc_rejection_reason= models.TextField(blank=True)
+    kyc_verified_at     = models.DateTimeField(null=True, blank=True)
+    kyc_verified_by     = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='kyc_verifications'
+    )
+ 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+ 
+    def __str__(self):
+        return f"{self.agency.name} — {self.account_holder_name} ({self.kyc_status})"
+ 
+    @property
+    def is_payout_ready(self):
+        """True only if KYC verified and Razorpay linked account exists."""
+        return self.kyc_status == 'verified' and bool(self.razorpay_account_id)
+ 
+ 
+class PayoutRecord(models.Model):
+    """
+    Records every payout split made via Razorpay Route.
+    Created automatically when a booking payment is confirmed.
+    """
+    STATUS_CHOICES = [
+        ('pending',    'Pending'),
+        ('processing', 'Processing'),
+        ('paid',       'Paid'),
+        ('failed',     'Failed'),
+    ]
+ 
+    booking              = models.OneToOneField('Booking', on_delete=models.CASCADE, related_name='payout_record')
+    agency               = models.ForeignKey('Agency', on_delete=models.CASCADE, related_name='payouts')
+ 
+    # Amounts
+    total_amount         = models.IntegerField(help_text="Total amount paid by traveller")
+    base_amount          = models.IntegerField(help_text="Base before GST")
+    gst_amount           = models.IntegerField(help_text="GST collected")
+    discount_amount      = models.IntegerField(default=0, help_text="Coupon discount applied")
+    trivasta_commission  = models.IntegerField(help_text="5% of original base — Trivasta earnings")
+    agency_payout_amount = models.IntegerField(help_text="Amount to transfer to agency")
+ 
+    # Razorpay Route transfer details
+    razorpay_transfer_id = models.CharField(max_length=100, blank=True, null=True)
+    status               = models.CharField(max_length=15, choices=STATUS_CHOICES, default='pending')
+    failure_reason       = models.TextField(blank=True)
+ 
+    created_at  = models.DateTimeField(auto_now_add=True)
+    paid_at     = models.DateTimeField(null=True, blank=True)
+ 
+    class Meta:
+        ordering = ['-created_at']
+ 
+    def __str__(self):
+        return f"Payout #{self.pk} — {self.agency.name} ₹{self.agency_payout_amount} ({self.status})"
