@@ -3,59 +3,136 @@
 
 {% block extra_css %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600&display=swap');
+    /* ════════════════════════════════════════════════════
+       TERMS PAGE — Ocean Dark Theme (matches base.html)
+    ════════════════════════════════════════════════════ */
 
-    .terms-page { font-family: 'Outfit', sans-serif; background: var(--cream); }
-
+    /* ── Hero ─────────────────────────────────────────── */
     .terms-hero {
-        background: linear-gradient(135deg, #0a2240, #0f3460);
-        padding: 5rem 2rem;
+        background: linear-gradient(135deg, var(--ocean-deep) 0%, var(--ocean-mid) 60%, rgba(14,77,146,0.6) 100%);
+        padding: 5rem 2rem 4rem;
         text-align: center;
+        position: relative;
+        overflow: hidden;
+        border-bottom: 1px solid rgba(56,189,248,0.12);
+    }
+
+    .terms-hero::before {
+        content: 'TERMS';
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        font-family: var(--font-display);
+        font-size: 18vw;
+        font-weight: 900;
+        color: rgba(56,189,248,0.04);
+        white-space: nowrap;
+        pointer-events: none;
+        letter-spacing: 0.1em;
+    }
+
+    .terms-hero::after {
+        content: '';
+        position: absolute;
+        bottom: 0; left: 0; right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(56,189,248,0.4), transparent);
+    }
+
+    .terms-hero-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        background: rgba(56,189,248,0.08);
+        border: 1px solid rgba(56,189,248,0.2);
+        padding: 0.4rem 1.1rem;
+        border-radius: 100px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--ocean-glow);
+        margin-bottom: 1.5rem;
+        position: relative;
+        z-index: 1;
     }
 
     .terms-hero h1 {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 3.5rem;
-        font-weight: 300;
-        color: white;
+        font-family: var(--font-display);
+        font-size: clamp(2.75rem, 6vw, 5rem);
+        font-weight: 900;
+        color: var(--white);
         margin-bottom: 0.75rem;
+        position: relative;
+        z-index: 1;
+        letter-spacing: 0.03em;
     }
 
-    .terms-hero h1 em { font-style: italic; color: #e8c97a; }
-    .terms-hero p { color: rgba(255,255,255,0.5); font-size: 0.875rem; }
+    .terms-hero h1 em {
+        font-style: italic;
+        font-weight: 400;
+        background: linear-gradient(135deg, var(--gold), var(--gold-light));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
 
+    .terms-hero p {
+        color: rgba(255,255,255,0.4);
+        font-size: 0.875rem;
+        position: relative;
+        z-index: 1;
+        letter-spacing: 0.04em;
+    }
+
+    /* ── Layout ───────────────────────────────────────── */
     .terms-wrap {
-        max-width: 820px;
+        max-width: 860px;
         margin: 0 auto;
-        padding: 4rem 2rem 6rem;
+        padding: 3.5rem 2rem 6rem;
     }
 
+    /* ── Card ─────────────────────────────────────────── */
     .terms-card {
-        background: var(--white);
-        border-radius: 16px;
-        box-shadow: var(--shadow);
+        background: rgba(10,37,64,0.5);
+        border: 1px solid rgba(56,189,248,0.1);
+        border-radius: 20px;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
         overflow: hidden;
+        box-shadow: 0 24px 80px rgba(0,0,0,0.4);
     }
 
+    /* ── Table of Contents ────────────────────────────── */
     .terms-toc {
-        background: var(--cream);
-        border-bottom: 1px solid var(--cream-dark);
+        background: rgba(2,12,27,0.5);
+        border-bottom: 1px solid rgba(56,189,248,0.1);
         padding: 1.75rem 2.5rem;
     }
 
     .terms-toc h3 {
-        font-size: 0.72rem;
+        font-size: 0.68rem;
         font-weight: 700;
-        letter-spacing: 0.14em;
+        letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: var(--gold);
-        margin-bottom: 1rem;
+        color: var(--ocean-glow);
+        margin-bottom: 1.1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .terms-toc h3::before {
+        content: '';
+        width: 24px; height: 1px;
+        background: var(--ocean-glow);
+        flex-shrink: 0;
     }
 
     .terms-toc ol {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 0.4rem 2rem;
+        gap: 0.45rem 2rem;
         padding: 0;
         list-style: none;
         counter-reset: toc;
@@ -64,53 +141,97 @@
     .terms-toc ol li { counter-increment: toc; }
 
     .terms-toc ol li::before {
-        content: counter(toc) ". ";
+        content: counter(toc, decimal-leading-zero) ". ";
         color: var(--gold);
-        font-weight: 600;
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
     }
 
     .terms-toc ol li a {
-        color: var(--sea);
+        color: rgba(255,255,255,0.55);
         text-decoration: none;
-        font-size: 0.875rem;
+        font-size: 0.85rem;
+        transition: color var(--transition);
     }
 
-    .terms-body { padding: 2.5rem; }
+    .terms-toc ol li a:hover { color: var(--ocean-glow); }
 
-    .terms-sec { margin-bottom: 2.5rem; }
+    /* ── Body ─────────────────────────────────────────── */
+    .terms-body { padding: 2.5rem 2.5rem 0.5rem; }
+
+    /* ── Info / Warning boxes ─────────────────────────── */
+    .info-box {
+        background: rgba(56,189,248,0.07);
+        border: 1px solid rgba(56,189,248,0.2);
+        border-left: 3px solid var(--ocean-glow);
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        font-size: 0.875rem;
+        color: rgba(56,189,248,0.9);
+        margin-bottom: 2.5rem;
+        line-height: 1.65;
+    }
+
+    .warning-box {
+        background: rgba(248,113,113,0.07);
+        border: 1px solid rgba(248,113,113,0.2);
+        border-left: 3px solid #f87171;
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+        font-size: 0.875rem;
+        color: #fca5a5;
+        margin: 1rem 0;
+        line-height: 1.65;
+    }
+
+    /* ── Sections ─────────────────────────────────────── */
+    .terms-sec {
+        margin-bottom: 0;
+        padding: 2rem 0;
+        border-top: 1px solid rgba(56,189,248,0.07);
+        position: relative;
+    }
+
+    .terms-sec:first-of-type { border-top: none; padding-top: 0; }
 
     .terms-sec-label {
-        font-size: 0.72rem;
+        font-size: 0.65rem;
         font-weight: 700;
-        letter-spacing: 0.14em;
+        letter-spacing: 0.2em;
         text-transform: uppercase;
         color: var(--gold);
-        margin-bottom: 0.875rem;
+        margin-bottom: 0.6rem;
         display: flex;
         align-items: center;
         gap: 0.5rem;
-        padding-top: 1rem;
-        border-top: 1px solid var(--cream-dark);
     }
 
-    .terms-sec:first-child .terms-sec-label { border-top: none; padding-top: 0; }
-    .terms-sec-label::before { content: ''; width: 16px; height: 1px; background: var(--gold); }
+    .terms-sec-label::before {
+        content: '';
+        width: 14px; height: 1px;
+        background: var(--gold);
+        flex-shrink: 0;
+    }
 
     .terms-sec h2 {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--ink);
+        font-family: var(--font-display);
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: var(--white);
         margin-bottom: 1rem;
+        letter-spacing: 0.02em;
     }
 
+    /* ── Paragraphs — THE FIX: explicit white text ──── */
     .terms-sec p {
         font-size: 0.9rem;
-        color: var(--muted);
+        color: rgba(255,255,255,0.6);
         line-height: 1.8;
         margin-bottom: 0.875rem;
     }
 
+    /* ── Lists ────────────────────────────────────────── */
     .terms-sec ul {
         list-style: none;
         padding: 0;
@@ -122,235 +243,248 @@
 
     .terms-sec ul li {
         font-size: 0.9rem;
-        color: var(--muted);
-        line-height: 1.6;
+        color: rgba(255,255,255,0.6);
+        line-height: 1.65;
         display: flex;
-        gap: 0.625rem;
+        gap: 0.65rem;
+        align-items: flex-start;
     }
 
-    .terms-sec ul li::before { content: '→'; color: var(--gold); flex-shrink: 0; }
-
-    .warning-box {
-        background: rgba(231,76,60,0.06);
-        border: 1px solid rgba(231,76,60,0.2);
-        border-left: 3px solid #e74c3c;
-        border-radius: 6px;
-        padding: 1rem 1.25rem;
-        font-size: 0.875rem;
-        color: #c0392b;
-        margin: 1rem 0;
-        line-height: 1.6;
+    .terms-sec ul li::before {
+        content: '→';
+        color: var(--ocean-glow);
+        flex-shrink: 0;
+        font-size: 0.8rem;
+        margin-top: 0.15rem;
     }
 
-    .info-box {
-        background: rgba(15,52,96,0.05);
-        border: 1px solid rgba(15,52,96,0.12);
-        border-left: 3px solid var(--sea);
-        border-radius: 6px;
-        padding: 1rem 1.25rem;
-        font-size: 0.875rem;
-        color: var(--sea);
-        margin: 1rem 0;
-        line-height: 1.6;
-    }
-
+    /* ── Footer ───────────────────────────────────────── */
     .terms-footer {
-        background: var(--cream);
-        border-top: 1px solid var(--cream-dark);
+        background: rgba(2,12,27,0.5);
+        border-top: 1px solid rgba(56,189,248,0.1);
         padding: 1.5rem 2.5rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 1rem;
         flex-wrap: wrap;
+        margin-top: 2rem;
     }
 
-    .terms-footer p { font-size: 0.8125rem; color: var(--muted); }
-    .terms-footer a { color: var(--sea); text-decoration: none; font-weight: 500; }
+    .terms-footer p {
+        font-size: 0.8rem;
+        color: rgba(255,255,255,0.3);
+    }
+
+    .terms-footer a {
+        color: var(--ocean-glow);
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 500;
+        transition: color var(--transition);
+    }
+
+    .terms-footer a:hover { color: var(--white); }
+
+    /* ── Responsive ───────────────────────────────────── */
+    @media (max-width: 640px) {
+        .terms-toc ol { grid-template-columns: 1fr; }
+        .terms-body { padding: 1.75rem 1.5rem 0.5rem; }
+        .terms-toc { padding: 1.5rem; }
+        .terms-footer { padding: 1.25rem 1.5rem; flex-direction: column; align-items: flex-start; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="terms-page">
 
-    <div class="terms-hero">
-        <h1>Terms & <em>Conditions</em></h1>
-        <p>Last updated: February 2026 · Applies to all users and agencies on Trivasta</p>
+<!-- ── Hero ──────────────────────────────────────────── -->
+<div class="terms-hero">
+    <div class="terms-hero-eyebrow">
+        <svg width="6" height="6" viewBox="0 0 6 6"><circle cx="3" cy="3" r="3" fill="#38bdf8"/></svg>
+        Legal
     </div>
+    <h1>Terms &amp; <em>Conditions</em></h1>
+    <p>Last updated: February 2026 · Applies to all users and agencies on Trivasta</p>
+</div>
 
-    <div class="terms-wrap">
-        <div class="terms-card">
+<!-- ── Main Card ─────────────────────────────────────── -->
+<div class="terms-wrap">
+    <div class="terms-card">
 
-            <div class="terms-toc">
-                <h3>Table of Contents</h3>
-                <ol>
-                    <li><a href="#t-acceptance">Acceptance of Terms</a></li>
-                    <li><a href="#t-services">Our Services</a></li>
-                    <li><a href="#t-accounts">User Accounts</a></li>
-                    <li><a href="#t-ai">AI-Generated Content</a></li>
-                    <li><a href="#t-marketplace">Marketplace Rules</a></li>
-                    <li><a href="#t-payments">Payments & Refunds</a></li>
-                    <li><a href="#t-agencies">Agency Obligations</a></li>
-                    <li><a href="#t-prohibited">Prohibited Conduct</a></li>
-                    <li><a href="#t-liability">Limitation of Liability</a></li>
-                    <li><a href="#t-termination">Termination</a></li>
-                    <li><a href="#t-disputes">Disputes</a></li>
-                    <li><a href="#t-governing">Governing Law</a></li>
-                </ol>
+        <!-- Table of Contents -->
+        <div class="terms-toc">
+            <h3>Table of Contents</h3>
+            <ol>
+                <li><a href="#t-acceptance">Acceptance of Terms</a></li>
+                <li><a href="#t-services">Our Services</a></li>
+                <li><a href="#t-accounts">User Accounts</a></li>
+                <li><a href="#t-ai">AI-Generated Content</a></li>
+                <li><a href="#t-marketplace">Marketplace Rules</a></li>
+                <li><a href="#t-payments">Payments &amp; Refunds</a></li>
+                <li><a href="#t-agencies">Agency Obligations</a></li>
+                <li><a href="#t-prohibited">Prohibited Conduct</a></li>
+                <li><a href="#t-liability">Limitation of Liability</a></li>
+                <li><a href="#t-termination">Termination</a></li>
+                <li><a href="#t-disputes">Disputes</a></li>
+                <li><a href="#t-governing">Governing Law</a></li>
+            </ol>
+        </div>
+
+        <!-- Body -->
+        <div class="terms-body">
+
+            <div class="info-box">
+                📋 By creating an account or using Trivasta, you agree to these Terms &amp; Conditions. Please read them carefully. If you do not agree, please do not use our platform.
             </div>
 
-            <div class="terms-body">
-
-                <div class="info-box">
-                    📋 By creating an account or using Trivasta, you agree to these Terms & Conditions. Please read them carefully. If you do not agree, please do not use our platform.
-                </div>
-
-                <div class="terms-sec" id="t-acceptance">
-                    <div class="terms-sec-label">Section 1</div>
-                    <h2>Acceptance of Terms</h2>
-                    <p>These Terms & Conditions ("Terms") govern your access to and use of Trivasta's platform, including our website, mobile applications and all related services (collectively, the "Platform"). By registering for an account, planning a trip or making a booking, you agree to be bound by these Terms.</p>
-                    <p>These Terms apply to all users including travelers, travel agencies and visitors to the Platform.</p>
-                </div>
-
-                <div class="terms-sec" id="t-services">
-                    <div class="terms-sec-label">Section 2</div>
-                    <h2>Our Services</h2>
-                    <p>Trivasta provides an AI-powered travel planning marketplace that enables:</p>
-                    <ul>
-                        <li>Generation of personalized travel itineraries using AI (Groq/Gemini)</li>
-                        <li>Connection between travelers and verified travel agencies</li>
-                        <li>A competitive marketplace where agencies submit offers on user trip requests</li>
-                        <li>Secure payment processing via Razorpay</li>
-                        <li>Booking management and confirmation services</li>
-                    </ul>
-                    <p>Trivasta acts as an intermediary marketplace only. We are not a travel agency and do not directly provide travel services.</p>
-                </div>
-
-                <div class="terms-sec" id="t-accounts">
-                    <div class="terms-sec-label">Section 3</div>
-                    <h2>User Accounts</h2>
-                    <ul>
-                        <li>You must be at least 18 years old to create an account</li>
-                        <li>You are responsible for maintaining the confidentiality of your login credentials</li>
-                        <li>You must provide accurate and complete registration information</li>
-                        <li>You are responsible for all activity that occurs under your account</li>
-                        <li>Notify us immediately of any unauthorized account access at security@trivasta.com</li>
-                        <li>One person may not maintain multiple accounts without written permission</li>
-                    </ul>
-                </div>
-
-                <div class="terms-sec" id="t-ai">
-                    <div class="terms-sec-label">Section 4</div>
-                    <h2>AI-Generated Content</h2>
-                    <p>Trivasta uses AI language models to generate travel itineraries. Important limitations:</p>
-                    <div class="warning-box">
-                        ⚠️ AI-generated itineraries are suggestions only. Prices, availability, opening hours and other details may not be current or accurate. Always verify critical information directly with service providers before booking.
-                    </div>
-                    <ul>
-                        <li>AI itineraries do not constitute professional travel advice</li>
-                        <li>Trivasta is not liable for decisions made based on AI-generated content</li>
-                        <li>We continuously improve our AI but cannot guarantee accuracy of all suggestions</li>
-                        <li>Budget estimates are approximate and may vary significantly from actual costs</li>
-                    </ul>
-                </div>
-
-                <div class="terms-sec" id="t-marketplace">
-                    <div class="terms-sec-label">Section 5</div>
-                    <h2>Marketplace Rules</h2>
-                    <p>Trivasta operates a two-sided marketplace connecting travelers and agencies. All users must:</p>
-                    <ul>
-                        <li>Communicate honestly and respectfully through the platform</li>
-                        <li>Not attempt to circumvent the platform by communicating off-platform before booking</li>
-                        <li>Not post false reviews or manipulate ratings</li>
-                        <li>Not use the platform for any unlawful purpose</li>
-                        <li>Not scrape, copy or reproduce platform content without permission</li>
-                    </ul>
-                </div>
-
-                <div class="terms-sec" id="t-payments">
-                    <div class="terms-sec-label">Section 6</div>
-                    <h2>Payments & Refunds</h2>
-                    <p>All payments on Trivasta are processed securely by Razorpay. By making a payment you agree to Razorpay's terms of service in addition to these Terms.</p>
-                    <ul>
-                        <li>All prices are in Indian Rupees (INR) and inclusive of platform fees</li>
-                        <li>Platform fees (5–10% depending on agency plan) are non-refundable</li>
-                        <li>Refund eligibility depends on the agency's cancellation policy stated at booking</li>
-                        <li>Disputed payments are investigated within 7 business days</li>
-                        <li>Chargebacks initiated without contacting us first may result in account suspension</li>
-                    </ul>
-                </div>
-
-                <div class="terms-sec" id="t-agencies">
-                    <div class="terms-sec-label">Section 7</div>
-                    <h2>Agency Obligations</h2>
-                    <p>Travel agencies registered on Trivasta must:</p>
-                    <ul>
-                        <li>Hold all legally required licenses and registrations to operate as a travel agency in India</li>
-                        <li>Provide accurate descriptions, prices and inclusions for all packages</li>
-                        <li>Honour all confirmed bookings made through the platform</li>
-                        <li>Respond to trip requests within 48 hours</li>
-                        <li>Maintain a minimum rating of 3.5 stars to remain listed</li>
-                        <li>Pay annual subscription fees and accept platform commission deductions</li>
-                        <li>Notify Trivasta immediately of any inability to fulfil a confirmed booking</li>
-                    </ul>
-                </div>
-
-                <div class="terms-sec" id="t-prohibited">
-                    <div class="terms-sec-label">Section 8</div>
-                    <h2>Prohibited Conduct</h2>
-                    <div class="warning-box">The following actions will result in immediate account suspension and possible legal action:</div>
-                    <ul>
-                        <li>Fraud, misrepresentation or impersonation of any person or entity</li>
-                        <li>Attempting to process payments outside the Trivasta platform</li>
-                        <li>Posting fake reviews or paying for reviews</li>
-                        <li>Harassment, abuse or threatening behaviour toward any user or agency</li>
-                        <li>Violating any applicable Indian or international law</li>
-                        <li>Attempting to hack, compromise or disrupt the platform</li>
-                        <li>Using the platform to promote competing marketplace services</li>
-                    </ul>
-                </div>
-
-                <div class="terms-sec" id="t-liability">
-                    <div class="terms-sec-label">Section 9</div>
-                    <h2>Limitation of Liability</h2>
-                    <p>Trivasta is a marketplace platform. To the maximum extent permitted by law:</p>
-                    <ul>
-                        <li>Trivasta is not liable for the quality, safety or legality of travel services provided by agencies</li>
-                        <li>Trivasta is not liable for any indirect, incidental or consequential damages</li>
-                        <li>Our total liability in any matter is limited to the platform fees paid in the last 12 months</li>
-                        <li>We do not guarantee uninterrupted or error-free service</li>
-                    </ul>
-                </div>
-
-                <div class="terms-sec" id="t-termination">
-                    <div class="terms-sec-label">Section 10</div>
-                    <h2>Termination</h2>
-                    <p>Trivasta reserves the right to suspend or terminate any account at any time for violations of these Terms, with or without notice. Users may delete their accounts at any time by contacting support@trivasta.com. Termination does not release either party from obligations arising prior to termination.</p>
-                </div>
-
-                <div class="terms-sec" id="t-disputes">
-                    <div class="terms-sec-label">Section 11</div>
-                    <h2>Disputes</h2>
-                    <p>In the event of a dispute between a traveler and an agency, Trivasta will act as a neutral mediator. Both parties agree to attempt resolution through Trivasta's dispute process before pursuing legal remedies. Contact us at disputes@trivasta.com with full details of the dispute.</p>
-                </div>
-
-                <div class="terms-sec" id="t-governing">
-                    <div class="terms-sec-label">Section 12</div>
-                    <h2>Governing Law</h2>
-                    <p>These Terms are governed by the laws of India. Any disputes arising from these Terms shall be subject to the exclusive jurisdiction of the courts of Mumbai, Maharashtra. If any provision of these Terms is found unenforceable, the remaining provisions continue in full force.</p>
-                </div>
-
+            <div class="terms-sec" id="t-acceptance">
+                <div class="terms-sec-label">Section 1</div>
+                <h2>Acceptance of Terms</h2>
+                <p>These Terms &amp; Conditions ("Terms") govern your access to and use of Trivasta's platform, including our website, mobile applications and all related services (collectively, the "Platform"). By registering for an account, planning a trip or making a booking, you agree to be bound by these Terms.</p>
+                <p>These Terms apply to all users including travelers, travel agencies and visitors to the Platform.</p>
             </div>
 
-            <div class="terms-footer">
-                <p>© 2026 Trivasta · These terms were last updated February 2026</p>
-                <div style="display:flex; gap:1.5rem;">
-                    <a href="{% url 'privacy' %}">Privacy Policy</a>
-                    <a href="{% url 'contact' %}">Contact Us</a>
+            <div class="terms-sec" id="t-services">
+                <div class="terms-sec-label">Section 2</div>
+                <h2>Our Services</h2>
+                <p>Trivasta provides an AI-powered travel planning marketplace that enables:</p>
+                <ul>
+                    <li>Generation of personalized travel itineraries using AI (Groq/Gemini)</li>
+                    <li>Connection between travelers and verified travel agencies</li>
+                    <li>A competitive marketplace where agencies submit offers on user trip requests</li>
+                    <li>Secure payment processing via Razorpay</li>
+                    <li>Booking management and confirmation services</li>
+                </ul>
+                <p>Trivasta acts as an intermediary marketplace only. We are not a travel agency and do not directly provide travel services.</p>
+            </div>
+
+            <div class="terms-sec" id="t-accounts">
+                <div class="terms-sec-label">Section 3</div>
+                <h2>User Accounts</h2>
+                <ul>
+                    <li>You must be at least 18 years old to create an account</li>
+                    <li>You are responsible for maintaining the confidentiality of your login credentials</li>
+                    <li>You must provide accurate and complete registration information</li>
+                    <li>You are responsible for all activity that occurs under your account</li>
+                    <li>Notify us immediately of any unauthorized account access at security@trivasta.com</li>
+                    <li>One person may not maintain multiple accounts without written permission</li>
+                </ul>
+            </div>
+
+            <div class="terms-sec" id="t-ai">
+                <div class="terms-sec-label">Section 4</div>
+                <h2>AI-Generated Content</h2>
+                <p>Trivasta uses AI language models to generate travel itineraries. Important limitations:</p>
+                <div class="warning-box">
+                    ⚠️ AI-generated itineraries are suggestions only. Prices, availability, opening hours and other details may not be current or accurate. Always verify critical information directly with service providers before booking.
                 </div>
+                <ul>
+                    <li>AI itineraries do not constitute professional travel advice</li>
+                    <li>Trivasta is not liable for decisions made based on AI-generated content</li>
+                    <li>We continuously improve our AI but cannot guarantee accuracy of all suggestions</li>
+                    <li>Budget estimates are approximate and may vary significantly from actual costs</li>
+                </ul>
+            </div>
+
+            <div class="terms-sec" id="t-marketplace">
+                <div class="terms-sec-label">Section 5</div>
+                <h2>Marketplace Rules</h2>
+                <p>Trivasta operates a two-sided marketplace connecting travelers and agencies. All users must:</p>
+                <ul>
+                    <li>Communicate honestly and respectfully through the platform</li>
+                    <li>Not attempt to circumvent the platform by communicating off-platform before booking</li>
+                    <li>Not post false reviews or manipulate ratings</li>
+                    <li>Not use the platform for any unlawful purpose</li>
+                    <li>Not scrape, copy or reproduce platform content without permission</li>
+                </ul>
+            </div>
+
+            <div class="terms-sec" id="t-payments">
+                <div class="terms-sec-label">Section 6</div>
+                <h2>Payments &amp; Refunds</h2>
+                <p>All payments on Trivasta are processed securely by Razorpay. By making a payment you agree to Razorpay's terms of service in addition to these Terms.</p>
+                <ul>
+                    <li>All prices are in Indian Rupees (INR) and inclusive of platform fees</li>
+                    <li>Platform fees (5–10% depending on agency plan) are non-refundable</li>
+                    <li>Refund eligibility depends on the agency's cancellation policy stated at booking</li>
+                    <li>Disputed payments are investigated within 7 business days</li>
+                    <li>Chargebacks initiated without contacting us first may result in account suspension</li>
+                </ul>
+            </div>
+
+            <div class="terms-sec" id="t-agencies">
+                <div class="terms-sec-label">Section 7</div>
+                <h2>Agency Obligations</h2>
+                <p>Travel agencies registered on Trivasta must:</p>
+                <ul>
+                    <li>Hold all legally required licenses and registrations to operate as a travel agency in India</li>
+                    <li>Provide accurate descriptions, prices and inclusions for all packages</li>
+                    <li>Honour all confirmed bookings made through the platform</li>
+                    <li>Respond to trip requests within 48 hours</li>
+                    <li>Maintain a minimum rating of 3.5 stars to remain listed</li>
+                    <li>Pay annual subscription fees and accept platform commission deductions</li>
+                    <li>Notify Trivasta immediately of any inability to fulfil a confirmed booking</li>
+                </ul>
+            </div>
+
+            <div class="terms-sec" id="t-prohibited">
+                <div class="terms-sec-label">Section 8</div>
+                <h2>Prohibited Conduct</h2>
+                <div class="warning-box">The following actions will result in immediate account suspension and possible legal action:</div>
+                <ul>
+                    <li>Fraud, misrepresentation or impersonation of any person or entity</li>
+                    <li>Attempting to process payments outside the Trivasta platform</li>
+                    <li>Posting fake reviews or paying for reviews</li>
+                    <li>Harassment, abuse or threatening behaviour toward any user or agency</li>
+                    <li>Violating any applicable Indian or international law</li>
+                    <li>Attempting to hack, compromise or disrupt the platform</li>
+                    <li>Using the platform to promote competing marketplace services</li>
+                </ul>
+            </div>
+
+            <div class="terms-sec" id="t-liability">
+                <div class="terms-sec-label">Section 9</div>
+                <h2>Limitation of Liability</h2>
+                <p>Trivasta is a marketplace platform. To the maximum extent permitted by law:</p>
+                <ul>
+                    <li>Trivasta is not liable for the quality, safety or legality of travel services provided by agencies</li>
+                    <li>Trivasta is not liable for any indirect, incidental or consequential damages</li>
+                    <li>Our total liability in any matter is limited to the platform fees paid in the last 12 months</li>
+                    <li>We do not guarantee uninterrupted or error-free service</li>
+                </ul>
+            </div>
+
+            <div class="terms-sec" id="t-termination">
+                <div class="terms-sec-label">Section 10</div>
+                <h2>Termination</h2>
+                <p>Trivasta reserves the right to suspend or terminate any account at any time for violations of these Terms, with or without notice. Users may delete their accounts at any time by contacting support@trivasta.com. Termination does not release either party from obligations arising prior to termination.</p>
+            </div>
+
+            <div class="terms-sec" id="t-disputes">
+                <div class="terms-sec-label">Section 11</div>
+                <h2>Disputes</h2>
+                <p>In the event of a dispute between a traveler and an agency, Trivasta will act as a neutral mediator. Both parties agree to attempt resolution through Trivasta's dispute process before pursuing legal remedies. Contact us at disputes@trivasta.com with full details of the dispute.</p>
+            </div>
+
+            <div class="terms-sec" id="t-governing">
+                <div class="terms-sec-label">Section 12</div>
+                <h2>Governing Law</h2>
+                <p>These Terms are governed by the laws of India. Any disputes arising from these Terms shall be subject to the exclusive jurisdiction of the courts of Mumbai, Maharashtra. If any provision of these Terms is found unenforceable, the remaining provisions continue in full force.</p>
             </div>
 
         </div>
+
+        <!-- Footer -->
+        <div class="terms-footer">
+            <p>©️ 2026 Trivasta · These terms were last updated February 2026</p>
+            <div style="display:flex; gap:1.5rem;">
+                <a href="{% url 'privacy' %}">Privacy Policy</a>
+                <a href="{% url 'contact' %}">Contact Us</a>
+            </div>
+        </div>
+
     </div>
 </div>
+
 {% endblock %}

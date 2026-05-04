@@ -3,13 +3,10 @@
 
 {% block extra_css %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600;700&display=swap');
-
     .dashboard-page {
-        background: var(--cream);
-        min-height: calc(100vh - 68px);
+        background: var(--ocean-deep);
+        min-height: calc(100vh - 72px);
         padding: 3rem 0 6rem;
-        font-family: 'Outfit', sans-serif;
     }
 
     .dashboard-container {
@@ -20,8 +17,9 @@
 
     /* ── WELCOME BANNER ── */
     .welcome-banner {
-        background: linear-gradient(135deg, var(--sea) 0%, #0a2240 100%);
-        border-radius: 16px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
         padding: 2.5rem 3rem;
         margin-bottom: 2rem;
         display: flex;
@@ -30,6 +28,7 @@
         gap: 2rem;
         position: relative;
         overflow: hidden;
+        backdrop-filter: blur(20px);
     }
 
     .welcome-banner::before {
@@ -37,10 +36,9 @@
         position: absolute;
         inset: 0;
         background:
-            radial-gradient(circle at 80% 50%, rgba(201,168,76,0.15) 0%, transparent 55%),
-            linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
-        background-size: auto, 40px 40px, 40px 40px;
+            radial-gradient(ellipse 60% 80% at 10% 50%, rgba(14,77,146,0.35) 0%, transparent 60%),
+            radial-gradient(ellipse 40% 60% at 90% 20%, rgba(56,189,248,0.12) 0%, transparent 55%);
+        pointer-events: none;
     }
 
     .welcome-text { position: relative; z-index: 1; }
@@ -48,22 +46,30 @@
     .welcome-greeting {
         font-size: 0.72rem;
         font-weight: 700;
-        letter-spacing: 0.16em;
+        letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: #e8c97a;
+        color: var(--ocean-glow);
         margin-bottom: 0.5rem;
     }
 
     .welcome-title {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 2.25rem;
-        font-weight: 300;
-        color: white;
+        font-weight: 400;
+        color: var(--white);
         line-height: 1.15;
     }
 
-    .welcome-title em { font-style: italic; color: #e8c97a; }
-    .welcome-sub { font-size: 0.9rem; color: rgba(255,255,255,0.5); margin-top: 0.4rem; }
+    .welcome-title em {
+        font-style: italic;
+        color: var(--gold-light);
+    }
+
+    .welcome-sub {
+        font-size: 0.875rem;
+        color: var(--muted);
+        margin-top: 0.4rem;
+    }
 
     .welcome-cta {
         position: relative;
@@ -75,48 +81,6 @@
         justify-content: flex-end;
     }
 
-    .welcome-cta-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.875rem 1.75rem;
-        background: var(--gold);
-        color: var(--ink);
-        border-radius: var(--radius);
-        font-weight: 700;
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: all 0.3s;
-        white-space: nowrap;
-    }
-
-    .welcome-cta-btn:hover {
-        background: #e8c97a;
-        transform: translateY(-1px);
-        box-shadow: 0 8px 24px rgba(201,168,76,0.4);
-    }
-
-    .welcome-cta-btn-outline {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        padding: 0.875rem 1.75rem;
-        background: transparent;
-        color: white;
-        border: 1.5px solid rgba(255,255,255,0.35);
-        border-radius: var(--radius);
-        font-weight: 600;
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: all 0.3s;
-        white-space: nowrap;
-    }
-
-    .welcome-cta-btn-outline:hover {
-        background: rgba(255,255,255,0.1);
-        border-color: rgba(255,255,255,0.6);
-    }
-
     /* ── STATS ── */
     .stats-row {
         display: grid;
@@ -126,38 +90,47 @@
     }
 
     .stat-card {
-        background: white;
-        border-radius: 12px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius);
         padding: 1.5rem;
-        box-shadow: var(--shadow);
-        border-bottom: 3px solid var(--cream-dark);
+        backdrop-filter: blur(20px);
         transition: border-color 0.3s, transform 0.3s;
         animation: fadeUp 0.5s ease both;
     }
 
-    .stat-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+    .stat-card:hover {
+        border-color: rgba(56,189,248,0.35);
+        transform: translateY(-2px);
+    }
+
     .stat-card-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
 
     .stat-card-num {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 2.25rem;
-        font-weight: 600;
-        color: var(--sea);
+        font-weight: 700;
+        color: var(--ocean-glow);
         line-height: 1;
     }
 
-    .stat-card-label { font-size: 0.8125rem; color: var(--muted); margin-top: 0.25rem; }
+    .stat-card-label {
+        font-size: 0.8125rem;
+        color: var(--muted);
+        margin-top: 0.25rem;
+    }
 
     /* ── TABS ── */
     .dash-tabs {
         display: flex;
         gap: 0.25rem;
-        background: white;
-        border-radius: 8px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius);
         padding: 0.35rem;
-        box-shadow: var(--shadow);
         margin-bottom: 1.75rem;
         overflow-x: auto;
+        backdrop-filter: blur(20px);
     }
 
     .dash-tab {
@@ -169,13 +142,21 @@
         cursor: pointer;
         border: none;
         background: none;
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-body);
         white-space: nowrap;
         transition: all 0.2s;
     }
 
-    .dash-tab.active { background: var(--sea); color: white; }
-    .dash-tab:hover:not(.active) { color: var(--sea); background: rgba(15,52,96,0.06); }
+    .dash-tab.active {
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        color: var(--white);
+        box-shadow: 0 0 16px rgba(26,127,212,0.3);
+    }
+
+    .dash-tab:hover:not(.active) {
+        color: var(--white);
+        background: rgba(255,255,255,0.06);
+    }
 
     .tab-content { display: none; animation: fadeUp 0.35s ease both; }
     .tab-content.active { display: block; }
@@ -189,10 +170,10 @@
     }
 
     .section-title {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--ink);
+        font-weight: 400;
+        color: var(--white);
         display: flex;
         align-items: center;
         gap: 0.75rem;
@@ -200,8 +181,9 @@
 
     .section-title::before {
         content: '';
-        width: 4px; height: 24px;
-        background: var(--gold);
+        width: 3px;
+        height: 22px;
+        background: linear-gradient(to bottom, var(--ocean-light), var(--ocean-glow));
         border-radius: 2px;
         display: inline-block;
         flex-shrink: 0;
@@ -210,9 +192,11 @@
     .section-count {
         font-size: 0.8125rem;
         color: var(--muted);
-        background: var(--cream-dark);
+        background: rgba(255,255,255,0.07);
+        border: 1px solid var(--glass-border);
         padding: 0.2rem 0.65rem;
         border-radius: 100px;
+        font-family: var(--font-body);
     }
 
     /* ── TRIPS GRID ── */
@@ -223,19 +207,24 @@
     }
 
     .trip-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: var(--shadow);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
         overflow: hidden;
-        transition: transform 0.3s, box-shadow 0.3s;
+        backdrop-filter: blur(20px);
+        transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
         animation: fadeUp 0.5s ease both;
     }
 
-    .trip-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-deep); }
+    .trip-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(56,189,248,0.3);
+        box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+    }
 
     .trip-card-visual {
         height: 100px;
-        background: linear-gradient(135deg, var(--sea), #1a4f82);
+        background: linear-gradient(135deg, var(--ocean-mid), var(--ocean-bright));
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -248,19 +237,24 @@
         content: '';
         position: absolute;
         inset: 0;
-        background: radial-gradient(circle at 90% 50%, rgba(201,168,76,0.2), transparent 60%);
+        background: radial-gradient(circle at 90% 50%, rgba(56,189,248,0.2), transparent 60%);
     }
 
     .trip-card-dest {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 1.375rem;
-        font-weight: 600;
-        color: white;
+        font-weight: 700;
+        color: var(--white);
         position: relative;
         z-index: 1;
     }
 
-    .trip-card-icon { font-size: 2.5rem; position: relative; z-index: 1; }
+    .trip-card-icon {
+        font-size: 2.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
     .trip-card-body { padding: 1.25rem 1.5rem; }
 
     .trip-card-meta {
@@ -273,19 +267,23 @@
     .meta-chip {
         font-size: 0.75rem;
         font-weight: 500;
-        color: var(--sea);
-        background: rgba(15,52,96,0.07);
+        color: var(--ocean-glow);
+        background: rgba(56,189,248,0.1);
+        border: 1px solid rgba(56,189,248,0.2);
         padding: 0.25rem 0.65rem;
         border-radius: 100px;
     }
 
-    .trip-card-date { font-size: 0.775rem; color: var(--muted); }
+    .trip-card-date {
+        font-size: 0.775rem;
+        color: var(--muted);
+    }
 
     .trip-card-actions {
         display: flex;
         gap: 0.5rem;
         padding: 0.75rem 1.5rem 1.25rem;
-        border-top: 1px solid var(--cream-dark);
+        border-top: 1px solid var(--glass-border);
         flex-wrap: wrap;
     }
 
@@ -295,24 +293,43 @@
         font-size: 0.8rem;
         font-weight: 600;
         text-align: center;
-        border-radius: var(--radius);
+        border-radius: var(--radius-sm);
         text-decoration: none;
         transition: all 0.2s;
         white-space: nowrap;
         min-width: 80px;
+        font-family: var(--font-body);
     }
 
-    .tap-primary { background: var(--sea); color: white; }
-    .tap-primary:hover { background: #0a2240; }
-    .tap-secondary { background: var(--cream); color: var(--sea); border: 1px solid var(--cream-dark); }
-    .tap-secondary:hover { border-color: var(--sea); }
+    .tap-primary {
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        color: var(--white);
+        box-shadow: 0 0 14px rgba(26,127,212,0.25);
+    }
+
+    .tap-primary:hover {
+        box-shadow: 0 0 22px rgba(56,189,248,0.4);
+        transform: translateY(-1px);
+    }
+
+    .tap-secondary {
+        background: var(--glass-bg);
+        color: var(--ocean-glow);
+        border: 1px solid var(--glass-border);
+    }
+
+    .tap-secondary:hover {
+        border-color: rgba(56,189,248,0.4);
+        background: rgba(56,189,248,0.08);
+    }
 
     /* ── BOOKINGS TABLE ── */
     .table-wrap {
-        background: white;
-        border-radius: 12px;
-        box-shadow: var(--shadow);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
         overflow: hidden;
+        backdrop-filter: blur(20px);
     }
 
     .data-table { width: 100%; border-collapse: collapse; }
@@ -325,28 +342,31 @@
         letter-spacing: 0.12em;
         text-transform: uppercase;
         color: var(--muted);
-        background: var(--cream);
-        border-bottom: 1px solid var(--cream-dark);
+        background: rgba(255,255,255,0.03);
+        border-bottom: 1px solid var(--glass-border);
     }
 
     .data-table td {
         padding: 1.125rem 1.5rem;
-        border-bottom: 1px solid var(--cream-dark);
+        border-bottom: 1px solid rgba(255,255,255,0.05);
         font-size: 0.9rem;
-        color: var(--ink);
+        color: var(--white);
         vertical-align: middle;
     }
 
     .data-table tr:last-child td { border-bottom: none; }
-    .data-table tr:hover td { background: rgba(15,52,96,0.02); }
+    .data-table tr:hover td { background: rgba(56,189,248,0.04); }
 
-    .booking-dest { font-weight: 600; color: var(--sea); }
+    .booking-dest {
+        font-weight: 600;
+        color: var(--ocean-glow);
+    }
 
     .booking-amount {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--sea);
+        font-weight: 700;
+        color: var(--white);
     }
 
     .booking-breakdown {
@@ -362,25 +382,42 @@
         gap: 0.3rem;
         font-size: 0.7rem;
         font-weight: 700;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
-        padding: 0.25rem 0.65rem;
-        border-radius: 2px;
+        padding: 0.3rem 0.7rem;
+        border-radius: var(--radius-sm);
     }
 
-    .badge-confirmed { background: rgba(39,174,96,0.1);  color: #27ae60; border: 1px solid rgba(39,174,96,0.25); }
-    .badge-chat      { background: rgba(15,52,96,0.08);  color: var(--sea); border: 1px solid rgba(15,52,96,0.2); text-decoration: none; }
-    .badge-track     { background: rgba(201,168,76,0.1); color: #a07c20; border: 1px solid rgba(201,168,76,0.3); text-decoration: none; }
-    .badge-chat:hover  { background: rgba(15,52,96,0.15); }
-    .badge-track:hover { background: rgba(201,168,76,0.2); }
+    .badge-confirmed {
+        background: rgba(52,211,153,0.12);
+        color: #34d399;
+        border: 1px solid rgba(52,211,153,0.25);
+    }
+
+    .badge-chat {
+        background: rgba(56,189,248,0.1);
+        color: var(--ocean-glow);
+        border: 1px solid rgba(56,189,248,0.25);
+        text-decoration: none;
+    }
+
+    .badge-track {
+        background: rgba(245,158,11,0.1);
+        color: var(--gold-light);
+        border: 1px solid rgba(245,158,11,0.25);
+        text-decoration: none;
+    }
+
+    .badge-chat:hover  { background: rgba(56,189,248,0.18); }
+    .badge-track:hover { background: rgba(245,158,11,0.18); }
 
     /* ── CHAT LIST ── */
     .chat-list { display: flex; flex-direction: column; gap: 0.875rem; }
 
     .chat-list-item {
-        background: white;
-        border-radius: 12px;
-        box-shadow: var(--shadow);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
         padding: 1.25rem 1.5rem;
         display: flex;
         align-items: center;
@@ -388,22 +425,25 @@
         text-decoration: none;
         color: inherit;
         transition: all 0.25s;
-        border: 1.5px solid transparent;
+        backdrop-filter: blur(20px);
     }
 
     .chat-list-item:hover {
-        border-color: rgba(15,52,96,0.2);
+        border-color: rgba(56,189,248,0.3);
         transform: translateX(4px);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
     }
 
     .chat-list-avatar {
-        width: 48px; height: 48px;
-        background: linear-gradient(135deg, var(--sea), #0a2240);
-        border-radius: 12px;
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, var(--ocean-mid), var(--ocean-bright));
+        border-radius: var(--radius);
         display: grid;
         place-items: center;
         font-size: 1.25rem;
         flex-shrink: 0;
+        border: 1px solid var(--glass-border);
     }
 
     .chat-list-info { flex: 1; min-width: 0; }
@@ -411,7 +451,7 @@
     .chat-list-name {
         font-weight: 600;
         font-size: 0.9375rem;
-        color: var(--ink);
+        color: var(--white);
         margin-bottom: 0.2rem;
     }
 
@@ -432,9 +472,9 @@
         gap: 0.3rem;
         font-size: 0.68rem;
         font-weight: 700;
-        color: #27ae60;
-        background: rgba(39,174,96,0.08);
-        border: 1px solid rgba(39,174,96,0.2);
+        color: #34d399;
+        background: rgba(52,211,153,0.1);
+        border: 1px solid rgba(52,211,153,0.2);
         border-radius: 100px;
         padding: 0.2rem 0.6rem;
     }
@@ -445,36 +485,40 @@
         gap: 0.3rem;
         font-size: 0.68rem;
         font-weight: 700;
-        color: var(--gold);
-        background: rgba(201,168,76,0.1);
-        border: 1px solid rgba(201,168,76,0.25);
+        color: var(--gold-light);
+        background: rgba(245,158,11,0.1);
+        border: 1px solid rgba(245,158,11,0.2);
         border-radius: 100px;
         padding: 0.2rem 0.6rem;
     }
 
     .unread-dot {
-        width: 8px; height: 8px;
-        background: var(--sea);
+        width: 8px;
+        height: 8px;
+        background: var(--ocean-glow);
         border-radius: 50%;
         margin-left: auto;
+        box-shadow: 0 0 6px rgba(56,189,248,0.6);
     }
 
     /* ── EMERGENCY ── */
     .emergency-banner {
-        background: linear-gradient(135deg, #c0392b, #922b21);
-        border-radius: 12px;
+        background: linear-gradient(135deg, rgba(153,60,29,0.4), rgba(192,57,43,0.3));
+        border: 1px solid rgba(248,113,113,0.25);
+        border-radius: var(--radius-lg);
         padding: 1.25rem 1.5rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 1.5rem;
         margin-bottom: 2rem;
+        backdrop-filter: blur(20px);
         animation: fadeUp 0.5s ease both;
     }
 
     .emergency-left { display: flex; align-items: center; gap: 1rem; }
     .emergency-icon { font-size: 1.75rem; }
-    .emergency-text strong { display: block; font-size: 0.875rem; font-weight: 700; color: white; margin-bottom: 0.2rem; }
+    .emergency-text strong { display: block; font-size: 0.875rem; font-weight: 700; color: var(--white); margin-bottom: 0.2rem; }
     .emergency-text span { font-size: 0.8rem; color: rgba(255,255,255,0.65); }
 
     .emergency-btn {
@@ -482,8 +526,9 @@
         align-items: center;
         gap: 0.4rem;
         padding: 0.625rem 1.25rem;
-        background: white;
-        color: #c0392b;
+        background: rgba(248,113,113,0.15);
+        color: #fca5a5;
+        border: 1px solid rgba(248,113,113,0.35);
         border-radius: var(--radius);
         font-weight: 700;
         font-size: 0.875rem;
@@ -491,9 +536,13 @@
         transition: all 0.2s;
         white-space: nowrap;
         flex-shrink: 0;
+        font-family: var(--font-body);
     }
 
-    .emergency-btn:hover { background: #ffeaea; }
+    .emergency-btn:hover {
+        background: rgba(248,113,113,0.25);
+        border-color: rgba(248,113,113,0.55);
+    }
 
     /* ── PACKAGES TAB ── */
     .pkg-promo-grid {
@@ -504,18 +553,23 @@
     }
 
     .pkg-promo-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: var(--shadow);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
         overflow: hidden;
-        transition: transform 0.3s, box-shadow 0.3s;
+        backdrop-filter: blur(20px);
+        transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
     }
 
-    .pkg-promo-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-deep); }
+    .pkg-promo-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(56,189,248,0.3);
+        box-shadow: 0 20px 48px rgba(0,0,0,0.4);
+    }
 
     .pkg-promo-img {
         height: 130px;
-        background: linear-gradient(135deg, var(--sea), #1a4f82);
+        background: linear-gradient(135deg, var(--ocean-mid), var(--ocean-bright));
         display: flex;
         align-items: center;
         justify-content: center;
@@ -525,8 +579,10 @@
     }
 
     .pkg-promo-img img {
-        position: absolute; inset: 0;
-        width: 100%; height: 100%;
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
         object-fit: cover;
     }
 
@@ -534,25 +590,35 @@
 
     .pkg-promo-agency-badge {
         position: absolute;
-        bottom: 0.6rem; left: 0.6rem;
-        background: rgba(0,0,0,0.55);
-        backdrop-filter: blur(4px);
+        bottom: 0.6rem;
+        left: 0.6rem;
+        background: rgba(2,12,27,0.7);
+        backdrop-filter: blur(8px);
         border-radius: 100px;
         padding: 0.15rem 0.5rem;
         font-size: 0.65rem;
         font-weight: 600;
-        color: white;
+        color: var(--white);
         z-index: 2;
+        border: 1px solid var(--glass-border);
     }
 
     .pkg-promo-body { padding: 1rem 1.125rem; }
-    .pkg-promo-category { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.25rem; }
+
+    .pkg-promo-category {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--ocean-glow);
+        margin-bottom: 0.25rem;
+    }
 
     .pkg-promo-title {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--ink);
+        font-weight: 700;
+        color: var(--white);
         margin-bottom: 0.2rem;
         line-height: 1.3;
     }
@@ -564,14 +630,14 @@
         align-items: center;
         justify-content: space-between;
         padding-top: 0.625rem;
-        border-top: 1px solid var(--cream-dark);
+        border-top: 1px solid var(--glass-border);
     }
 
     .pkg-promo-price {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--sea);
+        font-weight: 700;
+        color: var(--ocean-glow);
         line-height: 1;
     }
 
@@ -581,8 +647,8 @@
 
     .pkg-promo-btn {
         padding: 0.4rem 0.75rem;
-        border-radius: var(--radius);
-        font-family: 'Outfit', sans-serif;
+        border-radius: var(--radius-sm);
+        font-family: var(--font-body);
         font-size: 0.72rem;
         font-weight: 600;
         text-decoration: none;
@@ -592,28 +658,40 @@
         white-space: nowrap;
     }
 
-    .pkg-promo-btn-book { background: var(--sea); color: white; }
-    .pkg-promo-btn-book:hover { background: #0a2240; }
-    .pkg-promo-btn-chat { background: rgba(39,174,96,0.1); color: #27ae60; border: 1px solid rgba(39,174,96,0.25); }
-    .pkg-promo-btn-chat:hover { background: rgba(39,174,96,0.2); }
+    .pkg-promo-btn-book {
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        color: var(--white);
+        box-shadow: 0 0 12px rgba(26,127,212,0.25);
+    }
+
+    .pkg-promo-btn-book:hover { box-shadow: 0 0 20px rgba(56,189,248,0.4); }
+
+    .pkg-promo-btn-chat {
+        background: rgba(52,211,153,0.1);
+        color: #34d399;
+        border: 1px solid rgba(52,211,153,0.25);
+    }
+
+    .pkg-promo-btn-chat:hover { background: rgba(52,211,153,0.18); }
 
     .packages-cta-bar {
-        background: white;
-        border-radius: 12px;
-        box-shadow: var(--shadow);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
         padding: 1.75rem 2rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 1.5rem;
+        backdrop-filter: blur(20px);
     }
 
     .packages-cta-text strong {
         display: block;
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 1.25rem;
-        font-weight: 600;
-        color: var(--ink);
+        font-weight: 700;
+        color: var(--white);
         margin-bottom: 0.25rem;
     }
 
@@ -623,14 +701,34 @@
     .empty-dash {
         text-align: center;
         padding: 3rem 2rem;
-        background: white;
-        border-radius: 12px;
-        box-shadow: var(--shadow);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
+        backdrop-filter: blur(20px);
     }
 
     .empty-dash-icon  { font-size: 3rem; margin-bottom: 1rem; }
-    .empty-dash-title { font-family: 'Cormorant Garamond', serif; font-size: 1.625rem; font-weight: 300; color: var(--ink); margin-bottom: 0.4rem; }
+
+    .empty-dash-title {
+        font-family: var(--font-display);
+        font-size: 1.625rem;
+        font-weight: 400;
+        color: var(--white);
+        margin-bottom: 0.4rem;
+    }
+
     .empty-dash-desc  { font-size: 0.875rem; color: var(--muted); margin-bottom: 1.5rem; }
+
+    /* ── SECTION LINK ── */
+    .section-link {
+        font-size: 0.875rem;
+        color: var(--ocean-glow);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
+
+    .section-link:hover { color: var(--white); }
 
     @keyframes fadeUp {
         from { opacity: 0; transform: translateY(16px); }
@@ -649,6 +747,7 @@
         .trips-grid { grid-template-columns: 1fr; }
         .emergency-banner { flex-direction: column; text-align: center; }
         .dashboard-container { padding: 0 1rem; }
+        .welcome-banner { padding: 1.75rem 1.25rem; }
     }
 </style>
 {% endblock %}
@@ -665,8 +764,8 @@
                 <p class="welcome-sub">{{ trips|length }} trip{{ trips|length|pluralize }} planned · {{ bookings|length }} booking{{ bookings|length|pluralize }} confirmed</p>
             </div>
             <div class="welcome-cta">
-                <a href="{% url 'package_search' %}" class="welcome-cta-btn-outline">📦 Browse Packages</a>
-                <a href="{% url 'planner' %}" class="welcome-cta-btn">✦ Plan New Trip</a>
+                <a href="{% url 'package_search' %}" class="btn btn-glass">📦 Browse Packages</a>
+                <a href="{% url 'planner' %}" class="btn btn-primary">✦ Plan New Trip</a>
             </div>
         </div>
 
@@ -689,17 +788,17 @@
                 <div class="stat-card-num">{{ trips|length }}</div>
                 <div class="stat-card-label">Trips Planned</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" style="transition-delay:0.08s;">
                 <div class="stat-card-icon">✅</div>
                 <div class="stat-card-num">{{ bookings|length }}</div>
                 <div class="stat-card-label">Bookings Made</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" style="transition-delay:0.16s;">
                 <div class="stat-card-icon">💰</div>
                 <div class="stat-card-num">₹{{ total_spent|default:"0" }}</div>
                 <div class="stat-card-label">Total Spent</div>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" style="transition-delay:0.24s;">
                 <div class="stat-card-icon">💬</div>
                 <div class="stat-card-num">{{ chatrooms|length|default:"0" }}</div>
                 <div class="stat-card-label">Active Chats</div>
@@ -718,7 +817,7 @@
         <div class="tab-content active" id="tab-trips">
             <div class="section-header">
                 <h2 class="section-title">My Trips <span class="section-count">{{ trips|length }}</span></h2>
-                <a href="{% url 'planner' %}" style="font-size:0.875rem; color:var(--sea); text-decoration:none; font-weight:500;">+ New trip →</a>
+                <a href="{% url 'planner' %}" class="section-link">+ New trip →</a>
             </div>
 
             {% if trips %}
@@ -803,7 +902,7 @@
                                     </div>
                                 {% endif %}
                             </td>
-                            <td style="font-size:0.875rem;">
+                            <td style="font-size:0.875rem; color:var(--white);">
                                 {% if booking.offer %}{{ booking.offer.agency.name }}
                                 {% elif booking.package %}{{ booking.package.agency.name }}
                                 {% endif %}
@@ -901,7 +1000,7 @@
         <div class="tab-content" id="tab-packages">
             <div class="section-header">
                 <h2 class="section-title">Browse Packages</h2>
-                <a href="{% url 'package_search' %}" style="font-size:0.875rem; color:var(--sea); text-decoration:none; font-weight:500;">View all →</a>
+                <a href="{% url 'package_search' %}" class="section-link">View all →</a>
             </div>
 
             {% if featured_packages %}
@@ -910,8 +1009,7 @@
                 <div class="pkg-promo-card">
                     <div class="pkg-promo-img">
                         {% if pkg.image_url %}
-                        <img src="{{ pkg.image_url }}" alt="{{ pkg.title }}"
-                             onerror="this.style.display='none'">
+                        <img src="{{ pkg.image_url }}" alt="{{ pkg.title }}" onerror="this.style.display='none'">
                         {% endif %}
                         <span class="pkg-promo-img-emoji">
                             {% if pkg.category == 'adventure' %}🏔️

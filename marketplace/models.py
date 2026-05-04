@@ -578,6 +578,12 @@ class PayoutRecord(models.Model):
  
     class Meta:
         ordering = ['-created_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['booking'],
+                name='unique_payout_per_booking'
+            )
+        ]
  
     def __str__(self):
         return f"Payout #{self.pk} — {self.agency.name} ₹{self.agency_payout_amount} ({self.status})"

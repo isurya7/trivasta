@@ -1,7 +1,6 @@
 import razorpay
 import json
-import hmac
-import hashlib
+import logging
 from django.conf import settings
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.admin.views.decorators import staff_member_required
@@ -13,32 +12,35 @@ from datetime import timedelta
 from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
 from django.db.models import Q, Avg
+
 from .ai_support import get_ai_support_response
 from .payment_service import (
-    calculate_booking_amounts, create_razorpay_order,
-    verify_payment_signature, transfer_to_agency,
-    validate_coupon, create_agency_linked_account,
+    calculate_booking_amounts,
+    create_razorpay_order,
+    verify_payment_signature,   
+    transfer_to_agency,
+    validate_coupon,
+    create_agency_linked_account,
 )
 from trips.models import Trip
 from .contact_guard import is_violation, classify_violation
 from .models import (
     Offer, Agency, Booking, Package, Message,
     PaymentRequest, ChatRoom, AgencyWarning,
-    TripStatus, TripUpdate, PackageView, PackageImage, PackageReview,
+    TripStatus, TripUpdate, PackageView, PackageReview,
     SupportTicket, SupportMessage, RefundRequest, AgencyBankDetails,
-    PayoutRecord, Coupon, CouponUsage
+    PayoutRecord, Coupon, CouponUsage,
 )
 from .forms import (
     AgencyRegisterForm, PackageForm, OfferForm, AgencyProfileForm,
-    PackageImageForm, PackageReviewForm, PackageImageFormSet
+    PackageImageForm, PackageReviewForm, PackageImageFormSet,
 )
-import logging
 
 logger = logging.getLogger(__name__)
 
-client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+# One Razorpay client — used for order creation only.
+# Payouts go through payment_service.razorpay_client.
 
 COMMISSION_RATE = 0.10
 GST_RATE        = 0.05
@@ -50,7 +52,9 @@ PLAN_PRICES = {
 }
 
 
-# ── Helpers ───────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Helpers
+# ─────────────────────────────────────────────────────────────────────────────
 
 def get_agency(request):
     try:
@@ -60,6 +64,10 @@ def get_agency(request):
 
 
 def compute_pricing(base_amount):
+    """
+    Legacy helper used in a few older views (package_book, accept_payment_request).
+    New flows should use calculate_booking_amounts() from payment_service instead.
+    """
     gst        = int(base_amount * GST_RATE)
     total      = base_amount + gst
     commission = int(base_amount * COMMISSION_RATE)
@@ -73,13 +81,19 @@ def compute_pricing(base_amount):
     }
 
 
-def _verify_razorpay_signature(order_id, payment_id, signature):
-    """Cryptographic Razorpay signature verification. Raises on failure."""
-    body   = f"{order_id}|{payment_id}"
-    secret = settings.RAZORPAY_KEY_SECRET.encode()
-    digest = hmac.new(secret, body.encode(), hashlib.sha256).hexdigest()
-    if not hmac.compare_digest(digest, signature):
-        raise ValueError("Razorpay signature mismatch")
+def _amounts_from_pricing(pricing):
+    """
+    Converts compute_pricing() output → the shape expected by transfer_to_agency().
+    Keeps legacy views compatible with the unified payout logic.
+    """
+    return {
+        'total_amount':        pricing['total_amount'],
+        'base_amount':         pricing['base_amount'],
+        'gst_amount':          pricing['gst_amount'],
+        'trivasta_commission': pricing['commission_amount'],
+        'agency_payout':       pricing['agency_payout'],
+        'discount_amount':     0,
+    }
 
 
 def agency_required(view_func):
@@ -89,36 +103,22 @@ def agency_required(view_func):
         agency = get_agency(request)
         if not agency:
             return redirect('agency_login')
-
-        # Rejected
         if agency.status == 'rejected':
             messages.error(request, "Your application was rejected.")
             return redirect('agency_login')
-
-        # Pending approval — show onboarding page
         if agency.status == 'pending':
             return render(request, 'marketplace/agency_pending.html', {'agency': agency})
-
-        # ── SUBSCRIPTION TEMPORARILY DISABLED FOR FOUNDING AGENCIES ──
-        # Uncomment the block below when ready to enforce subscription payments:
-        #
-        # if not agency.subscription_paid:
-        #     return redirect('agency_subscribe')
-        # if agency.subscription_expires_at and agency.subscription_expires_at < timezone.now():
-        #     messages.warning(request, "Your subscription has expired. Please renew.")
-        #     return redirect('agency_subscribe')
-
         return view_func(request, *args, **kwargs)
-
     wrapper.__name__ = view_func.__name__
     return wrapper
 
 
-# ── AI Support Chat ───────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# AI Support Chat
+# ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
 def support_chat(request):
-    """Open or resume a support ticket for the current user."""
     ticket = SupportTicket.objects.filter(
         user=request.user,
         status__in=['open', 'escalated', 'in_review']
@@ -135,27 +135,25 @@ def support_chat(request):
             subject    = request.POST.get('subject', '').strip()
             category   = request.POST.get('category', 'other')
             booking_id = request.POST.get('booking_id')
-
             if not subject:
                 messages.error(request, "Please enter a subject.")
                 return redirect('support_chat')
-
             booking = None
             if booking_id:
-                booking = Booking.objects.filter(
-                    pk=booking_id, user=request.user
-                ).first()
-
+                booking = Booking.objects.filter(pk=booking_id, user=request.user).first()
             ticket = SupportTicket.objects.create(
-                user=request.user,
-                booking=booking,
-                subject=subject,
-                category=category,
+                user=request.user, booking=booking,
+                subject=subject, category=category,
             )
 
+            try:
+                from users.emails import send_support_ack
+                send_support_ack(ticket)
+            except Exception:
+                logger.exception(f"Support ack email failed for ticket {ticket.id}")
+
             SupportMessage.objects.create(
-                ticket=ticket,
-                sender_type='ai',
+                ticket=ticket, sender_type='ai',
                 content=(
                     "Thank you for reaching out to Trivasta Support! 👋\n\n"
                     "I'm your AI assistant and I'm here to help resolve your issue quickly.\n\n"
@@ -177,10 +175,8 @@ def support_chat(request):
                 return redirect('support_chat')
 
             SupportMessage.objects.create(
-                ticket=ticket,
-                sender=request.user,
-                sender_type='user',
-                content=content,
+                ticket=ticket, sender=request.user,
+                sender_type='user', content=content,
             )
 
             history = []
@@ -190,9 +186,14 @@ def support_chat(request):
                 elif msg.sender_type in ('ai', 'agent'):
                     history.append({"role": "assistant", "content": msg.content})
 
+            # FIX: was bare `except Exception: pass` — now logs the real error
             try:
                 ai_response, needs_escalation = get_ai_support_response(content, history)
             except Exception:
+                logger.exception(
+                    f"AI support response failed for ticket {ticket.id} — "
+                    f"falling back to generic message"
+                )
                 ai_response = (
                     "I'm having trouble connecting right now. "
                     "Please try again in a moment or our team will assist you shortly."
@@ -200,9 +201,7 @@ def support_chat(request):
                 needs_escalation = False
 
             SupportMessage.objects.create(
-                ticket=ticket,
-                sender_type='ai',
-                content=ai_response,
+                ticket=ticket, sender_type='ai', content=ai_response,
             )
 
             if needs_escalation and not ticket.is_escalated:
@@ -210,20 +209,16 @@ def support_chat(request):
                 ticket.status       = 'escalated'
                 ticket.escalated_at = timezone.now()
                 ticket.save(update_fields=['is_escalated', 'status', 'escalated_at'])
-
                 SupportMessage.objects.create(
-                    ticket=ticket,
-                    sender_type='system',
+                    ticket=ticket, sender_type='system',
                     content=(
                         "🚨 **This ticket has been escalated to our support team.**\n"
                         "A human agent will review your case within 2 hours and respond here."
                     ),
                 )
-
             return redirect('support_chat')
 
     chat_messages = ticket.messages.all() if ticket else []
-
     return render(request, 'support/support_chat.html', {
         'ticket':        ticket,
         'chat_messages': chat_messages,
@@ -232,15 +227,15 @@ def support_chat(request):
     })
 
 
-# ── Refund Request ────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Refund Request
+# ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
 def request_refund(request, booking_id):
     booking = get_object_or_404(Booking, pk=booking_id, user=request.user, is_paid=True)
-
     existing = RefundRequest.objects.filter(
-        booking=booking,
-        status__in=['pending', 'approved']
+        booking=booking, status__in=['pending', 'approved']
     ).first()
     if existing:
         messages.info(request, "A refund request for this booking is already in progress.")
@@ -250,7 +245,6 @@ def request_refund(request, booking_id):
         reason      = request.POST.get('reason', 'other')
         description = request.POST.get('description', '').strip()
         amount_str  = request.POST.get('amount', str(booking.total_amount))
-
         try:
             amount = int(amount_str)
             if amount <= 0 or amount > booking.total_amount:
@@ -260,27 +254,17 @@ def request_refund(request, booking_id):
             return redirect('request_refund', booking_id=booking_id)
 
         ticket = SupportTicket.objects.create(
-            user=request.user,
-            booking=booking,
+            user=request.user, booking=booking,
             subject=f"Refund request — Booking #{booking.id}",
-            category='refund',
-            status='escalated',
-            is_escalated=True,
-            escalated_at=timezone.now(),
+            category='refund', status='escalated',
+            is_escalated=True, escalated_at=timezone.now(),
         )
-
         RefundRequest.objects.create(
-            ticket=ticket,
-            booking=booking,
-            requested_by=request.user,
-            reason=reason,
-            description=description,
-            amount=amount,
+            ticket=ticket, booking=booking, requested_by=request.user,
+            reason=reason, description=description, amount=amount,
         )
-
         SupportMessage.objects.create(
-            ticket=ticket,
-            sender_type='system',
+            ticket=ticket, sender_type='system',
             content=(
                 f"💰 **Refund Request Submitted**\n"
                 f"Amount: ₹{amount:,}\n"
@@ -289,7 +273,6 @@ def request_refund(request, booking_id):
                 f"Our refund team will review this within 2 hours and process within 5-7 business days."
             ),
         )
-
         messages.success(request, "Refund request submitted. Our team will review within 2 hours.")
         return redirect('support_chat')
 
@@ -299,11 +282,12 @@ def request_refund(request, booking_id):
     })
 
 
-# ── Package Search ────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Package Search
+# ─────────────────────────────────────────────────────────────────────────────
 
 def package_search(request):
     qs = Package.objects.filter(is_active=True).select_related('agency')
-
     q         = request.GET.get('q', '').strip()
     category  = request.GET.get('category', '')
     min_price = request.GET.get('min_price', '')
@@ -324,32 +308,24 @@ def package_search(request):
     if max_days:  qs = qs.filter(duration__lte=int(max_days))
 
     sort_map = {
-        'price_asc':  'price',
-        'price_desc': '-price',
-        'duration':   'duration',
-        'newest':     '-created_at',
+        'price_asc':  'price', 'price_desc': '-price',
+        'duration':   'duration', 'newest': '-created_at',
     }
     qs = qs.order_by(sort_map.get(sort, '-created_at'))
-
     return render(request, 'marketplace/package_search.html', {
-        'packages':   qs,
-        'q':          q,
-        'category':   category,
-        'min_price':  min_price,
-        'max_price':  max_price,
-        'min_days':   min_days,
-        'max_days':   max_days,
-        'sort':       sort,
-        'categories': Package.CATEGORY_CHOICES,
-        'count':      qs.count(),
+        'packages': qs, 'q': q, 'category': category,
+        'min_price': min_price, 'max_price': max_price,
+        'min_days': min_days, 'max_days': max_days,
+        'sort': sort, 'categories': Package.CATEGORY_CHOICES, 'count': qs.count(),
     })
 
 
-# ── Package Detail ────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Package Detail
+# ─────────────────────────────────────────────────────────────────────────────
 
 def package_detail(request, pk):
     package = get_object_or_404(Package, pk=pk, is_active=True)
-
     ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', ''))
     if ip and ',' in ip:
         ip = ip.split(',')[0].strip()
@@ -366,18 +342,16 @@ def package_detail(request, pk):
     reviews    = package.reviews.select_related('user').all()
     avg_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 0
 
-    can_review       = False
-    already_reviewed = False
-    review_form      = None
+    can_review = already_reviewed = False
+    review_form = None
     if request.user.is_authenticated:
         has_booking      = Booking.objects.filter(package=package, user=request.user, is_paid=True).exists()
         already_reviewed = PackageReview.objects.filter(package=package, user=request.user).exists()
         can_review       = has_booking and not already_reviewed
-
         if request.method == 'POST' and can_review:
             review_form = PackageReviewForm(request.POST)
             if review_form.is_valid():
-                rev         = review_form.save(commit=False)
+                rev = review_form.save(commit=False)
                 rev.package = package
                 rev.user    = request.user
                 rev.save()
@@ -387,19 +361,16 @@ def package_detail(request, pk):
             review_form = PackageReviewForm()
 
     return render(request, 'marketplace/package_detail.html', {
-        'package':          package,
-        'pricing':          pricing,
-        'images':           images,
-        'reviews':          reviews,
-        'avg_rating':       round(avg_rating, 1),
-        'review_count':     reviews.count(),
-        'can_review':       can_review,
-        'already_reviewed': already_reviewed,
-        'review_form':      review_form,
+        'package': package, 'pricing': pricing, 'images': images,
+        'reviews': reviews, 'avg_rating': round(avg_rating, 1),
+        'review_count': reviews.count(), 'can_review': can_review,
+        'already_reviewed': already_reviewed, 'review_form': review_form,
     })
 
 
-# ── Package Chat ──────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Package Chat
+# ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
 def package_chat(request, pk):
@@ -421,14 +392,19 @@ def package_chat(request, pk):
     return redirect('chat_room', room_id=room.id)
 
 
-# ── Package Book ──────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Package Book  (legacy flow — kept for backward compat)
+# New flow: book_package (below) which supports coupons
+# ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
 def package_book(request, pk):
     package = get_object_or_404(Package, pk=pk, is_active=True)
     pricing = compute_pricing(package.price)
 
-    razorpay_order = client.order.create({
+    # FIX: use payment_service client, not a module-level duplicate
+    from .payment_service import razorpay_client
+    razorpay_order = razorpay_client.order.create({
         "amount":          pricing['total_amount'] * 100,
         "currency":        "INR",
         "payment_capture": 1,
@@ -461,41 +437,65 @@ def package_toggle(request, pk):
     return redirect('agency_dashboard')
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Payment success — legacy package_book flow
+# ─────────────────────────────────────────────────────────────────────────────
+
 @csrf_exempt
 def package_book_success(request, pk):
     package = get_object_or_404(Package, pk=pk)
-    if request.method == 'POST':
+    if request.method != 'POST':
+        return redirect('dashboard')
+ 
+    order_id   = request.POST.get('razorpay_order_id')
+    payment_id = request.POST.get('razorpay_payment_id')
+    signature  = request.POST.get('razorpay_signature')
+ 
+    if not verify_payment_signature(order_id, payment_id, signature):
+        logger.warning(f"package_book_success: invalid signature for order {order_id}")
+        return redirect('payment_failed')
+ 
+    try:
+        booking = Booking.objects.get(razorpay_order_id=order_id)
+    except Booking.DoesNotExist:
+        logger.error(f"package_book_success: no booking for order {order_id}")
+        return redirect('payment_failed')
+ 
+    if not booking.is_paid:
+        booking.is_paid             = True
+        booking.status              = 'confirmed'
+        booking.razorpay_payment_id = payment_id
+        booking.save()
+ 
+        # ── Send booking confirmation email ───────────────────────────────────
         try:
-            _verify_razorpay_signature(
-                request.POST.get('razorpay_order_id'),
-                request.POST.get('razorpay_payment_id'),
-                request.POST.get('razorpay_signature'),
-            )
-            booking = Booking.objects.get(razorpay_order_id=request.POST.get('razorpay_order_id'))
-            booking.is_paid             = True
-            booking.status              = 'confirmed'
-            booking.razorpay_payment_id = request.POST.get('razorpay_payment_id')
-            booking.save()
-
-            room, _ = ChatRoom.objects.get_or_create(
-                package=package, user=booking.user, agency=package.agency,
-                defaults={'offer': None}
-            )
-            agency = package.agency
-            Message.objects.create(
-                room=room, sender_type='system',
-                content=(
-                    f"✅ Payment of ₹{booking.total_amount:,} confirmed for **{package.title}**!\n\n"
-                    f"🔓 Agency contact details are now unlocked:\n"
-                    f"📞 {agency.phone}\n📧 {agency.email}"
-                    + (f"\n🌐 {agency.website}" if agency.website else "") +
-                    "\n\nOur team will contact you within 24 hours."
-                )
-            )
-            return redirect('package_booking_confirmation', booking_id=booking.id)
+            from users.emails import send_booking_confirmation
+            send_booking_confirmation(booking)
         except Exception:
-            return redirect('payment_failed')
-    return redirect('dashboard')
+            pass
+        # ─────────────────────────────────────────────────────────────────────
+ 
+    amounts = _amounts_from_pricing(compute_pricing(package.price))
+    payout, error = transfer_to_agency(booking, amounts)
+    if error:
+        logger.warning(f"Payout queued (failed) for booking {booking.id}: {error}")
+ 
+    room, _ = ChatRoom.objects.get_or_create(
+        package=package, user=booking.user, agency=package.agency,
+        defaults={'offer': None}
+    )
+    agency = package.agency
+    Message.objects.create(
+        room=room, sender_type='system',
+        content=(
+            f"✅ Payment of ₹{booking.total_amount:,} confirmed for **{package.title}**!\n\n"
+            f"🔓 Agency contact details are now unlocked:\n"
+            f"📞 {agency.phone}\n📧 {agency.email}"
+            + (f"\n🌐 {agency.website}" if agency.website else "") +
+            "\n\nOur team will contact you within 24 hours."
+        )
+    )
+    return redirect('package_booking_confirmation', booking_id=booking.id)
 
 
 @login_required
@@ -507,10 +507,7 @@ def package_booking_confirmation(request, booking_id):
     if package:
         room = ChatRoom.objects.filter(package=package, user=request.user).first()
     return render(request, 'marketplace/package_confirmation.html', {
-        'booking': booking,
-        'package': package,
-        'agency':  agency,
-        'room':    room,
+        'booking': booking, 'package': package, 'agency': agency, 'room': room,
         'pricing': {
             'base_amount':  booking.base_amount,
             'gst_amount':   booking.gst_amount,
@@ -519,13 +516,15 @@ def package_booking_confirmation(request, booking_id):
     })
 
 
-# ── Agency Registration / Auth ────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Agency Registration / Auth
+# ─────────────────────────────────────────────────────────────────────────────
 
 def agency_register(request):
     if request.method == 'POST':
         form = AgencyRegisterForm(request.POST)
         if form.is_valid():
-            d    = form.cleaned_data
+            d = form.cleaned_data
             user = User.objects.create_user(
                 username=d['username'], email=d['email'], password=d['password']
             )
@@ -544,55 +543,28 @@ def agency_register(request):
 
 
 def agency_subscribe(request):
-    """
-    Subscription page — temporarily disabled for founding agencies.
-    Approved agencies go straight to dashboard.
-    """
     if not request.user.is_authenticated:
         return redirect('agency_login')
     agency = get_object_or_404(Agency, user=request.user)
     if agency.status == 'pending':
         return render(request, 'marketplace/agency_pending.html', {'agency': agency})
     if agency.status == 'approved':
-        # Subscription disabled for launch — go straight to dashboard
         return redirect('agency_dashboard')
     return redirect('agency_login')
-
-    # ── SUBSCRIPTION PAYMENT (re-enable after launch) ──────────────────────
-    # plan  = agency.plan
-    # price = PLAN_PRICES.get(plan, 9999)
-    # razorpay_order = client.order.create({
-    #     "amount":          price * 100,
-    #     "currency":        "INR",
-    #     "payment_capture": 1,
-    #     "notes":           {"agency_id": agency.id, "plan": plan, "type": "agency_subscription"}
-    # })
-    # agency.subscription_order_id = razorpay_order["id"]
-    # agency.save()
-    # return render(request, 'marketplace/agency_subscribe.html', {
-    #     "agency":            agency,
-    #     "plan":              plan,
-    #     "price":             price,
-    #     "razorpay_key":      settings.RAZORPAY_KEY_ID,
-    #     "razorpay_order_id": razorpay_order["id"],
-    #     "user":              request.user,
-    # })
 
 
 @csrf_exempt
 def agency_payment_success(request):
     if request.method == "POST":
+        order_id   = request.POST.get("razorpay_order_id")
+        payment_id = request.POST.get("razorpay_payment_id")
+        signature  = request.POST.get("razorpay_signature")
+        if not verify_payment_signature(order_id, payment_id, signature):
+            return redirect('agency_payment_failed')
         try:
-            _verify_razorpay_signature(
-                request.POST.get("razorpay_order_id"),
-                request.POST.get("razorpay_payment_id"),
-                request.POST.get("razorpay_signature"),
-            )
-            agency = Agency.objects.get(
-                subscription_order_id=request.POST.get("razorpay_order_id")
-            )
+            agency = Agency.objects.get(subscription_order_id=order_id)
             agency.subscription_paid       = True
-            agency.subscription_payment_id = request.POST.get("razorpay_payment_id")
+            agency.subscription_payment_id = payment_id
             agency.subscription_expires_at = timezone.now() + timedelta(days=365)
             agency.save()
             return redirect('agency_dashboard')
@@ -625,7 +597,9 @@ def agency_logout(request):
     return redirect('agency_login')
 
 
-# ── Agency Dashboard ──────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Agency Dashboard
+# ─────────────────────────────────────────────────────────────────────────────
 
 @agency_required
 def agency_dashboard(request):
@@ -656,40 +630,31 @@ def agency_dashboard(request):
             for b in Booking.objects.filter(package=pkg, is_paid=True)
         )
         package_stats.append({
-            'pkg':        pkg,
-            'views':      total_views,
-            'bookings':   total_bookings,
-            'chats':      total_chats,
-            'conversion': conversion,
-            'revenue':    pkg_revenue,
+            'pkg': pkg, 'views': total_views, 'bookings': total_bookings,
+            'chats': total_chats, 'conversion': conversion, 'revenue': pkg_revenue,
         })
 
-    # KYC status for banner
     try:
         bank = agency.bank_details
     except Exception:
         bank = None
 
     return render(request, 'marketplace/agency_dashboard.html', {
-        'agency':              agency,
-        'packages':            packages,
-        'package_stats':       package_stats,
-        'offers':              offers,
-        'bookings':            bookings,
-        'trips':               trips,
-        'chatrooms':           chatrooms,
-        'revenue':             revenue,
-        'sent_offer_trip_ids': sent_offer_trip_ids,
-        'bank':                bank,
+        'agency': agency, 'packages': packages, 'package_stats': package_stats,
+        'offers': offers, 'bookings': bookings, 'trips': trips,
+        'chatrooms': chatrooms, 'revenue': revenue,
+        'sent_offer_trip_ids': sent_offer_trip_ids, 'bank': bank,
     })
 
 
-# ── Chat Room ─────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Chat Room
+# ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
 def chat_room(request, room_id):
-    room      = get_object_or_404(ChatRoom, pk=room_id)
-    is_user   = room.user == request.user
+    room     = get_object_or_404(ChatRoom, pk=room_id)
+    is_user  = room.user == request.user
     is_agency = hasattr(request.user, 'agency') and request.user.agency == room.agency
 
     if not is_user and not is_agency:
@@ -710,27 +675,22 @@ def chat_room(request, room_id):
             package=room.package, user=room.user, is_paid=True
         ).exists()
 
-    pending_preq      = room.payment_requests.filter(status='pending').first()
+    pending_preq = room.payment_requests.filter(status='pending').first()
     agency_trip_count = Booking.objects.filter(
         Q(offer__agency=room.agency) | Q(package__agency=room.agency), is_paid=True
     ).count()
 
     return render(request, 'marketplace/chat_room.html', {
-        'room':                room,
-        'messages':            messages_qs,
-        'is_user':             is_user,
-        'is_agency':           is_agency,
-        'pending_preq':        pending_preq,
-        'show_contacts':       show_contacts,
-        'offer':               room.offer,
-        'agency_trip_count':   agency_trip_count,
+        'room': room, 'messages': messages_qs,
+        'is_user': is_user, 'is_agency': is_agency,
+        'pending_preq': pending_preq, 'show_contacts': show_contacts,
+        'offer': room.offer, 'agency_trip_count': agency_trip_count,
         'agency_review_count': 0,
     })
 
 
 @login_required
 def send_message(request, room_id):
-    """Send a message with contact guard enforcement."""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST only'}, status=405)
 
@@ -755,27 +715,22 @@ def send_message(request, room_id):
     if is_agency and is_violation(content):
         violation_type = classify_violation(content)
         agency         = room.agency
-
         AgencyWarning.objects.create(
             agency=agency, room=room,
             reason='contact_sharing', flagged_content=content
         )
-
         warning_count = AgencyWarning.objects.filter(agency=agency).count()
         _issue_warning_messages(room, agency, warning_count)
-
         return JsonResponse({
-            'blocked': True,
-            'warning': warning_count,
+            'blocked': True, 'warning': warning_count,
             'message': f"Message blocked — contact sharing detected ({violation_type}). Warning {warning_count}/3."
         }, status=403)
 
     msg = Message.objects.create(room=room, sender_type=sender_type, content=content)
     return JsonResponse({
-        'id':          msg.id,
-        'content':     msg.content,
+        'id': msg.id, 'content': msg.content,
         'sender_type': sender_type,
-        'created_at':  msg.created_at.strftime('%H:%M'),
+        'created_at': msg.created_at.strftime('%H:%M'),
     })
 
 
@@ -810,7 +765,9 @@ def approve_offer(request, offer_id):
     return redirect('chat_room', room_id=room.id)
 
 
-# ── Payment Request ───────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Chat Payment Request
+# ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
 def raise_payment_request(request, room_id):
@@ -826,6 +783,7 @@ def raise_payment_request(request, room_id):
     if amount <= 0:
         return JsonResponse({'error': 'Invalid amount'}, status=400)
 
+    # Cancel any previously pending request in this room
     room.payment_requests.filter(status='pending').update(status='rejected')
 
     msg = Message.objects.create(
@@ -836,8 +794,9 @@ def raise_payment_request(request, room_id):
     pr = PaymentRequest.objects.create(room=room, message=msg, amount=amount, note=note)
     return JsonResponse({
         'id': msg.id, 'pr_id': pr.id,
-        'amount': amount, 'note': note, 'status': 'pending'
+        'amount': amount, 'note': note, 'status': 'pending',
     })
+
 
 
 @login_required
@@ -846,7 +805,8 @@ def accept_payment_request(request, pr_id):
     room    = pr.room
     pricing = compute_pricing(pr.amount)
 
-    razorpay_order = client.order.create({
+    from .payment_service import razorpay_client
+    razorpay_order = razorpay_client.order.create({
         "amount":          pricing['total_amount'] * 100,
         "currency":        "INR",
         "payment_capture": 1,
@@ -856,67 +816,84 @@ def accept_payment_request(request, pr_id):
     pr.save()
 
     return render(request, 'marketplace/chat_checkout.html', {
-        'pr':                pr,
-        'room':              room,
-        'pricing':           pricing,
-        'razorpay_key':      settings.RAZORPAY_KEY_ID,
+        'pr': pr, 'room': room, 'pricing': pricing,
+        'razorpay_key': settings.RAZORPAY_KEY_ID,
         'razorpay_order_id': razorpay_order['id'],
-        'user':              request.user,
+        'user': request.user,
     })
 
 
 @csrf_exempt
 def chat_payment_success(request):
-    if request.method == 'POST':
-        try:
-            _verify_razorpay_signature(
-                request.POST.get('razorpay_order_id'),
-                request.POST.get('razorpay_payment_id'),
-                request.POST.get('razorpay_signature'),
-            )
-            pr                     = PaymentRequest.objects.get(
-                razorpay_order_id=request.POST.get('razorpay_order_id')
-            )
-            pr.status              = 'paid'
-            pr.razorpay_payment_id = request.POST.get('razorpay_payment_id')
-            pr.save()
+    """
+    Handles Razorpay callback for chat payment requests.
+    Verifies signature → marks PaymentRequest paid → creates/updates Booking
+    → fires agency payout via Razorpay Route → unlocks contact details.
+    """
+    if request.method != 'POST':
+        return redirect('dashboard')
 
-            room    = pr.room
-            pricing = compute_pricing(pr.amount)
+    order_id   = request.POST.get('razorpay_order_id')
+    payment_id = request.POST.get('razorpay_payment_id')
+    signature  = request.POST.get('razorpay_signature')
 
-            booking, created = Booking.objects.get_or_create(
-                user=room.user, offer=room.offer,
-                defaults={
-                    **pricing,
-                    'is_paid':             True,
-                    'status':              'confirmed',
-                    'razorpay_order_id':   pr.razorpay_order_id,
-                    'razorpay_payment_id': pr.razorpay_payment_id,
-                }
-            )
-            if not booking.is_paid:
-                booking.is_paid             = True
-                booking.status              = 'confirmed'
-                booking.razorpay_payment_id = pr.razorpay_payment_id
-                booking.commission_amount   = pricing['commission_amount']
-                booking.agency_payout       = pricing['agency_payout']
-                booking.save()
+    if not verify_payment_signature(order_id, payment_id, signature):
+        logger.warning(f"chat_payment_success: invalid signature for order {order_id}")
+        return redirect('payment_failed')
 
-            agency = room.agency
-            Message.objects.create(
-                room=room, sender_type='system',
-                content=(
-                    f"✅ Payment of ₹{pricing['total_amount']:,} confirmed!\n\n"
-                    f"🔓 Contact details now unlocked:\n"
-                    f"📞 {agency.phone}\n📧 {agency.email}"
-                    + (f"\n🌐 {agency.website}" if agency.website else "") +
-                    "\n\nOur team will reach out within 24 hours."
-                )
-            )
-            return redirect('chat_room', room_id=room.id)
-        except Exception:
-            return redirect('payment_failed')
-    return redirect('dashboard')
+    try:
+        pr = PaymentRequest.objects.get(razorpay_order_id=order_id)
+    except PaymentRequest.DoesNotExist:
+        logger.error(f"chat_payment_success: no PaymentRequest for order {order_id}")
+        return redirect('payment_failed')
+
+    # Mark payment request as paid
+    pr.status              = 'paid'
+    pr.razorpay_payment_id = payment_id
+    pr.save()
+
+    room    = pr.room
+    pricing = compute_pricing(pr.amount)
+
+    # Create or update the booking
+    booking, created = Booking.objects.get_or_create(
+        user=room.user, offer=room.offer,
+        defaults={
+            **pricing,
+            'is_paid':             True,
+            'status':              'confirmed',
+            'razorpay_order_id':   order_id,
+            'razorpay_payment_id': payment_id,
+        }
+    )
+    if not booking.is_paid:
+        booking.is_paid             = True
+        booking.status              = 'confirmed'
+        booking.razorpay_payment_id = payment_id
+        booking.commission_amount   = pricing['commission_amount']
+        booking.agency_payout       = pricing['agency_payout']
+        booking.save()
+
+    # ── Fire agency payout ────────────────────────────────────────────────────
+    # This is the critical part — chat payments also trigger the 10% split payout
+    amounts = _amounts_from_pricing(pricing)
+    payout, error = transfer_to_agency(booking, amounts)
+    if error:
+        logger.warning(f"Payout queued (failed) for chat booking {booking.id}: {error}")
+
+    # ── Unlock contact details in chat ────────────────────────────────────────
+    agency = room.agency
+    Message.objects.create(
+        room=room, sender_type='system',
+        content=(
+            f"✅ Payment of ₹{pricing['total_amount']:,} confirmed!\n\n"
+            f"🔓 Contact details now unlocked:\n"
+            f"📞 {agency.phone}\n📧 {agency.email}"
+            + (f"\n🌐 {agency.website}" if agency.website else "") +
+            "\n\nOur team will reach out within 24 hours."
+        )
+    )
+    return redirect('chat_room', room_id=room.id)
 
 
 @login_required
@@ -931,13 +908,16 @@ def reject_payment_request(request, pr_id):
     return redirect('chat_room', room_id=pr.room.id)
 
 
-# ── Offers ────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Offers
+# ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
 def offers(request, trip_id):
     trip        = get_object_or_404(Trip, pk=trip_id, user=request.user)
     offers_list = Offer.objects.filter(trip=trip).select_related('agency').order_by('price')
     return render(request, 'marketplace/offers.html', {'trip': trip, 'offers': offers_list})
+
 
 
 @login_required
@@ -947,7 +927,9 @@ def checkout(request, offer_id):
         return redirect('dashboard')
 
     pricing = compute_pricing(offer.price)
-    razorpay_order = client.order.create({
+
+    from .payment_service import razorpay_client
+    razorpay_order = razorpay_client.order.create({
         "amount":          pricing['total_amount'] * 100,
         "currency":        "INR",
         "payment_capture": 1,
@@ -963,46 +945,49 @@ def checkout(request, offer_id):
         booking.save()
 
     return render(request, 'marketplace/checkout.html', {
-        'offer':             offer,
-        'pricing':           pricing,
-        'razorpay_key':      settings.RAZORPAY_KEY_ID,
+        'offer': offer, 'pricing': pricing,
+        'razorpay_key': settings.RAZORPAY_KEY_ID,
         'razorpay_order_id': razorpay_order['id'],
-        'user':              request.user,
+        'user': request.user,
     })
 
 
 @csrf_exempt
 def offer_payment_success(request):
-    """Handles payment success for trip offer checkout flow."""
-    if request.method == 'POST':
-        try:
-            _verify_razorpay_signature(
-                request.POST.get('razorpay_order_id'),
-                request.POST.get('razorpay_payment_id'),
-                request.POST.get('razorpay_signature'),
-            )
-            booking = Booking.objects.get(
-                razorpay_order_id=request.POST.get('razorpay_order_id')
-            )
-            booking.is_paid             = True
-            booking.status              = 'confirmed'
-            booking.razorpay_payment_id = request.POST.get('razorpay_payment_id')
-            booking.save()
+    """
+    Handles payment success for the trip offer checkout flow.
+    Verifies signature → marks booking paid → fires agency payout.
+    """
+    if request.method != 'POST':
+        return redirect('dashboard')
 
-            pricing = {
-                'total_amount':        booking.total_amount,
-                'base_amount':         booking.base_amount,
-                'gst_amount':          booking.gst_amount,
-                'trivasta_commission': booking.commission_amount,
-                'agency_payout':       booking.agency_payout,
-                'discount_amount':     0,
-            }
-            transfer_to_agency(booking, pricing)
+    order_id   = request.POST.get('razorpay_order_id')
+    payment_id = request.POST.get('razorpay_payment_id')
+    signature  = request.POST.get('razorpay_signature')
 
-            return redirect('booking_confirmation', booking_id=booking.id)
-        except Exception:
-            return redirect('payment_failed')
-    return redirect('dashboard')
+    if not verify_payment_signature(order_id, payment_id, signature):
+        logger.warning(f"offer_payment_success: invalid signature for order {order_id}")
+        return redirect('payment_failed')
+
+    try:
+        booking = Booking.objects.get(razorpay_order_id=order_id)
+    except Booking.DoesNotExist:
+        logger.error(f"offer_payment_success: no booking for order {order_id}")
+        return redirect('payment_failed')
+
+    if not booking.is_paid:
+        booking.is_paid             = True
+        booking.status              = 'confirmed'
+        booking.razorpay_payment_id = payment_id
+        booking.save()
+
+    # ── Fire payout ───────────────────────────────────────────────────────────
+    amounts = _amounts_from_pricing(compute_pricing(booking.base_amount or booking.total_amount))
+    payout, error = transfer_to_agency(booking, amounts)
+    if error:
+        logger.warning(f"Payout queued for offer booking {booking.id}: {error}")
+
+    return redirect('booking_confirmation', booking_id=booking.id)
 
 
 def payment_failed(request):
@@ -1024,9 +1009,7 @@ def trip_tracking(request, booking_id):
         trip_status = None
     history = trip_status.updates.all() if trip_status else []
     return render(request, 'marketplace/trip_tracking.html', {
-        'booking':     booking,
-        'trip_status': trip_status,
-        'history':     history,
+        'booking': booking, 'trip_status': trip_status, 'history': history,
     })
 
 
@@ -1038,11 +1021,11 @@ def update_trip_status(request, booking_id):
         return redirect('agency_dashboard')
     if booking.package and booking.package.agency != agency:
         return redirect('agency_dashboard')
-
+ 
     trip_status, _ = TripStatus.objects.get_or_create(
         booking=booking, defaults={'status': 'confirmed'}
     )
-
+ 
     if request.method == 'POST':
         new_status = request.POST.get('status')
         note       = request.POST.get('note', '').strip()
@@ -1050,16 +1033,24 @@ def update_trip_status(request, booking_id):
         if new_status not in valid:
             messages.error(request, 'Invalid status.')
             return redirect('update_trip_status', booking_id=booking_id)
-
+ 
         TripUpdate.objects.create(trip_status=trip_status, status=new_status, note=note)
         trip_status.status = new_status
         trip_status.note   = note
         trip_status.save()
-
+ 
+        # ── Send trip status update email ─────────────────────────────────────
+        try:
+            from users.emails import send_trip_status_update
+            send_trip_status_update(booking, new_status, note)
+        except Exception:
+            pass
+        # ─────────────────────────────────────────────────────────────────────
+ 
         if new_status == 'completed':
             booking.status = 'completed'
             booking.save(update_fields=['status'])
-
+ 
         try:
             room = booking.offer.chatroom if booking.offer else None
             if not room and booking.package:
@@ -1074,20 +1065,20 @@ def update_trip_status(request, booking_id):
                 )
         except Exception:
             pass
-
+ 
         messages.success(request, 'Trip status updated.')
         return redirect('agency_dashboard')
-
+ 
     history = trip_status.updates.all()
     return render(request, 'marketplace/update_trip_status.html', {
-        'booking':     booking,
-        'trip_status': trip_status,
-        'history':     history,
-        'choices':     TripStatus.STATUS_CHOICES,
+        'booking': booking, 'trip_status': trip_status,
+        'history': history, 'choices': TripStatus.STATUS_CHOICES,
     })
 
 
-# ── Package CRUD ──────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Package CRUD
+# ─────────────────────────────────────────────────────────────────────────────
 
 @agency_required
 def package_create(request):
@@ -1182,7 +1173,9 @@ def agency_profile_edit(request):
     })
 
 
-# ── Contact Guard Warning Helper ──────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Contact Guard Warning Helper
+# ─────────────────────────────────────────────────────────────────────────────
 
 def _issue_warning_messages(room, agency, warning_count):
     WARNING_TEMPLATES = {
@@ -1202,11 +1195,12 @@ def _issue_warning_messages(room, agency, warning_count):
         agency.save(update_fields=['plan'])
 
 
-# ── Agency Bank & KYC ─────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Agency Bank Details & KYC
+# ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
 def agency_bank_details(request):
-    """Agency submits their bank details for KYC verification."""
     try:
         agency = request.user.agency
     except Exception:
@@ -1245,15 +1239,15 @@ def agency_bank_details(request):
             bank.save()
         else:
             AgencyBankDetails.objects.create(
-                agency              = agency,
-                account_holder_name = account_holder_name,
-                account_number      = account_number,
-                ifsc_code           = ifsc_code,
-                account_type        = account_type,
-                bank_name           = bank_name,
-                pan_number          = pan_number,
-                gst_number          = gst_number,
-                kyc_status          = 'submitted',
+                agency=agency,
+                account_holder_name=account_holder_name,
+                account_number=account_number,
+                ifsc_code=ifsc_code,
+                account_type=account_type,
+                bank_name=bank_name,
+                pan_number=pan_number,
+                gst_number=gst_number,
+                kyc_status='submitted',
             )
 
         messages.success(request, "Bank details submitted for KYC verification. We'll verify within 24 hours.")
@@ -1262,17 +1256,13 @@ def agency_bank_details(request):
         return redirect('agency_dashboard')
 
     return render(request, 'marketplace/agency_bank_details.html', {
-        'bank':     bank,
-        'existing': existing,
-        'agency':   agency,
+        'bank': bank, 'existing': existing, 'agency': agency,
     })
 
 
 @staff_member_required
 def admin_verify_kyc(request, agency_id):
-    """Admin verifies agency KYC and creates Razorpay linked account."""
     agency = get_object_or_404(Agency, pk=agency_id)
-
     try:
         bank = agency.bank_details
     except Exception:
@@ -1281,30 +1271,26 @@ def admin_verify_kyc(request, agency_id):
 
     if request.method == 'POST':
         action = request.POST.get('action')
-
         if action == 'verify':
             account_id, error = create_agency_linked_account(agency)
             if error:
                 messages.warning(
                     request,
-                    f"Razorpay account creation failed ({error}). Marking as verified manually."
+                    f"Razorpay account creation failed ({error}). Marking as verified manually. "
+                    f"You MUST apply for Razorpay Route at dashboard.razorpay.com → +10 More → Route."
                 )
-
             bank.kyc_status      = 'verified'
             bank.kyc_verified_at = timezone.now()
             bank.kyc_verified_by = request.user
             bank.save(update_fields=['kyc_status', 'kyc_verified_at', 'kyc_verified_by'])
-
             agency.status = 'approved'
             agency.save(update_fields=['status'])
-
             messages.success(
                 request,
-                f"KYC verified for {agency.name}. Razorpay account: {account_id or 'manual'}"
+                f"KYC verified for {agency.name}. Razorpay account: {account_id or 'manual (Route not active)'}"
             )
-
         elif action == 'reject':
-            reason                    = request.POST.get('rejection_reason', '').strip()
+            reason = request.POST.get('rejection_reason', '').strip()
             bank.kyc_status           = 'rejected'
             bank.kyc_rejection_reason = reason
             bank.save(update_fields=['kyc_status', 'kyc_rejection_reason'])
@@ -1315,9 +1301,7 @@ def admin_verify_kyc(request, agency_id):
 
 @staff_member_required
 def admin_retry_payout(request, payout_id):
-    """Admin manually retries a failed or pending payout."""
     payout = get_object_or_404(PayoutRecord, pk=payout_id)
-
     if payout.status == 'paid':
         messages.info(request, "This payout is already completed.")
         return redirect('trivasta_admin')
@@ -1330,40 +1314,33 @@ def admin_retry_payout(request, payout_id):
         'agency_payout':       payout.agency_payout_amount,
         'discount_amount':     payout.discount_amount,
     }
-
     _, error = transfer_to_agency(payout.booking, amounts)
-
     if error:
         messages.error(request, f"Retry failed: {error}")
     else:
         messages.success(request, f"Payout retried for Booking #{payout.booking.id}")
-
     return redirect('trivasta_admin')
 
 
-# ── Coupon ────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Coupon
+# ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
 def validate_coupon_ajax(request):
-    """AJAX endpoint to validate a coupon code before checkout."""
     if request.method != 'POST':
         return JsonResponse({'error': 'POST required'}, status=405)
 
     code        = request.POST.get('code', '').strip()
     base_amount = int(request.POST.get('base_amount', 0))
     agency_id   = request.POST.get('agency_id')
-
-    agency = None
-    if agency_id:
-        agency = Agency.objects.filter(pk=agency_id).first()
+    agency      = Agency.objects.filter(pk=agency_id).first() if agency_id else None
 
     coupon, error = validate_coupon(code, request.user, base_amount, agency)
-
     if error:
         return JsonResponse({'valid': False, 'error': error})
 
     amounts = calculate_booking_amounts(base_amount, coupon)
-
     return JsonResponse({
         'valid':           True,
         'code':            coupon.code,
@@ -1375,7 +1352,9 @@ def validate_coupon_ajax(request):
     })
 
 
-# ── Book Package ──────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Book Package  (new flow — supports coupons)
+# ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
 def book_package(request, package_id):
@@ -1396,19 +1375,15 @@ def book_package(request, package_id):
                     amounts = calculate_booking_amounts(package.price, coupon)
                     messages.success(request, f"Coupon applied! You save ₹{amounts['discount_amount']:,}")
             return render(request, 'marketplace/book_package.html', {
-                'package':         package,
-                'amounts':         amounts,
-                'coupon':          coupon,
-                'RAZORPAY_KEY_ID': settings.RAZORPAY_KEY_ID,
+                'package': package, 'amounts': amounts,
+                'coupon': coupon, 'RAZORPAY_KEY_ID': settings.RAZORPAY_KEY_ID,
             })
 
         if action == 'create_order':
             coupon_code = request.POST.get('applied_coupon', '')
             if coupon_code:
-                coupon, _ = validate_coupon(
-                    coupon_code, request.user, package.price, package.agency
-                )
-                amounts = calculate_booking_amounts(package.price, coupon)
+                coupon, _ = validate_coupon(coupon_code, request.user, package.price, package.agency)
+                amounts   = calculate_booking_amounts(package.price, coupon)
 
             booking = Booking.objects.create(
                 user              = request.user,
@@ -1435,59 +1410,82 @@ def book_package(request, package_id):
                 request.session[f'coupon_booking_{booking.id}'] = coupon.code
 
             return render(request, 'marketplace/payment_checkout.html', {
-                'booking':         booking,
-                'package':         package,
-                'amounts':         amounts,
-                'coupon':          coupon,
-                'razorpay_order':  order,
+                'booking': booking, 'package': package, 'amounts': amounts,
+                'coupon': coupon, 'razorpay_order': order,
                 'RAZORPAY_KEY_ID': settings.RAZORPAY_KEY_ID,
             })
 
     return render(request, 'marketplace/book_package.html', {
-        'package':         package,
-        'amounts':         amounts,
-        'coupon':          None,
-        'RAZORPAY_KEY_ID': settings.RAZORPAY_KEY_ID,
+        'package': package, 'amounts': amounts,
+        'coupon': None, 'RAZORPAY_KEY_ID': settings.RAZORPAY_KEY_ID,
     })
 
 
-# ── Payment Success (package booking) ────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Payment success — new book_package flow
+# ─────────────────────────────────────────────────────────────────────────────
 
-@login_required
+@csrf_exempt
 def payment_success(request, booking_id):
-    """Verifies signature, marks booking paid, fires Route transfer."""
-    booking = get_object_or_404(Booking, pk=booking_id, user=request.user)
-
-    if booking.is_paid:
-        messages.info(request, "This booking is already paid.")
+    """
+    Payment callback for the new book_package flow.
+    Razorpay POSTs here after the user pays. Signature verification
+    replaces CSRF as the auth mechanism.
+    """
+    if request.method != 'POST':
         return redirect('dashboard')
 
-    razorpay_order_id   = request.POST.get('razorpay_order_id')
-    razorpay_payment_id = request.POST.get('razorpay_payment_id')
-    razorpay_signature  = request.POST.get('razorpay_signature')
+    order_id   = request.POST.get('razorpay_order_id')
+    payment_id = request.POST.get('razorpay_payment_id')
+    signature  = request.POST.get('razorpay_signature')
 
-    if not verify_payment_signature(razorpay_order_id, razorpay_payment_id, razorpay_signature):
-        messages.error(request, "Payment verification failed. Please contact support.")
+    if not verify_payment_signature(order_id, payment_id, signature):
+        logger.warning(f"payment_success: invalid signature for booking {booking_id}")
+        return redirect('payment_failed')
+
+    # FIX 2: Look up by pk only, not pk + user, because Razorpay posts here
+    # server-to-server and there is no logged-in user in the request context.
+    try:
+        booking = Booking.objects.get(pk=booking_id)
+    except Booking.DoesNotExist:
+        logger.error(f"payment_success: no booking with id {booking_id}")
+        return redirect('payment_failed')
+
+    # FIX 3: Idempotency — Razorpay may deliver the callback more than once.
+    # Return silently instead of re-processing a booking that is already paid.
+    if booking.is_paid:
         return redirect('dashboard')
 
     booking.is_paid             = True
     booking.status              = 'confirmed'
-    booking.razorpay_payment_id = razorpay_payment_id
+    booking.razorpay_payment_id = payment_id
     booking.save()
 
+    try:
+        from users.emails import send_booking_confirmation
+        send_booking_confirmation(booking)
+    except Exception:
+        # FIX 4: log instead of silently swallowing so email failures are visible
+        logger.exception(f"Booking confirmation email failed for booking {booking_id}")
+
+    # FIX 5: was `discount_applied=booking.base_amount` which recorded the wrong
+    # value. base_amount is the discounted price the customer paid, not the
+    # discount itself. Recalculate using the coupon to get the actual saving.
     coupon_code = request.session.pop(f'coupon_booking_{booking.id}', None)
     if coupon_code:
         try:
             coupon = Coupon.objects.get(code=coupon_code)
+            recalculated    = calculate_booking_amounts(booking.base_amount, coupon)
+            actual_discount = recalculated['discount_amount']
             CouponUsage.objects.create(
                 coupon           = coupon,
-                user             = request.user,
+                user             = booking.user,
                 booking          = booking,
-                discount_applied = booking.base_amount,
+                discount_applied = actual_discount,
             )
             coupon.mark_used()
         except Exception:
-            pass
+            logger.exception(f"Coupon usage recording failed for booking {booking_id}")
 
     amounts = {
         'total_amount':        booking.total_amount,
@@ -1498,15 +1496,15 @@ def payment_success(request, booking_id):
         'discount_amount':     0,
     }
     payout, error = transfer_to_agency(booking, amounts)
-
     if error:
-        logger.warning(f"Payout failed for booking {booking.id}: {error}. Will retry manually.")
+        logger.warning(f"Payout queued (failed) for booking {booking.id}: {error}")
 
-    messages.success(request, f"🎉 Booking confirmed! Booking #{booking.id}")
     return redirect('dashboard')
 
 
-# ── Agency Earnings ───────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Agency Earnings
+# ─────────────────────────────────────────────────────────────────────────────
 
 @login_required
 def agency_earnings(request):
@@ -1528,10 +1526,7 @@ def agency_earnings(request):
         bank = None
 
     return render(request, 'marketplace/agency_earnings.html', {
-        'agency':         agency,
-        'payouts':        payouts,
-        'total_earned':   total_earned,
-        'total_pending':  total_pending,
-        'total_bookings': total_bookings,
-        'bank':           bank,
+        'agency': agency, 'payouts': payouts,
+        'total_earned': total_earned, 'total_pending': total_pending,
+        'total_bookings': total_bookings, 'bank': bank,
     })

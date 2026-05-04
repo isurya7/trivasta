@@ -3,517 +3,692 @@
 
 {% block extra_css %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
-    body { font-family: 'Outfit', sans-serif; }
+    @keyframes fadeUp {
+        from { opacity:0; transform:translateY(20px); }
+        to   { opacity:1; transform:translateY(0); }
+    }
+
+    @keyframes slowZoom {
+        from { transform: scale(1.05); }
+        to   { transform: scale(1.1); }
+    }
+
+    @keyframes blink {
+        0%,100% { opacity:1; } 50% { opacity:0.3; }
+    }
 
     .search-page {
-        min-height: calc(100vh - 68px);
-        background: var(--cream);
-        padding: 2.5rem 0 5rem;
+        min-height: 100vh;
+        background: var(--ocean-deep);
+        padding-bottom: 6rem;
     }
 
-    .search-container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
-
-    /* Hero */
+    /* ── HERO ─────────────────────────────────── */
     .search-hero {
-        background: linear-gradient(135deg, var(--sea), #0a2240);
-        border-radius: 16px;
-        padding: 3rem;
-        margin-bottom: 2rem;
         position: relative;
         overflow: hidden;
+        padding: 8rem 2.5rem 5rem;
     }
 
-    .search-hero::before {
-        content: '';
+    .search-hero-bg {
         position: absolute; inset: 0;
+        background-image: url('https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1600&q=80');
+        background-size: cover;
+        background-position: center 40%;
+        transform: scale(1.05);
+        animation: slowZoom 20s ease-in-out infinite alternate;
+        z-index: 0;
+    }
+
+    .search-hero-scrim {
+        position: absolute; inset: 0; z-index: 1;
+        background: linear-gradient(
+            160deg,
+            rgba(2,12,27,0.88) 0%,
+            rgba(2,12,27,0.5) 50%,
+            rgba(2,12,27,0.92) 100%
+        );
+    }
+
+    .search-hero-grid {
+        position: absolute; inset: 0; z-index: 2;
         background-image:
-            linear-gradient(rgba(201,168,76,0.07) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(201,168,76,0.07) 1px, transparent 1px);
-        background-size: 30px 30px;
+            linear-gradient(rgba(56,189,248,0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(56,189,248,0.05) 1px, transparent 1px);
+        background-size: 50px 50px;
     }
 
-    .search-hero-content { position: relative; z-index: 1; }
-    .search-eyebrow { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #e8c97a; margin-bottom: 0.5rem; }
+    .search-hero-content {
+        position: relative; z-index: 3;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
 
-    .search-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 2.25rem;
+    .search-eyebrow {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: rgba(56,189,248,0.12);
+        border: 1px solid rgba(56,189,248,0.3);
+        padding: 5px 16px; border-radius: 100px;
+        font-size: 0.7rem; font-weight: 700;
+        letter-spacing: 0.2em; text-transform: uppercase;
+        color: var(--ocean-glow);
+        margin-bottom: 1.25rem;
+        animation: fadeUp .7s .2s both;
+    }
+
+    .search-eyebrow-dot {
+        width: 6px; height: 6px; border-radius: 50%;
+        background: var(--ocean-glow);
+        animation: blink 2s ease-in-out infinite;
+    }
+
+    .search-hero h1 {
+        font-family: var(--font-display);
+        font-size: clamp(2.5rem, 5vw, 4.5rem);
+        font-weight: 700;
+        color: var(--white);
+        line-height: 1.05;
+        margin-bottom: 1rem;
+        letter-spacing: -0.01em;
+        animation: fadeUp .7s .35s both;
+    }
+
+    .search-hero h1 em {
+        font-style: italic;
         font-weight: 300;
-        color: white;
-        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, var(--ocean-glow), var(--gold));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
     }
 
-    .search-title em { font-style: italic; color: #e8c97a; }
+    .search-hero p {
+        font-size: 1rem;
+        color: rgba(255,255,255,0.5);
+        margin-bottom: 2rem;
+        max-width: 480px;
+        line-height: 1.7;
+        animation: fadeUp .7s .5s both;
+    }
 
-    /* Search bar */
+    /* search bar */
+    .search-bar-wrap { animation: fadeUp .7s .65s both; max-width: 680px; }
+
     .search-bar {
         display: flex;
-        gap: 0.75rem;
-        max-width: 640px;
-    }
-
-    .search-input-wrap {
-        flex: 1;
-        display: flex;
-        align-items: center;
-        background: white;
-        border-radius: var(--radius);
+        background: rgba(255,255,255,0.07);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255,255,255,0.14);
+        border-radius: 100px;
         overflow: hidden;
-        box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+        transition: border-color .3s, box-shadow .3s;
     }
 
-    .search-icon { padding: 0 1rem; font-size: 1rem; color: var(--muted); }
+    .search-bar:focus-within {
+        border-color: rgba(56,189,248,0.5);
+        box-shadow: 0 0 0 4px rgba(56,189,248,0.1);
+    }
+
+    .search-icon {
+        padding: 0 1.25rem;
+        color: rgba(255,255,255,0.35);
+        font-size: 1rem;
+        display: flex; align-items: center;
+        flex-shrink: 0;
+    }
 
     .search-input {
         flex: 1;
-        border: none;
-        outline: none;
-        font-family: 'Outfit', sans-serif;
-        font-size: 0.9375rem;
-        color: var(--ink);
-        padding: 0.875rem 0;
         background: transparent;
+        border: none; outline: none;
+        font-family: var(--font-body);
+        font-size: 0.9375rem;
+        color: var(--white);
+        padding: 1rem 0;
     }
 
-    .search-btn {
-        padding: 0 1.5rem;
-        background: var(--gold);
-        color: var(--ink);
+    .search-input::placeholder { color: rgba(255,255,255,0.3); }
+
+    .search-submit {
+        margin: 5px;
+        padding: 0 1.75rem;
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        color: var(--white);
         border: none;
-        font-family: 'Outfit', sans-serif;
+        border-radius: 100px;
+        font-family: var(--font-body);
         font-size: 0.875rem;
         font-weight: 700;
         cursor: pointer;
-        transition: background 0.2s;
-        height: 100%;
+        transition: all .3s;
+        white-space: nowrap;
+        box-shadow: 0 0 20px rgba(26,127,212,0.35);
     }
 
-    .search-btn:hover { background: #e8c97a; }
+    .search-submit:hover {
+        background: linear-gradient(135deg, var(--ocean-light), var(--ocean-glow));
+        transform: scale(1.02);
+        box-shadow: 0 0 30px rgba(56,189,248,0.5);
+    }
 
-    /* Layout */
+    /* wave divider */
+    .hero-wave { position: relative; z-index: 3; line-height: 0; margin-top: -1px; }
+    .hero-wave svg { display: block; width: 100%; }
+
+    /* ── LAYOUT ─────────────────────────────── */
     .search-layout {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2.5rem 2.5rem 0;
         display: grid;
         grid-template-columns: 280px 1fr;
-        gap: 1.5rem;
+        gap: 1.75rem;
         align-items: start;
     }
 
-    /* Filters sidebar */
+    /* ── FILTERS ─────────────────────────────── */
     .filters-panel {
-        background: white;
-        border-radius: 12px;
-        box-shadow: var(--shadow);
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
         overflow: hidden;
         position: sticky;
-        top: 88px;
+        top: 90px;
+        backdrop-filter: blur(12px);
     }
 
     .filters-header {
-        background: var(--sea);
-        padding: 1.125rem 1.5rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid rgba(255,255,255,0.07);
+        display: flex; align-items: center; justify-content: space-between;
     }
 
-    .filters-title { font-size: 0.875rem; font-weight: 700; color: white; letter-spacing: 0.04em; }
+    .filters-title {
+        font-size: 0.825rem; font-weight: 700;
+        letter-spacing: 0.06em; color: var(--white);
+        display: flex; align-items: center; gap: 8px;
+    }
+
+    .filters-title-icon {
+        width: 28px; height: 28px;
+        background: rgba(56,189,248,0.12);
+        border: 1px solid rgba(56,189,248,0.25);
+        border-radius: 8px;
+        display: grid; place-items: center;
+        font-size: 0.75rem;
+    }
 
     .filters-clear {
-        font-size: 0.72rem;
-        color: rgba(255,255,255,0.6);
+        font-size: 0.72rem; font-weight: 600;
+        color: rgba(255,255,255,0.3);
         text-decoration: none;
-        transition: color 0.2s;
+        transition: color .2s;
+        letter-spacing: 0.04em;
     }
 
-    .filters-clear:hover { color: #e8c97a; }
+    .filters-clear:hover { color: var(--ocean-glow); }
 
     .filters-body { padding: 1.25rem; }
 
     .filter-group { margin-bottom: 1.5rem; }
 
     .filter-label {
-        font-size: 0.62rem;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--muted);
-        margin-bottom: 0.75rem;
-        display: block;
+        font-size: 0.65rem; font-weight: 700;
+        letter-spacing: 0.16em; text-transform: uppercase;
+        color: rgba(255,255,255,0.35);
+        margin-bottom: 0.75rem; display: block;
     }
 
     .filter-input {
         width: 100%;
-        padding: 0.625rem 0.875rem;
-        border: 1.5px solid var(--cream-dark);
+        padding: 0.65rem 0.875rem;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
         border-radius: var(--radius);
-        font-family: 'Outfit', sans-serif;
-        font-size: 0.875rem;
-        color: var(--ink);
-        background: var(--cream);
+        font-family: var(--font-body);
+        font-size: 0.85rem;
+        color: var(--white);
         outline: none;
-        transition: all 0.2s;
+        transition: all .25s;
         box-sizing: border-box;
     }
 
-    .filter-input:focus { border-color: var(--sea); background: white; }
+    .filter-input::placeholder { color: rgba(255,255,255,0.2); }
+
+    .filter-input:focus {
+        border-color: var(--ocean-glow);
+        background: rgba(255,255,255,0.07);
+        box-shadow: 0 0 0 3px rgba(56,189,248,0.12);
+    }
 
     .filter-range { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
 
-    .category-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+    .category-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 
     .cat-chip {
-        padding: 0.3rem 0.75rem;
+        padding: 0.3rem 0.8rem;
         border-radius: 100px;
-        font-size: 0.75rem;
-        font-weight: 500;
-        border: 1.5px solid var(--cream-dark);
-        color: var(--muted);
+        font-size: 0.73rem; font-weight: 600;
+        border: 1px solid rgba(255,255,255,0.1);
+        color: rgba(255,255,255,0.45);
         cursor: pointer;
         text-decoration: none;
-        transition: all 0.2s;
-        background: var(--cream);
+        transition: all .25s;
+        background: rgba(255,255,255,0.04);
     }
 
-    .cat-chip:hover,
-    .cat-chip.active { background: var(--sea); color: white; border-color: var(--sea); }
+    .cat-chip:hover {
+        background: rgba(56,189,248,0.12);
+        color: var(--white);
+        border-color: rgba(56,189,248,0.3);
+    }
+
+    .cat-chip.active {
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        color: var(--white);
+        border-color: transparent;
+        box-shadow: 0 0 14px rgba(26,127,212,0.35);
+    }
 
     .filter-apply {
-        width: 100%;
-        padding: 0.75rem;
-        background: var(--sea);
-        color: white;
-        border: none;
-        border-radius: var(--radius);
-        font-family: 'Outfit', sans-serif;
-        font-size: 0.875rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: background 0.2s;
+        width: 100%; padding: 0.8rem;
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        color: var(--white);
+        border: none; border-radius: var(--radius);
+        font-family: var(--font-body);
+        font-size: 0.875rem; font-weight: 700;
+        cursor: pointer; transition: all .3s;
+        box-shadow: 0 0 20px rgba(14,77,146,0.3);
+        letter-spacing: 0.04em;
     }
 
-    .filter-apply:hover { background: #0a2240; }
+    .filter-apply:hover {
+        background: linear-gradient(135deg, var(--ocean-light), var(--ocean-glow));
+        transform: translateY(-1px);
+        box-shadow: 0 0 30px rgba(56,189,248,0.45);
+    }
 
-    /* Results */
+    /* ── RESULTS HEADER ──────────────────────── */
     .results-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 1.25rem;
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
     }
 
     .results-count {
-        font-size: 0.875rem;
-        color: var(--muted);
+        font-size: 0.875rem; color: rgba(255,255,255,0.4);
     }
 
-    .results-count strong { color: var(--ink); }
+    .results-count strong { color: var(--white); font-weight: 700; }
 
     .sort-select {
-        padding: 0.5rem 1rem;
-        border: 1.5px solid var(--cream-dark);
+        padding: 0.55rem 1rem;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
         border-radius: var(--radius);
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-body);
         font-size: 0.8125rem;
-        color: var(--ink);
-        background: white;
-        cursor: pointer;
-        outline: none;
+        color: var(--white);
+        cursor: pointer; outline: none;
+        transition: border-color .2s;
     }
 
-    /* Package cards */
+    .sort-select:focus { border-color: var(--ocean-glow); }
+    .sort-select option { background: var(--ocean-mid); color: var(--white); }
+
+    /* ── PACKAGE CARDS ───────────────────────── */
     .packages-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
         gap: 1.25rem;
     }
 
     .pkg-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: var(--shadow);
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
         overflow: hidden;
-        transition: transform 0.3s, box-shadow 0.3s;
-        display: flex;
-        flex-direction: column;
+        transition: transform .4s cubic-bezier(0.34,1.56,0.64,1), border-color .3s, box-shadow .4s;
+        display: flex; flex-direction: column;
+        cursor: pointer;
     }
 
-    .pkg-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-deep); }
+    .pkg-card:hover {
+        transform: translateY(-8px);
+        border-color: rgba(56,189,248,0.3);
+        box-shadow: 0 24px 60px rgba(0,0,0,0.5);
+    }
 
     .pkg-img {
-        height: 160px;
-        background: linear-gradient(135deg, var(--sea), #1a4f82);
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        height: 200px;
+        background: linear-gradient(135deg, var(--ocean-mid), var(--ocean-deep));
+        display: flex; align-items: center; justify-content: center;
         font-size: 3.5rem;
-        position: relative;
-        overflow: hidden;
-        flex-shrink: 0;
+        position: relative; overflow: hidden; flex-shrink: 0;
     }
 
     .pkg-img img {
         position: absolute; inset: 0;
         width: 100%; height: 100%;
         object-fit: cover;
+        transition: transform .6s;
+    }
+
+    .pkg-card:hover .pkg-img img { transform: scale(1.08); }
+
+    .pkg-img-overlay {
+        position: absolute; inset: 0;
+        background: linear-gradient(to top, rgba(2,12,27,0.8) 0%, transparent 55%);
     }
 
     .pkg-img-emoji { position: relative; z-index: 1; }
 
     .pkg-agency-badge {
-        position: absolute;
-        bottom: 0.75rem; left: 0.75rem;
-        background: rgba(0,0,0,0.55);
-        backdrop-filter: blur(4px);
+        position: absolute; bottom: .75rem; left: .75rem;
+        background: rgba(2,12,27,0.75);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,0.12);
         border-radius: 100px;
-        padding: 0.2rem 0.625rem;
-        font-size: 0.68rem;
-        font-weight: 600;
-        color: white;
-        z-index: 2;
+        padding: .25rem .75rem;
+        font-size: 0.68rem; font-weight: 600;
+        color: rgba(255,255,255,0.8); z-index: 2;
+    }
+
+    .pkg-cat-tag {
+        position: absolute; top: .875rem; left: .875rem;
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        backdrop-filter: blur(8px);
+        border-radius: 100px;
+        padding: .22rem .7rem;
+        font-size: 0.65rem; font-weight: 700;
+        letter-spacing: .08em; text-transform: uppercase;
+        color: var(--white); z-index: 2;
+        box-shadow: 0 0 12px rgba(14,77,146,0.4);
     }
 
     .pkg-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
-    .pkg-category { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.3rem; }
 
     .pkg-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: var(--ink);
-        margin-bottom: 0.2rem;
-        line-height: 1.3;
+        font-family: var(--font-display);
+        font-size: 1.1rem; font-weight: 700;
+        color: var(--white); line-height: 1.25;
+        margin-bottom: 0.25rem;
     }
 
-    .pkg-dest { font-size: 0.8rem; color: var(--muted); margin-bottom: 0.75rem; }
+    .pkg-dest {
+        font-size: 0.8rem; color: rgba(255,255,255,0.4);
+        margin-bottom: .875rem;
+        display: flex; align-items: center; gap: 4px;
+    }
 
-    .pkg-chips { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.875rem; }
+    .pkg-chips { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .875rem; }
 
     .pkg-chip {
-        font-size: 0.72rem;
-        font-weight: 500;
-        color: var(--sea);
-        background: rgba(15,52,96,0.07);
-        padding: 0.2rem 0.55rem;
-        border-radius: 100px;
+        font-size: 0.7rem; font-weight: 600;
+        color: rgba(255,255,255,0.5);
+        background: rgba(255,255,255,0.06);
+        border: 1px solid rgba(255,255,255,0.08);
+        padding: .22rem .65rem; border-radius: 100px;
     }
 
     .pkg-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: auto;
-        padding-top: 0.875rem;
-        border-top: 1px solid var(--cream-dark);
+        display: flex; align-items: center; justify-content: space-between;
+        margin-top: auto; padding-top: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.07);
     }
 
     .pkg-price {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.375rem;
-        font-weight: 600;
-        color: var(--sea);
+        font-family: var(--font-display);
+        font-size: 1.5rem; font-weight: 700;
+        background: linear-gradient(135deg, var(--ocean-glow), var(--gold));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
         line-height: 1;
     }
 
-    .pkg-price-sub { font-size: 0.68rem; color: var(--muted); margin-top: 0.1rem; }
-
-    .pkg-actions { display: flex; gap: 0.4rem; }
-
-    .pkg-btn {
-        padding: 0.5rem 0.875rem;
-        border-radius: var(--radius);
-        font-family: 'Outfit', sans-serif;
-        font-size: 0.775rem;
-        font-weight: 600;
-        text-decoration: none;
-        border: none;
-        cursor: pointer;
-        transition: all 0.2s;
-        white-space: nowrap;
+    .pkg-price-sub {
+        font-size: 0.68rem;
+        color: rgba(255,255,255,0.3);
+        margin-top: 2px;
+        -webkit-text-fill-color: rgba(255,255,255,0.3);
     }
 
-    .pkg-btn-book { background: var(--sea); color: white; }
-    .pkg-btn-book:hover { background: #0a2240; }
-    .pkg-btn-chat { background: rgba(39,174,96,0.1); color: #27ae60; border: 1px solid rgba(39,174,96,0.25); }
-    .pkg-btn-chat:hover { background: rgba(39,174,96,0.2); }
+    .pkg-actions { display: flex; gap: .4rem; }
 
+    .pkg-btn {
+        padding: .5rem .9rem;
+        border-radius: 100px;
+        font-family: var(--font-body);
+        font-size: 0.75rem; font-weight: 700;
+        text-decoration: none; border: none;
+        cursor: pointer; transition: all .25s; white-space: nowrap;
+    }
+
+    .pkg-btn-book {
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        color: var(--white);
+        box-shadow: 0 0 14px rgba(14,77,146,0.35);
+    }
+
+    .pkg-btn-book:hover {
+        background: linear-gradient(135deg, var(--ocean-light), var(--ocean-glow));
+        transform: scale(1.04);
+        box-shadow: 0 0 22px rgba(56,189,248,0.5);
+    }
+
+    .pkg-btn-chat {
+        background: rgba(52,211,153,0.1);
+        color: #34d399;
+        border: 1px solid rgba(52,211,153,0.25);
+    }
+
+    .pkg-btn-chat:hover {
+        background: rgba(52,211,153,0.2);
+        transform: scale(1.04);
+    }
+
+    /* ── EMPTY STATE ─────────────────────────── */
     .empty-results {
-        text-align: center;
-        padding: 4rem 2rem;
-        background: white;
-        border-radius: 12px;
-        box-shadow: var(--shadow);
+        text-align: center; padding: 5rem 2rem;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 20px;
         grid-column: 1 / -1;
     }
 
-    .empty-results-icon { font-size: 3rem; margin-bottom: 1rem; }
-    .empty-results-title { font-family: 'Cormorant Garamond', serif; font-size: 1.5rem; color: var(--ink); margin-bottom: 0.5rem; }
-    .empty-results-desc  { font-size: 0.875rem; color: var(--muted); }
+    .empty-results-icon { font-size: 3.5rem; margin-bottom: 1rem; }
 
-    @media (max-width: 900px) {
-        .search-layout { grid-template-columns: 1fr; }
+    .empty-results-title {
+        font-family: var(--font-display);
+        font-size: 1.6rem; font-weight: 700;
+        color: var(--white); margin-bottom: .5rem;
+    }
+
+    .empty-results-desc {
+        font-size: 0.875rem; color: rgba(255,255,255,0.35);
+    }
+
+    /* ── REVEAL ──────────────────────────────── */
+    .reveal-left {
+        opacity: 0; transform: translateX(-28px);
+        transition: opacity .7s ease, transform .7s ease;
+    }
+
+    .reveal-left.visible { opacity: 1; transform: translateX(0); }
+
+    @media (max-width: 960px) {
+        .search-layout { grid-template-columns: 1fr; padding: 2rem 1.5rem 0; }
         .filters-panel { position: static; }
+        .search-hero { padding: 7rem 1.5rem 4rem; }
     }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="search-page">
-    <div class="search-container">
 
-        <!-- Hero -->
-        <div class="search-hero">
-            <div class="search-hero-content">
-                <div class="search-eyebrow">✦ Browse Packages</div>
-                <div class="search-title">Find your perfect <em>journey</em></div>
+    <!-- HERO -->
+    <div class="search-hero">
+        <div class="search-hero-bg"></div>
+        <div class="search-hero-scrim"></div>
+        <div class="search-hero-grid"></div>
+
+        <div class="search-hero-content">
+            <div class="search-eyebrow">
+                <span class="search-eyebrow-dot"></span>
+                Browse Packages
+            </div>
+            <h1>Find your perfect <em>journey</em></h1>
+            <p>Explore curated travel packages from verified agencies across India — beaches, mountains, heritage and more.</p>
+
+            <div class="search-bar-wrap">
                 <form method="get" action="{% url 'package_search' %}">
                     <div class="search-bar">
-                        <div class="search-input-wrap">
-                            <span class="search-icon">🔍</span>
-                            <input type="text" name="q" value="{{ q }}"
-                                   class="search-input"
-                                   placeholder="Search destination, package name, agency…">
-                        </div>
-                        <button type="submit" class="search-btn">Search</button>
+                        <span class="search-icon">🔍</span>
+                        <input type="text" name="q" value="{{ q }}"
+                               class="search-input"
+                               placeholder="Search destination, package name, agency…">
+                        {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+                        {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+                        <button type="submit" class="search-submit">Search</button>
                     </div>
-                    <!-- preserve other filters on search -->
-                    {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
-                    {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="hero-wave">
+        <svg viewBox="0 0 1440 48" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,24 C360,48 1080,0 1440,24 L1440,48 L0,48 Z" fill="#020c1b"/>
+        </svg>
+    </div>
+
+    <!-- LAYOUT -->
+    <div class="search-layout">
+
+        <!-- FILTERS -->
+        <div class="filters-panel reveal-left">
+            <div class="filters-header">
+                <span class="filters-title">
+                    <span class="filters-title-icon">⚙</span>
+                    Filters
+                </span>
+                <a href="{% url 'package_search' %}" class="filters-clear">Clear all</a>
+            </div>
+            <div class="filters-body">
+                <form method="get" action="{% url 'package_search' %}" id="filterForm">
+                    {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+                    <input type="hidden" name="sort" value="{{ sort }}" id="sortHidden">
+
+                    <div class="filter-group">
+                        <span class="filter-label">Category</span>
+                        <div class="category-chips">
+                            <a href="?q={{ q }}&sort={{ sort }}"
+                               class="cat-chip {% if not category %}active{% endif %}">All</a>
+                            {% for val, label in categories %}
+                            <a href="?q={{ q }}&category={{ val }}&sort={{ sort }}"
+                               class="cat-chip {% if category == val %}active{% endif %}">{{ label }}</a>
+                            {% endfor %}
+                        </div>
+                        {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
+                    </div>
+
+                    <div class="filter-group">
+                        <span class="filter-label">Price Range (₹)</span>
+                        <div class="filter-range">
+                            <input type="number" name="min_price" value="{{ min_price }}" class="filter-input" placeholder="Min">
+                            <input type="number" name="max_price" value="{{ max_price }}" class="filter-input" placeholder="Max">
+                        </div>
+                    </div>
+
+                    <div class="filter-group">
+                        <span class="filter-label">Duration (days)</span>
+                        <div class="filter-range">
+                            <input type="number" name="min_days" value="{{ min_days }}" class="filter-input" placeholder="Min">
+                            <input type="number" name="max_days" value="{{ max_days }}" class="filter-input" placeholder="Max">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="filter-apply">Apply Filters</button>
                 </form>
             </div>
         </div>
 
-        <div class="search-layout">
-
-            <!-- Filters sidebar -->
-            <div class="filters-panel">
-                <div class="filters-header">
-                    <span class="filters-title">🔧 Filters</span>
-                    <a href="{% url 'package_search' %}" class="filters-clear">Clear all</a>
+        <!-- RESULTS -->
+        <div>
+            <div class="results-header reveal">
+                <div class="results-count">
+                    <strong>{{ count }}</strong> package{{ count|pluralize }} found
+                    {% if q %}for "<strong>{{ q }}</strong>"{% endif %}
                 </div>
-                <div class="filters-body">
-                    <form method="get" action="{% url 'package_search' %}" id="filterForm">
-                        {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
-                        <input type="hidden" name="sort" value="{{ sort }}" id="sortHidden">
-
-                        <!-- Category -->
-                        <div class="filter-group">
-                            <span class="filter-label">Category</span>
-                            <div class="category-chips">
-                                <a href="?q={{ q }}&sort={{ sort }}"
-                                   class="cat-chip {% if not category %}active{% endif %}">All</a>
-                                {% for val, label in categories %}
-                                <a href="?q={{ q }}&category={{ val }}&sort={{ sort }}"
-                                   class="cat-chip {% if category == val %}active{% endif %}">
-                                    {{ label }}
-                                </a>
-                                {% endfor %}
-                            </div>
-                            {% if category %}<input type="hidden" name="category" value="{{ category }}">{% endif %}
-                        </div>
-
-                        <!-- Price range -->
-                        <div class="filter-group">
-                            <span class="filter-label">Price Range (₹)</span>
-                            <div class="filter-range">
-                                <input type="number" name="min_price" value="{{ min_price }}"
-                                       class="filter-input" placeholder="Min">
-                                <input type="number" name="max_price" value="{{ max_price }}"
-                                       class="filter-input" placeholder="Max">
-                            </div>
-                        </div>
-
-                        <!-- Duration -->
-                        <div class="filter-group">
-                            <span class="filter-label">Duration (days)</span>
-                            <div class="filter-range">
-                                <input type="number" name="min_days" value="{{ min_days }}"
-                                       class="filter-input" placeholder="Min">
-                                <input type="number" name="max_days" value="{{ max_days }}"
-                                       class="filter-input" placeholder="Max">
-                            </div>
-                        </div>
-
-                        <button type="submit" class="filter-apply">Apply Filters</button>
-                    </form>
-                </div>
+                <select class="sort-select" onchange="applySort(this.value)">
+                    <option value="popular"    {% if sort == 'popular'    %}selected{% endif %}>Most Popular</option>
+                    <option value="newest"     {% if sort == 'newest'     %}selected{% endif %}>Newest First</option>
+                    <option value="price_asc"  {% if sort == 'price_asc'  %}selected{% endif %}>Price: Low → High</option>
+                    <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: High → Low</option>
+                    <option value="duration"   {% if sort == 'duration'   %}selected{% endif %}>Shortest First</option>
+                </select>
             </div>
 
-            <!-- Results -->
-            <div>
-                <div class="results-header">
-                    <div class="results-count">
-                        <strong>{{ count }}</strong> package{{ count|pluralize }} found
-                        {% if q %}for "<strong>{{ q }}</strong>"{% endif %}
+            {% if packages %}
+            <div class="packages-grid">
+                {% for pkg in packages %}
+                <div class="pkg-card reveal" style="transition-delay: {{ forloop.counter0|add:'1' }}00ms">
+                    <div class="pkg-img">
+                        {% if pkg.image_url %}
+                        <img src="{{ pkg.image_url }}" alt="{{ pkg.title }}" onerror="this.style.display='none'">
+                        <div class="pkg-img-overlay"></div>
+                        {% endif %}
+                        <span class="pkg-img-emoji">
+                            {% if pkg.category == 'adventure' %}🏔️
+                            {% elif pkg.category == 'cultural' %}🏛️
+                            {% elif pkg.category == 'leisure' %}🌴
+                            {% elif pkg.category == 'romantic' %}💑
+                            {% elif pkg.category == 'family' %}👨‍👩‍👧
+                            {% elif pkg.category == 'luxury' %}✨
+                            {% elif pkg.category == 'solo' %}🎒
+                            {% else %}✈️{% endif %}
+                        </span>
+                        <div class="pkg-cat-tag">{{ pkg.get_category_display }}</div>
+                        <div class="pkg-agency-badge">🏢 {{ pkg.agency.name }}</div>
                     </div>
-                    <select class="sort-select" onchange="applySort(this.value)">
-                        <option value="popular"    {% if sort == 'popular'    %}selected{% endif %}>Most Popular</option>
-                        <option value="newest"     {% if sort == 'newest'     %}selected{% endif %}>Newest First</option>
-                        <option value="price_asc"  {% if sort == 'price_asc'  %}selected{% endif %}>Price: Low → High</option>
-                        <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Price: High → Low</option>
-                        <option value="duration"   {% if sort == 'duration'   %}selected{% endif %}>Shortest First</option>
-                    </select>
-                </div>
-
-                {% if packages %}
-                <div class="packages-grid">
-                    {% for pkg in packages %}
-                    <div class="pkg-card">
-                        <div class="pkg-img">
-                            {% if pkg.image_url %}
-                            <img src="{{ pkg.image_url }}" alt="{{ pkg.title }}"
-                                 onerror="this.style.display='none'">
-                            {% endif %}
-                            <span class="pkg-img-emoji">
-                                {% if pkg.category == 'adventure' %}🏔️
-                                {% elif pkg.category == 'cultural' %}🏛️
-                                {% elif pkg.category == 'leisure' %}🌴
-                                {% elif pkg.category == 'romantic' %}💑
-                                {% elif pkg.category == 'family' %}👨‍👩‍👧
-                                {% elif pkg.category == 'luxury' %}✨
-                                {% elif pkg.category == 'solo' %}🎒
-                                {% else %}✈️{% endif %}
-                            </span>
-                            <div class="pkg-agency-badge">🏢 {{ pkg.agency.name }}</div>
+                    <div class="pkg-body">
+                        <div class="pkg-title">{{ pkg.title }}</div>
+                        <div class="pkg-dest">📍 {{ pkg.destination }}</div>
+                        <div class="pkg-chips">
+                            <span class="pkg-chip">📅 {{ pkg.duration }} days</span>
+                            <span class="pkg-chip">⭐ {{ pkg.agency.rating }}</span>
                         </div>
-                        <div class="pkg-body">
-                            <div class="pkg-category">{{ pkg.get_category_display }}</div>
-                            <div class="pkg-title">{{ pkg.title }}</div>
-                            <div class="pkg-dest">📍 {{ pkg.destination }}</div>
-                            <div class="pkg-chips">
-                                <span class="pkg-chip">📅 {{ pkg.duration }} days</span>
-                                <span class="pkg-chip">⭐ {{ pkg.agency.rating }}</span>
+                        <div class="pkg-footer">
+                            <div>
+                                <div class="pkg-price">₹{{ pkg.price }}</div>
+                                <div class="pkg-price-sub">+ 5% GST per person</div>
                             </div>
-                            <div class="pkg-footer">
-                                <div>
-                                    <div class="pkg-price">₹{{ pkg.price }}</div>
-                                    <div class="pkg-price-sub">+ 5% GST per person</div>
-                                </div>
-                                <div class="pkg-actions">
-                                    {% if user.is_authenticated %}
-                                    <a href="{% url 'package_chat' pkg.id %}" class="pkg-btn pkg-btn-chat">💬 Chat</a>
-                                    <a href="{% url 'package_book' pkg.id %}" class="pkg-btn pkg-btn-book">Book Now</a>
-                                    {% else %}
-                                    <a href="{% url 'login' %}" class="pkg-btn pkg-btn-book">Login to Book</a>
-                                    {% endif %}
-                                </div>
+                            <div class="pkg-actions">
+                                {% if user.is_authenticated %}
+                                <a href="{% url 'package_chat' pkg.id %}" class="pkg-btn pkg-btn-chat">💬</a>
+                                <a href="{% url 'package_detail' pkg.id %}" class="pkg-btn pkg-btn-book">Book Now</a>
+                                {% else %}
+                                <a href="{% url 'login' %}" class="pkg-btn pkg-btn-book">Login to Book</a>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
-                {% else %}
-                <div class="packages-grid">
-                    <div class="empty-results">
-                        <div class="empty-results-icon">🔍</div>
-                        <div class="empty-results-title">No packages found</div>
-                        <div class="empty-results-desc">Try adjusting your filters or search term.</div>
-                    </div>
-                </div>
-                {% endif %}
+                {% endfor %}
             </div>
 
+            {% else %}
+            <div class="packages-grid">
+                <div class="empty-results reveal">
+                    <div class="empty-results-icon">🔍</div>
+                    <div class="empty-results-title">No packages found</div>
+                    <div class="empty-results-desc">Try adjusting your filters or search term.</div>
+                </div>
+            </div>
+            {% endif %}
         </div>
+
     </div>
 </div>
 {% endblock %}
@@ -524,5 +699,11 @@ function applySort(value) {
     document.getElementById('sortHidden').value = value;
     document.getElementById('filterForm').submit();
 }
+
+const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.06 });
+
+document.querySelectorAll('.reveal, .reveal-left').forEach(el => obs.observe(el));
 </script>
 {% endblock %}

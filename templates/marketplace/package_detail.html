@@ -3,31 +3,32 @@
 
 {% block extra_css %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600;700&display=swap');
-    body { font-family: 'Outfit', sans-serif; }
+    /* ════════════════════════════════════════════════════
+       PACKAGE DETAIL — Ocean Dark Theme (matches base.html)
+    ════════════════════════════════════════════════════ */
 
     .detail-page {
-        background: var(--cream);
-        min-height: calc(100vh - 68px);
+        min-height: calc(100vh - 72px);
         padding-bottom: 5rem;
     }
 
-    /* ── HERO ── */
+    /* ── Hero ─────────────────────────────────────────── */
     .pkg-hero {
         position: relative;
         height: 480px;
-        background: linear-gradient(135deg, var(--sea), #0a2240);
+        background: linear-gradient(135deg, var(--ocean-mid), var(--ocean-deep));
         overflow: hidden;
     }
 
     .pkg-hero-img {
-        width: 100%; height: 100%; object-fit: cover;
+        width: 100%; height: 100%;
+        object-fit: cover;
         position: absolute; inset: 0;
     }
 
     .pkg-hero-overlay {
         position: absolute; inset: 0;
-        background: linear-gradient(to bottom, rgba(13,17,23,0.15) 0%, rgba(13,17,23,0.7) 100%);
+        background: linear-gradient(to bottom, rgba(2,12,27,0.2) 0%, rgba(2,12,27,0.75) 100%);
     }
 
     .pkg-hero-content {
@@ -38,16 +39,20 @@
 
     .pkg-category-badge {
         display: inline-flex; align-items: center; gap: 0.35rem;
-        background: rgba(201,168,76,0.2); border: 1px solid rgba(201,168,76,0.4);
-        color: #e8c97a; padding: 0.3rem 0.875rem; border-radius: 100px;
-        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em;
+        background: rgba(245,158,11,0.15);
+        border: 1px solid rgba(245,158,11,0.35);
+        color: var(--gold-light);
+        padding: 0.3rem 0.875rem; border-radius: 100px;
+        font-size: 0.72rem; font-weight: 700; letter-spacing: 0.12em;
         text-transform: uppercase; margin-bottom: 0.875rem;
     }
 
     .pkg-hero-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 2.75rem; font-weight: 300; color: white;
+        font-family: var(--font-display);
+        font-size: 2.75rem; font-weight: 700;
+        color: var(--white);
         line-height: 1.15; margin-bottom: 0.75rem;
+        letter-spacing: 0.02em;
     }
 
     .pkg-hero-meta {
@@ -56,155 +61,188 @@
 
     .pkg-hero-chip {
         display: flex; align-items: center; gap: 0.35rem;
-        font-size: 0.875rem; color: rgba(255,255,255,0.8);
+        font-size: 0.875rem; color: rgba(255,255,255,0.75);
     }
 
-    /* Thumbnail gallery strip */
+    /* ── Gallery Strip ────────────────────────────────── */
     .pkg-gallery-strip {
         display: flex; gap: 0.5rem;
-        padding: 1rem 3rem;
-        background: var(--ink);
+        padding: 0.875rem 3rem;
+        background: rgba(2,12,27,0.8);
+        border-bottom: 1px solid rgba(56,189,248,0.1);
         overflow-x: auto;
+        scrollbar-width: none;
     }
+
+    .pkg-gallery-strip::-webkit-scrollbar { display: none; }
 
     .pkg-gallery-thumb {
         width: 80px; height: 60px; flex-shrink: 0;
         border-radius: 6px; overflow: hidden; cursor: pointer;
-        border: 2px solid transparent; transition: border-color 0.2s;
+        border: 2px solid transparent;
+        transition: border-color var(--transition), transform var(--transition);
     }
 
-    .pkg-gallery-thumb:hover, .pkg-gallery-thumb.active { border-color: var(--gold); }
-    .pkg-gallery-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .pkg-gallery-thumb:hover  { border-color: rgba(56,189,248,0.5); transform: scale(1.04); }
+    .pkg-gallery-thumb.active { border-color: var(--ocean-glow); }
+    .pkg-gallery-thumb img    { width: 100%; height: 100%; object-fit: cover; }
 
-    /* Lightbox */
+    /* ── Lightbox ─────────────────────────────────────── */
     .lightbox {
         display: none; position: fixed; inset: 0; z-index: 9000;
-        background: rgba(0,0,0,0.92); align-items: center; justify-content: center;
+        background: rgba(0,0,0,0.93);
+        align-items: center; justify-content: center;
     }
 
     .lightbox.open { display: flex; }
-    .lightbox-img { max-width: 90vw; max-height: 85vh; border-radius: 6px; object-fit: contain; }
+    .lightbox-img  { max-width: 90vw; max-height: 85vh; border-radius: 8px; object-fit: contain; }
 
     .lightbox-close {
         position: absolute; top: 1.5rem; right: 1.5rem;
         width: 40px; height: 40px; border-radius: 50%;
-        background: rgba(255,255,255,0.1); color: white; border: none;
-        font-size: 1.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+        background: rgba(255,255,255,0.1); color: var(--white); border: none;
+        font-size: 1.1rem; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background var(--transition);
     }
+
+    .lightbox-close:hover { background: rgba(255,255,255,0.2); }
 
     .lightbox-nav {
         position: absolute; top: 50%; transform: translateY(-50%);
         width: 44px; height: 44px; border-radius: 50%;
-        background: rgba(255,255,255,0.1); color: white; border: none;
-        font-size: 1.25rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
-        transition: background 0.2s;
+        background: rgba(255,255,255,0.1); color: var(--white); border: none;
+        font-size: 1.4rem; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        transition: background var(--transition);
     }
 
-    .lightbox-nav:hover { background: rgba(255,255,255,0.2); }
+    .lightbox-nav:hover  { background: rgba(56,189,248,0.25); }
     .lightbox-prev { left: 1.5rem; }
     .lightbox-next { right: 1.5rem; }
 
-    /* ── BODY LAYOUT ── */
+    /* ── Body Layout ──────────────────────────────────── */
     .detail-body {
-        max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 0;
-        display: grid; grid-template-columns: 1fr 360px; gap: 2rem; align-items: start;
+        max-width: 1200px; margin: 0 auto;
+        padding: 2.5rem 2rem 0;
+        display: grid;
+        grid-template-columns: 1fr 360px;
+        gap: 2rem; align-items: start;
     }
 
-    /* ── LEFT CONTENT ── */
+    /* ── Content Sections ─────────────────────────────── */
     .detail-section {
-        background: white; border-radius: 12px;
-        box-shadow: var(--shadow); overflow: hidden; margin-bottom: 1.5rem;
+        background: rgba(10,37,64,0.5);
+        border: 1px solid rgba(56,189,248,0.1);
+        border-radius: 16px;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        overflow: hidden;
+        margin-bottom: 1.5rem;
     }
 
     .detail-section-header {
-        padding: 1.25rem 1.75rem; border-bottom: 1px solid var(--cream-dark);
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.25rem; font-weight: 600; color: var(--ink);
+        padding: 1.1rem 1.75rem;
+        border-bottom: 1px solid rgba(56,189,248,0.08);
+        font-family: var(--font-display);
+        font-size: 1.15rem; font-weight: 700;
+        color: var(--white);
         display: flex; align-items: center; gap: 0.75rem;
+        background: rgba(2,12,27,0.3);
     }
 
     .detail-section-header::before {
-        content: ''; width: 4px; height: 22px; background: var(--gold);
+        content: ''; width: 4px; height: 18px;
+        background: var(--ocean-glow);
         border-radius: 2px; flex-shrink: 0;
     }
 
     .detail-section-body { padding: 1.75rem; }
 
     .detail-desc {
-        font-size: 0.9375rem; color: var(--ink); line-height: 1.8;
+        font-size: 0.9375rem;
+        color: rgba(255,255,255,0.65);
+        line-height: 1.85;
         white-space: pre-wrap;
     }
 
+    /* ── Inclusions ───────────────────────────────────── */
     .inclusions-list {
-        list-style: none; display: flex; flex-wrap: wrap; gap: 0.5rem;
+        list-style: none;
+        display: flex; flex-wrap: wrap; gap: 0.5rem;
     }
 
     .inclusion-chip {
         display: flex; align-items: center; gap: 0.35rem;
-        background: rgba(39,174,96,0.08); border: 1px solid rgba(39,174,96,0.2);
-        color: #1e8449; border-radius: 100px;
-        padding: 0.3rem 0.875rem; font-size: 0.8rem; font-weight: 500;
+        background: rgba(52,211,153,0.08);
+        border: 1px solid rgba(52,211,153,0.2);
+        color: #34d399;
+        border-radius: 100px;
+        padding: 0.3rem 0.875rem;
+        font-size: 0.8rem; font-weight: 500;
     }
 
-    /* ── REVIEWS ── */
+    /* ── Reviews ──────────────────────────────────────── */
     .rating-summary {
         display: flex; align-items: center; gap: 2rem;
-        padding: 1.5rem 1.75rem; border-bottom: 1px solid var(--cream-dark);
+        padding: 1.5rem 1.75rem;
+        border-bottom: 1px solid rgba(56,189,248,0.08);
     }
 
-    .rating-big {
-        text-align: center; flex-shrink: 0;
-    }
+    .rating-big { text-align: center; flex-shrink: 0; }
 
     .rating-big-num {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 3.5rem; font-weight: 600; color: var(--sea); line-height: 1;
+        font-family: var(--font-display);
+        font-size: 3.5rem; font-weight: 700;
+        color: var(--ocean-glow); line-height: 1;
     }
 
-    .rating-stars { font-size: 1.25rem; letter-spacing: 2px; color: var(--gold); margin: 0.25rem 0; }
-    .rating-count { font-size: 0.75rem; color: var(--muted); }
+    .rating-stars { font-size: 1.1rem; letter-spacing: 2px; color: var(--gold); margin: 0.25rem 0; }
+    .rating-count { font-size: 0.75rem; color: rgba(255,255,255,0.35); }
 
     .review-list { display: flex; flex-direction: column; }
 
     .review-item {
-        padding: 1.5rem 1.75rem; border-bottom: 1px solid var(--cream-dark);
+        padding: 1.5rem 1.75rem;
+        border-bottom: 1px solid rgba(56,189,248,0.07);
     }
 
     .review-item:last-child { border-bottom: none; }
 
     .review-header {
         display: flex; align-items: center; justify-content: space-between;
-        margin-bottom: 0.625rem;
+        margin-bottom: 0.75rem;
     }
 
-    .review-user {
-        display: flex; align-items: center; gap: 0.75rem;
-    }
+    .review-user { display: flex; align-items: center; gap: 0.75rem; }
 
     .review-avatar {
         width: 38px; height: 38px; border-radius: 50%;
-        background: linear-gradient(135deg, var(--sea), #1a4f82);
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
         display: grid; place-items: center;
-        font-size: 0.875rem; font-weight: 700; color: white; flex-shrink: 0;
+        font-size: 0.875rem; font-weight: 700;
+        color: var(--white); flex-shrink: 0;
     }
 
-    .review-username { font-weight: 600; font-size: 0.9rem; color: var(--ink); }
-    .review-date     { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+    .review-username { font-weight: 600; font-size: 0.9rem; color: var(--white); }
+    .review-date     { font-size: 0.72rem; color: rgba(255,255,255,0.35); margin-top: 0.1rem; }
+    .review-stars    { font-size: 0.875rem; color: var(--gold); letter-spacing: 1px; }
+    .review-title    { font-weight: 600; font-size: 0.9375rem; color: rgba(255,255,255,0.9); margin-bottom: 0.35rem; }
+    .review-body     { font-size: 0.875rem; color: rgba(255,255,255,0.5); line-height: 1.75; }
 
-    .review-stars { font-size: 0.875rem; color: var(--gold); letter-spacing: 1px; }
-
-    .review-title { font-weight: 600; font-size: 0.9375rem; color: var(--ink); margin-bottom: 0.35rem; }
-    .review-body  { font-size: 0.875rem; color: #4a5568; line-height: 1.7; }
-
-    /* Review form */
-    .review-form-wrap { padding: 1.75rem; background: var(--cream); border-top: 1px solid var(--cream-dark); }
+    /* ── Review Form ──────────────────────────────────── */
+    .review-form-wrap {
+        padding: 1.75rem;
+        background: rgba(2,12,27,0.3);
+        border-top: 1px solid rgba(56,189,248,0.08);
+    }
 
     .review-form-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.25rem; font-weight: 600; color: var(--ink); margin-bottom: 1.25rem;
+        font-family: var(--font-display);
+        font-size: 1.1rem; font-weight: 700;
+        color: var(--white); margin-bottom: 1.25rem;
     }
 
-    /* Star rating picker */
     .star-picker {
         display: flex; flex-direction: row-reverse; gap: 0.25rem;
         margin-bottom: 1.25rem;
@@ -213,7 +251,8 @@
     .star-picker input { display: none; }
 
     .star-picker label {
-        font-size: 2rem; cursor: pointer; color: var(--cream-dark);
+        font-size: 2rem; cursor: pointer;
+        color: rgba(255,255,255,0.15);
         transition: color 0.15s;
     }
 
@@ -221,52 +260,78 @@
     .star-picker label:hover,
     .star-picker label:hover ~ label { color: var(--gold); }
 
-    .field-input-review, .field-textarea-review {
-        width: 100%; padding: 0.75rem 1rem;
-        border: 1.5px solid var(--cream-dark); border-radius: var(--radius);
-        font-family: 'Outfit', sans-serif; font-size: 0.9375rem;
-        color: var(--ink); background: white; outline: none;
-        transition: all 0.2s; box-sizing: border-box;
+    .field-input-review,
+    .field-textarea-review {
+        width: 100%;
+        padding: 0.75rem 1rem;
+        border: 1px solid rgba(56,189,248,0.15);
+        border-radius: 8px;
+        font-family: var(--font-body);
+        font-size: 0.9375rem;
+        color: var(--white);
+        background: rgba(2,12,27,0.5);
+        outline: none;
+        transition: all var(--transition);
+        box-sizing: border-box;
     }
 
-    .field-input-review:focus, .field-textarea-review:focus {
-        border-color: var(--sea); box-shadow: 0 0 0 3px rgba(15,52,96,0.08);
+    .field-input-review::placeholder,
+    .field-textarea-review::placeholder { color: rgba(255,255,255,0.2); }
+
+    .field-input-review:focus,
+    .field-textarea-review:focus {
+        border-color: var(--ocean-glow);
+        background: rgba(14,77,146,0.2);
+        box-shadow: 0 0 0 3px rgba(56,189,248,0.1);
     }
 
-    .field-textarea-review { resize: vertical; min-height: 100px; line-height: 1.6; }
+    .field-textarea-review { resize: vertical; min-height: 100px; line-height: 1.65; }
 
-    /* ── SIDEBAR BOOKING CARD ── */
+    /* ── Sidebar Booking Card ─────────────────────────── */
     .booking-card {
-        background: white; border-radius: 12px; box-shadow: var(--shadow);
-        overflow: hidden; position: sticky; top: 88px;
+        background: rgba(10,37,64,0.6);
+        border: 1px solid rgba(56,189,248,0.15);
+        border-radius: 16px;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        overflow: hidden;
+        position: sticky; top: 88px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4);
     }
 
     .booking-card-header {
-        background: linear-gradient(135deg, var(--sea), #0a2240);
-        padding: 1.5rem 1.75rem; position: relative; overflow: hidden;
+        background: linear-gradient(135deg, var(--ocean-mid), var(--ocean-deep));
+        padding: 1.5rem 1.75rem;
+        position: relative; overflow: hidden;
+        border-bottom: 1px solid rgba(56,189,248,0.12);
     }
 
     .booking-card-header::before {
-        content: ''; position: absolute; inset: 0;
+        content: '';
+        position: absolute; inset: 0;
         background-image:
-            linear-gradient(rgba(201,168,76,0.07) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(201,168,76,0.07) 1px, transparent 1px);
+            linear-gradient(rgba(56,189,248,0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(56,189,248,0.05) 1px, transparent 1px);
         background-size: 24px 24px;
+        pointer-events: none;
     }
 
     .booking-price-label {
-        font-size: 0.62rem; font-weight: 700; letter-spacing: 0.12em;
-        text-transform: uppercase; color: rgba(255,255,255,0.55); margin-bottom: 0.35rem;
+        font-size: 0.62rem; font-weight: 700;
+        letter-spacing: 0.14em; text-transform: uppercase;
+        color: rgba(255,255,255,0.45);
+        margin-bottom: 0.35rem;
         position: relative; z-index: 1;
     }
 
     .booking-price {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 2.5rem; font-weight: 600; color: white; line-height: 1;
+        font-family: var(--font-display);
+        font-size: 2.5rem; font-weight: 700;
+        color: var(--white); line-height: 1;
         position: relative; z-index: 1;
     }
 
-    .booking-price span { font-size: 1rem; color: rgba(255,255,255,0.6); }
+    .booking-price span { font-size: 1rem; color: rgba(255,255,255,0.5); }
 
     .booking-card-body { padding: 1.5rem 1.75rem; }
 
@@ -277,65 +342,119 @@
         font-size: 0.875rem;
     }
 
-    .booking-line-label { color: var(--muted); }
-    .booking-line-val   { font-weight: 600; color: var(--ink); }
+    .booking-line-label { color: rgba(255,255,255,0.4); }
+    .booking-line-val   { font-weight: 600; color: rgba(255,255,255,0.85); }
 
     .booking-total-line {
         display: flex; align-items: center; justify-content: space-between;
-        padding-top: 0.875rem; border-top: 1.5px solid var(--cream-dark);
+        padding-top: 0.875rem;
+        border-top: 1px solid rgba(56,189,248,0.12);
         font-size: 1rem; font-weight: 700;
+        color: rgba(255,255,255,0.85);
     }
 
     .booking-total-val {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.5rem; font-weight: 600; color: var(--sea);
+        font-family: var(--font-display);
+        font-size: 1.5rem; font-weight: 700;
+        color: var(--ocean-glow);
     }
 
     .booking-actions { display: flex; flex-direction: column; gap: 0.625rem; }
 
     .booking-btn-primary {
-        width: 100%; padding: 0.9rem; background: var(--sea); color: white;
-        border: none; border-radius: var(--radius); font-family: 'Outfit', sans-serif;
-        font-size: 0.9375rem; font-weight: 700; cursor: pointer;
-        transition: all 0.2s; text-align: center; text-decoration: none;
-        display: block;
+        width: 100%; padding: 0.9rem;
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        color: var(--white);
+        border: none; border-radius: 100px;
+        font-family: var(--font-body);
+        font-size: 0.9375rem; font-weight: 700;
+        cursor: pointer; transition: all var(--transition);
+        text-align: center; text-decoration: none;
+        display: block; letter-spacing: 0.04em;
+        box-shadow: 0 4px 20px rgba(14,77,146,0.35);
     }
 
-    .booking-btn-primary:hover { background: #0a2240; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(15,52,96,0.3); }
+    .booking-btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 36px rgba(56,189,248,0.4);
+    }
 
     .booking-btn-secondary {
-        width: 100%; padding: 0.75rem; background: transparent;
-        color: var(--sea); border: 1.5px solid var(--sea);
-        border-radius: var(--radius); font-family: 'Outfit', sans-serif;
-        font-size: 0.875rem; font-weight: 600; cursor: pointer;
-        transition: all 0.2s; text-align: center; text-decoration: none;
+        width: 100%; padding: 0.75rem;
+        background: rgba(56,189,248,0.06);
+        color: var(--ocean-glow);
+        border: 1px solid rgba(56,189,248,0.25);
+        border-radius: 100px;
+        font-family: var(--font-body);
+        font-size: 0.875rem; font-weight: 600;
+        cursor: pointer; transition: all var(--transition);
+        text-align: center; text-decoration: none;
         display: block;
     }
 
-    .booking-btn-secondary:hover { background: rgba(15,52,96,0.06); }
-
-    .booking-card-footer {
-        padding: 1rem 1.75rem; background: var(--cream);
-        border-top: 1px solid var(--cream-dark);
-        font-size: 0.75rem; color: var(--muted); text-align: center;
-        line-height: 1.6;
+    .booking-btn-secondary:hover {
+        background: rgba(56,189,248,0.12);
+        border-color: var(--ocean-glow);
+        transform: translateY(-1px);
     }
 
-    /* Agency strip */
     .agency-strip {
         display: flex; align-items: center; gap: 1rem;
-        padding: 1rem 1.75rem; border-top: 1px solid var(--cream-dark);
+        padding: 1rem 1.75rem;
+        border-top: 1px solid rgba(56,189,248,0.08);
     }
 
     .agency-strip-avatar {
         width: 42px; height: 42px; border-radius: 10px;
-        background: linear-gradient(135deg, var(--sea), #0a2240);
-        display: grid; place-items: center; font-size: 1.1rem; flex-shrink: 0;
+        background: rgba(56,189,248,0.1);
+        border: 1px solid rgba(56,189,248,0.2);
+        display: grid; place-items: center;
+        font-size: 1.1rem; flex-shrink: 0;
     }
 
-    .agency-strip-name { font-size: 0.875rem; font-weight: 600; color: var(--ink); }
-    .agency-strip-loc  { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+    .agency-strip-name { font-size: 0.875rem; font-weight: 600; color: var(--white); }
+    .agency-strip-loc  { font-size: 0.72rem; color: rgba(255,255,255,0.35); margin-top: 0.1rem; }
 
+    .booking-card-footer {
+        padding: 1rem 1.75rem;
+        background: rgba(2,12,27,0.3);
+        border-top: 1px solid rgba(56,189,248,0.08);
+        font-size: 0.75rem;
+        color: rgba(255,255,255,0.3);
+        text-align: center; line-height: 1.6;
+    }
+
+    /* ── Review state messages ────────────────────────── */
+    .review-state-msg {
+        padding: 1.1rem 1.75rem;
+        border-top: 1px solid rgba(56,189,248,0.08);
+        text-align: center;
+        font-size: 0.875rem;
+    }
+
+    .review-state-msg.success { background: rgba(52,211,153,0.06); color: #34d399; }
+    .review-state-msg.muted   { background: rgba(2,12,27,0.3); color: rgba(255,255,255,0.35); }
+    .review-state-msg.muted a { color: var(--ocean-glow); font-weight: 600; text-decoration: none; }
+    .review-state-msg.muted a:hover { color: var(--white); }
+
+    /* ── Empty state ──────────────────────────────────── */
+    .empty-reviews {
+        padding: 2rem 1.75rem;
+        text-align: center;
+        color: rgba(255,255,255,0.3);
+    }
+
+    .empty-reviews .empty-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+    /* ── Field labels in review form ──────────────────── */
+    .review-field-label {
+        font-size: 0.68rem; font-weight: 700;
+        letter-spacing: 0.12em; text-transform: uppercase;
+        color: rgba(255,255,255,0.45);
+        display: block; margin-bottom: 0.4rem;
+    }
+
+    /* ── Responsive ───────────────────────────────────── */
     @media (max-width: 900px) {
         .detail-body { grid-template-columns: 1fr; }
         .booking-card { position: static; }
@@ -351,19 +470,24 @@
 {% block content %}
 <div class="detail-page">
 
-    <!-- HERO -->
+    <!-- ── Hero ──────────────────────────────────────── -->
     <div class="pkg-hero" id="mainHero">
         {% if package.images.first %}
             <img src="{{ package.images.first.get_url }}" alt="{{ package.title }}"
                  class="pkg-hero-img" id="heroImg">
         {% elif package.image_url %}
-            <img src="{{ package.image_url }}" alt="{{ package.title }}" class="pkg-hero-img" id="heroImg">
+            <img src="{{ package.image_url }}" alt="{{ package.title }}"
+                 class="pkg-hero-img" id="heroImg">
         {% else %}
-            <div style="position:absolute; inset:0; display:grid; place-items:center; font-size:5rem; opacity:0.3;">
-                {% if package.category == 'adventure' %}🏔️{% elif package.category == 'cultural' %}🏛️
-                {% elif package.category == 'leisure' %}🌴{% elif package.category == 'romantic' %}💑
-                {% elif package.category == 'family' %}👨‍👩‍👧{% elif package.category == 'luxury' %}✨
-                {% elif package.category == 'solo' %}🎒{% else %}✈️{% endif %}
+            <div style="position:absolute;inset:0;display:grid;place-items:center;font-size:5rem;opacity:0.2;">
+                {% if package.category == 'adventure' %}🏔️
+                {% elif package.category == 'cultural' %}🏛️
+                {% elif package.category == 'leisure' %}🌴
+                {% elif package.category == 'romantic' %}💑
+                {% elif package.category == 'family' %}👨‍👩‍👧
+                {% elif package.category == 'luxury' %}✨
+                {% elif package.category == 'solo' %}🎒
+                {% else %}✈️{% endif %}
             </div>
         {% endif %}
         <div class="pkg-hero-overlay"></div>
@@ -381,7 +505,7 @@
         </div>
     </div>
 
-    <!-- GALLERY STRIP -->
+    <!-- ── Gallery Strip ─────────────────────────────── -->
     {% if images %}
     <div class="pkg-gallery-strip">
         {% for img in images %}
@@ -394,10 +518,10 @@
     </div>
     {% endif %}
 
-    <!-- BODY -->
+    <!-- ── Body ──────────────────────────────────────── -->
     <div class="detail-body">
 
-        <!-- LEFT -->
+        <!-- LEFT col -->
         <div>
 
             <!-- Description -->
@@ -429,7 +553,9 @@
                 <div class="detail-section-header">
                     Reviews
                     {% if review_count %}
-                    <span style="font-family:'Outfit',sans-serif; font-size:0.8rem; font-weight:400; color:var(--muted); margin-left:auto;">{{ review_count }} review{{ review_count|pluralize }}</span>
+                    <span style="font-family:var(--font-body);font-size:0.78rem;font-weight:400;color:rgba(255,255,255,0.35);margin-left:auto;">
+                        {{ review_count }} review{{ review_count|pluralize }}
+                    </span>
                     {% endif %}
                 </div>
 
@@ -472,23 +598,23 @@
                     </div>
                     {% endfor %}
                 </div>
+
                 {% else %}
-                <div style="padding:2rem 1.75rem; text-align:center; color:var(--muted);">
-                    <div style="font-size:2rem; margin-bottom:0.5rem;">💬</div>
+                <div class="empty-reviews">
+                    <div class="empty-icon">💬</div>
                     <p>No reviews yet. Book this package to leave the first review!</p>
                 </div>
                 {% endif %}
 
-                <!-- Write a review -->
+                <!-- Review write / state -->
                 {% if can_review %}
                 <div class="review-form-wrap">
                     <div class="review-form-title">Write a Review</div>
                     <form method="post">
                         {% csrf_token %}
 
-                        <!-- Star picker -->
                         <div style="margin-bottom:1rem;">
-                            <div style="font-size:0.68rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); margin-bottom:0.5rem;">Your Rating</div>
+                            <span class="review-field-label">Your Rating</span>
                             <div class="star-picker">
                                 {% for i in "54321" %}
                                 <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}"
@@ -499,9 +625,7 @@
                         </div>
 
                         <div style="margin-bottom:0.875rem;">
-                            <label style="font-size:0.68rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:0.4rem;">
-                                Headline
-                            </label>
+                            <span class="review-field-label">Headline</span>
                             <input type="text" name="title"
                                    value="{{ review_form.title.value|default:'' }}"
                                    placeholder="Summarise your experience"
@@ -509,9 +633,7 @@
                         </div>
 
                         <div style="margin-bottom:1.25rem;">
-                            <label style="font-size:0.68rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:0.4rem;">
-                                Your Review <span style="color:#e74c3c;">*</span>
-                            </label>
+                            <span class="review-field-label">Your Review <span style="color:#f87171;">*</span></span>
                             <textarea name="body" rows="4" required
                                       placeholder="Tell others what you loved about this experience..."
                                       class="field-textarea-review">{{ review_form.body.value|default:'' }}</textarea>
@@ -522,25 +644,28 @@
                         </button>
                     </form>
                 </div>
+
                 {% elif already_reviewed %}
-                <div style="padding:1.25rem 1.75rem; background:rgba(39,174,96,0.04); border-top:1px solid var(--cream-dark); text-align:center; font-size:0.875rem; color:#27ae60;">
+                <div class="review-state-msg success">
                     ✅ You've already reviewed this package. Thank you!
                 </div>
+
                 {% elif user.is_authenticated %}
-                <div style="padding:1.25rem 1.75rem; background:var(--cream); border-top:1px solid var(--cream-dark); text-align:center; font-size:0.875rem; color:var(--muted);">
+                <div class="review-state-msg muted">
                     🔒 Only verified travellers who booked this package can leave a review.
                 </div>
+
                 {% else %}
-                <div style="padding:1.25rem 1.75rem; background:var(--cream); border-top:1px solid var(--cream-dark); text-align:center; font-size:0.875rem; color:var(--muted);">
-                    <a href="{% url 'login' %}" style="color:var(--sea); font-weight:600;">Login</a> to leave a review after booking.
+                <div class="review-state-msg muted">
+                    <a href="{% url 'login' %}">Login</a> to leave a review after booking.
                 </div>
                 {% endif %}
 
-            </div>
+            </div><!-- /detail-section reviews -->
 
-        </div>
+        </div><!-- /left col -->
 
-        <!-- SIDEBAR -->
+        <!-- ── Sidebar ────────────────────────────────── -->
         <div>
             <div class="booking-card">
                 <div class="booking-card-header">
@@ -595,21 +720,21 @@
             </div>
         </div>
 
-    </div>
-</div>
+    </div><!-- /detail-body -->
+</div><!-- /detail-page -->
 
-<!-- LIGHTBOX -->
+<!-- ── Lightbox ───────────────────────────────────────── -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox(event)">
     <button class="lightbox-close" onclick="closeLightbox()">✕</button>
-    <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1); event.stopPropagation();">‹</button>
+    <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1);event.stopPropagation()">‹</button>
     <img src="" alt="" class="lightbox-img" id="lightboxImg">
-    <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1); event.stopPropagation();">›</button>
+    <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1);event.stopPropagation()">›</button>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // ── Gallery / hero ──
+    /* ── Gallery / hero swap ── */
     const galleryImages = [
         {% for img in images %}'{{ img.get_url }}'{% if not forloop.last %},{% endif %}{% endfor %}
         {% if not images %}{% if package.image_url %}'{{ package.image_url }}'{% endif %}{% endif %}
@@ -618,13 +743,14 @@
     let currentIdx = 0;
 
     function setHeroImage(url, thumb) {
-        document.getElementById('heroImg') && (document.getElementById('heroImg').src = url);
+        const heroImg = document.getElementById('heroImg');
+        if (heroImg) heroImg.src = url;
         document.querySelectorAll('.pkg-gallery-thumb').forEach(t => t.classList.remove('active'));
-        thumb && thumb.classList.add('active');
+        if (thumb) thumb.classList.add('active');
         currentIdx = galleryImages.indexOf(url);
     }
 
-    // Click gallery thumbs to open lightbox
+    /* Double-click thumbnail → lightbox */
     document.querySelectorAll('.pkg-gallery-thumb').forEach((el, i) => {
         el.addEventListener('dblclick', () => openLightbox(i));
     });
@@ -644,6 +770,7 @@
     }
 
     function lightboxNav(dir) {
+        if (!galleryImages.length) return;
         currentIdx = (currentIdx + dir + galleryImages.length) % galleryImages.length;
         document.getElementById('lightboxImg').src = galleryImages[currentIdx];
     }
@@ -652,14 +779,7 @@
         if (!document.getElementById('lightbox').classList.contains('open')) return;
         if (e.key === 'ArrowRight') lightboxNav(1);
         if (e.key === 'ArrowLeft')  lightboxNav(-1);
-        if (e.key === 'Escape')     closeLightbox({target: document.getElementById('lightbox')});
-    });
-
-    // ── Star picker: update hidden input ──
-    document.querySelectorAll('.star-picker input').forEach(inp => {
-        inp.addEventListener('change', () => {
-            // value is already the radio value, Django reads it directly
-        });
+        if (e.key === 'Escape')     closeLightbox({ target: document.getElementById('lightbox') });
     });
 </script>
 {% endblock %}

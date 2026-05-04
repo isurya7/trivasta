@@ -3,64 +3,129 @@
 
 {% block extra_css %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Syne:wght@300;400;500;600;700;800&display=swap');
 
-    body { font-family: 'Outfit', sans-serif; }
-
+    /* ── BASE OVERRIDES ── */
     .agency-dash {
-        background: var(--cream);
-        min-height: calc(100vh - 68px);
-        padding: 2.5rem 0 5rem;
+        background: var(--ocean-deep);
+        min-height: calc(100vh - 72px);
+        padding: 2.5rem 0 6rem;
+        position: relative;
+    }
+
+    .agency-dash::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background:
+            radial-gradient(ellipse 80% 60% at 20% -10%, rgba(14,77,146,0.45) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 50% at 90% 110%, rgba(56,189,248,0.12) 0%, transparent 55%);
+        pointer-events: none;
+        z-index: 0;
     }
 
     .agency-dash-container {
-        max-width: 1200px;
+        max-width: 1240px;
         margin: 0 auto;
         padding: 0 2rem;
+        position: relative;
+        z-index: 1;
     }
 
     /* ── BANNER ── */
     .agency-banner {
-        background: linear-gradient(135deg, var(--sea) 0%, #0a2240 100%);
-        border-radius: 16px;
+        background: rgba(10,37,64,0.6);
+        border: 1px solid rgba(56,189,248,0.15);
+        border-radius: 24px;
         padding: 2.5rem 3rem;
-        margin-bottom: 2rem;
+        margin-bottom: 1.75rem;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 2rem;
         position: relative;
         overflow: hidden;
+        backdrop-filter: blur(20px);
     }
 
     .agency-banner::before {
         content: '';
         position: absolute; inset: 0;
         background-image:
-            linear-gradient(rgba(201,168,76,0.06) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(201,168,76,0.06) 1px, transparent 1px);
-        background-size: 40px 40px;
+            linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
+        background-size: 48px 48px;
+        pointer-events: none;
+    }
+
+    .agency-banner::after {
+        content: '';
+        position: absolute;
+        top: -80px; right: -80px;
+        width: 300px; height: 300px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(56,189,248,0.08), transparent 70%);
+        pointer-events: none;
     }
 
     .agency-banner-text { position: relative; z-index: 1; }
-    .agency-banner-label { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #e8c97a; margin-bottom: 0.4rem; }
 
-    .agency-banner-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 2rem; font-weight: 300; color: white; line-height: 1.15;
+    .agency-banner-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--ocean-glow);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
     }
 
-    .agency-banner-title em { font-style: italic; color: #e8c97a; }
-    .agency-banner-sub { font-size: 0.875rem; color: rgba(255,255,255,0.5); margin-top: 0.4rem; }
+    .agency-banner-label::before {
+        content: '';
+        width: 28px; height: 1.5px;
+        background: var(--ocean-glow);
+        display: inline-block;
+    }
+
+    .agency-banner-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2.2rem;
+        font-weight: 300;
+        color: var(--white);
+        line-height: 1.1;
+    }
+
+    .agency-banner-title em {
+        font-style: italic;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--ocean-glow), var(--gold-light));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .agency-banner-sub {
+        font-size: 0.825rem;
+        color: rgba(255,255,255,0.38);
+        margin-top: 0.5rem;
+        font-family: 'Syne', sans-serif;
+    }
 
     .agency-banner-actions {
-        display: flex; gap: 0.75rem; flex-shrink: 0;
-        position: relative; z-index: 1; flex-wrap: wrap; justify-content: flex-end;
+        display: flex;
+        gap: 0.625rem;
+        flex-shrink: 0;
+        position: relative;
+        z-index: 1;
+        flex-wrap: wrap;
+        justify-content: flex-end;
     }
 
     /* ── KYC NOTICE BANNERS ── */
     .kyc-notice {
-        border-radius: 12px;
+        border-radius: 16px;
         padding: 1.1rem 1.5rem;
         margin-bottom: 1.5rem;
         display: flex;
@@ -68,386 +133,733 @@
         justify-content: space-between;
         gap: 1rem;
         flex-wrap: wrap;
+        backdrop-filter: blur(16px);
     }
 
     .kyc-notice-left {
         display: flex;
         align-items: center;
-        gap: 0.875rem;
+        gap: 1rem;
     }
 
-    .kyc-notice-icon { font-size: 1.375rem; flex-shrink: 0; }
+    .kyc-notice-icon {
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        width: 42px; height: 42px;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+    }
 
     .kyc-notice-title {
-        font-weight: 700;
-        font-size: 0.9rem;
-        margin-bottom: 0.15rem;
+        font-weight: 600;
+        font-size: 0.875rem;
+        margin-bottom: 0.2rem;
+        font-family: 'Syne', sans-serif;
     }
 
     .kyc-notice-sub {
-        font-size: 0.8rem;
-        color: #7a7060;
-        line-height: 1.4;
+        font-size: 0.775rem;
+        opacity: 0.65;
+        line-height: 1.5;
     }
 
     .kyc-notice-btn {
-        padding: 0.6rem 1.25rem;
-        border-radius: 8px;
-        font-size: 0.875rem;
-        font-weight: 600;
+        padding: 0.55rem 1.25rem;
+        border-radius: 100px;
+        font-size: 0.8rem;
+        font-weight: 700;
         text-decoration: none;
         white-space: nowrap;
         flex-shrink: 0;
         display: inline-flex;
         align-items: center;
         gap: 0.4rem;
-        transition: all 0.2s;
+        font-family: 'Syne', sans-serif;
+        letter-spacing: 0.04em;
+        transition: all 0.25s;
     }
 
     .kyc-notice.warn {
-        background: #fffbeb;
-        border: 1px solid #fde68a;
-        border-left: 4px solid #f59e0b;
+        background: rgba(245,158,11,0.08);
+        border: 1px solid rgba(245,158,11,0.2);
+        border-left: 3px solid #f59e0b;
     }
-    .kyc-notice.warn .kyc-notice-title { color: #92400e; }
-    .kyc-notice.warn .kyc-notice-btn { background: #f59e0b; color: white; }
-    .kyc-notice.warn .kyc-notice-btn:hover { background: #d97706; }
+    .kyc-notice.warn .kyc-notice-icon { background: rgba(245,158,11,0.12); }
+    .kyc-notice.warn .kyc-notice-title { color: #fcd34d; }
+    .kyc-notice.warn .kyc-notice-sub { color: rgba(252,211,77,0.7); }
+    .kyc-notice.warn .kyc-notice-btn { background: linear-gradient(135deg, #d97706, #fcd34d); color: var(--ocean-deep); }
+    .kyc-notice.warn .kyc-notice-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(245,158,11,0.4); }
 
     .kyc-notice.info {
-        background: #eff6ff;
-        border: 1px solid #bfdbfe;
-        border-left: 4px solid #3b82f6;
+        background: rgba(56,189,248,0.06);
+        border: 1px solid rgba(56,189,248,0.18);
+        border-left: 3px solid var(--ocean-glow);
     }
-    .kyc-notice.info .kyc-notice-title { color: #1d4ed8; }
+    .kyc-notice.info .kyc-notice-icon { background: rgba(56,189,248,0.1); }
+    .kyc-notice.info .kyc-notice-title { color: var(--ocean-glow); }
+    .kyc-notice.info .kyc-notice-sub { color: rgba(56,189,248,0.65); }
+    .kyc-notice.info .kyc-notice-btn { background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light)); color: white; }
+    .kyc-notice.info .kyc-notice-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(56,189,248,0.35); }
 
     .kyc-notice.err {
-        background: #fef2f2;
-        border: 1px solid #fecaca;
-        border-left: 4px solid #ef4444;
+        background: rgba(248,113,113,0.06);
+        border: 1px solid rgba(248,113,113,0.2);
+        border-left: 3px solid #f87171;
     }
-    .kyc-notice.err .kyc-notice-title { color: #991b1b; }
-    .kyc-notice.err .kyc-notice-btn { background: #ef4444; color: white; }
-    .kyc-notice.err .kyc-notice-btn:hover { background: #dc2626; }
+    .kyc-notice.err .kyc-notice-icon { background: rgba(248,113,113,0.1); }
+    .kyc-notice.err .kyc-notice-title { color: #fca5a5; }
+    .kyc-notice.err .kyc-notice-sub { color: rgba(252,165,165,0.65); }
+    .kyc-notice.err .kyc-notice-btn { background: linear-gradient(135deg, #ef4444, #f87171); color: white; }
+    .kyc-notice.err .kyc-notice-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(239,68,68,0.35); }
 
     .kyc-notice.ok {
-        background: #f0fdf4;
-        border: 1px solid #bbf7d0;
-        border-left: 4px solid #10b981;
+        background: rgba(52,211,153,0.06);
+        border: 1px solid rgba(52,211,153,0.2);
+        border-left: 3px solid #34d399;
     }
-    .kyc-notice.ok .kyc-notice-title { color: #166534; }
-    .kyc-notice.ok .kyc-notice-btn { background: #10b981; color: white; }
-    .kyc-notice.ok .kyc-notice-btn:hover { background: #059669; }
+    .kyc-notice.ok .kyc-notice-icon { background: rgba(52,211,153,0.1); }
+    .kyc-notice.ok .kyc-notice-title { color: #6ee7b7; }
+    .kyc-notice.ok .kyc-notice-sub { color: rgba(110,231,183,0.65); }
+    .kyc-notice.ok .kyc-notice-btn { background: linear-gradient(135deg, #059669, #34d399); color: var(--ocean-deep); }
+    .kyc-notice.ok .kyc-notice-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(52,211,153,0.35); }
 
     /* ── STATS ROW ── */
     .stats-row {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: 1.25rem;
+        gap: 1rem;
         margin-bottom: 1.5rem;
     }
 
     .stat-card {
-        background: white; border-radius: 12px; padding: 1.5rem;
-        box-shadow: var(--shadow); border-bottom: 3px solid var(--cream-dark);
+        background: rgba(10,37,64,0.55);
+        border: 1px solid rgba(56,189,248,0.1);
+        border-radius: 18px;
+        padding: 1.5rem;
+        backdrop-filter: blur(16px);
         transition: border-color 0.3s, transform 0.3s;
+        position: relative;
+        overflow: hidden;
     }
 
-    .stat-card:hover { border-color: var(--gold); transform: translateY(-2px); }
-    .stat-card-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .stat-card::after {
+        content: '';
+        position: absolute;
+        bottom: -40px; right: -40px;
+        width: 100px; height: 100px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(56,189,248,0.06), transparent 70%);
+        pointer-events: none;
+    }
+
+    .stat-card:hover {
+        border-color: rgba(56,189,248,0.3);
+        transform: translateY(-3px);
+    }
+
+    .stat-card-icon {
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+        display: block;
+    }
 
     .stat-card-num {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 2rem; font-weight: 600; color: var(--sea); line-height: 1;
+        font-family: 'Playfair Display', serif;
+        font-size: 2.2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--white), var(--ocean-glow));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
     }
 
-    .stat-card-label { font-size: 0.8125rem; color: var(--muted); margin-top: 0.25rem; }
+    .stat-card-label {
+        font-size: 0.72rem;
+        color: rgba(255,255,255,0.38);
+        margin-top: 0.3rem;
+        font-family: 'Syne', sans-serif;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
 
     /* ── TABS ── */
     .dash-tabs {
-        display: flex; gap: 0.25rem; background: white; border-radius: 8px;
-        padding: 0.35rem; box-shadow: var(--shadow); margin-bottom: 1.75rem;
+        display: flex;
+        gap: 0.25rem;
+        background: rgba(10,37,64,0.5);
+        border: 1px solid rgba(56,189,248,0.1);
+        border-radius: 14px;
+        padding: 0.35rem;
+        margin-bottom: 1.75rem;
         overflow-x: auto;
+        backdrop-filter: blur(16px);
+        scrollbar-width: none;
     }
+
+    .dash-tabs::-webkit-scrollbar { display: none; }
 
     .dash-tab {
-        padding: 0.6rem 1.25rem; border-radius: 6px; font-size: 0.875rem;
-        font-weight: 500; color: var(--muted); cursor: pointer; border: none;
-        background: none; font-family: 'Outfit', sans-serif; white-space: nowrap;
+        padding: 0.6rem 1.2rem;
+        border-radius: 10px;
+        font-size: 0.825rem;
+        font-weight: 600;
+        color: rgba(255,255,255,0.4);
+        cursor: pointer;
+        border: none;
+        background: none;
+        font-family: 'Syne', sans-serif;
+        white-space: nowrap;
         transition: all 0.2s;
+        letter-spacing: 0.02em;
     }
 
-    .dash-tab.active { background: var(--sea); color: white; }
-    .dash-tab:hover:not(.active) { color: var(--sea); background: rgba(15,52,96,0.06); }
+    .dash-tab.active {
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        color: white;
+        box-shadow: 0 4px 16px rgba(14,77,146,0.4);
+    }
 
-    .tab-content { display: none; animation: fadeUp 0.35s ease both; }
+    .dash-tab:hover:not(.active) {
+        color: var(--ocean-glow);
+        background: rgba(56,189,248,0.07);
+    }
+
+    .tab-content { display: none; animation: fadeUp 0.3s ease both; }
     .tab-content.active { display: block; }
 
     /* ── SECTION HEADER ── */
     .section-header {
-        display: flex; align-items: center;
-        justify-content: space-between; margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
     }
 
     .section-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.5rem; font-weight: 600; color: var(--ink);
-        display: flex; align-items: center; gap: 0.75rem;
+        font-family: 'Playfair Display', serif;
+        font-size: 1.6rem;
+        font-weight: 300;
+        color: var(--white);
+        display: flex;
+        align-items: center;
+        gap: 1rem;
     }
 
-    .section-title::before {
-        content: '';
-        width: 4px; height: 24px; background: var(--gold);
-        border-radius: 2px; display: inline-block;
+    .section-title em {
+        font-style: italic;
+        background: linear-gradient(135deg, var(--ocean-glow), var(--gold-light));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .section-count {
+        font-size: 0.75rem;
+        color: rgba(255,255,255,0.3);
+        background: rgba(56,189,248,0.08);
+        border: 1px solid rgba(56,189,248,0.12);
+        padding: 0.2rem 0.65rem;
+        border-radius: 100px;
+        font-family: 'Syne', sans-serif;
+        font-weight: 600;
+        letter-spacing: 0.06em;
     }
 
     /* ── PACKAGES GRID ── */
     .packages-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
         gap: 1.25rem;
     }
 
     .package-card {
-        background: white; border-radius: 12px; box-shadow: var(--shadow);
-        overflow: hidden; transition: transform 0.3s, box-shadow 0.3s;
-        display: flex; flex-direction: column;
+        background: rgba(10,37,64,0.55);
+        border: 1px solid rgba(56,189,248,0.1);
+        border-radius: 20px;
+        overflow: hidden;
+        transition: transform 0.35s, border-color 0.35s, box-shadow 0.35s;
+        display: flex;
+        flex-direction: column;
+        backdrop-filter: blur(16px);
     }
 
-    .package-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-deep); }
+    .package-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(56,189,248,0.25);
+        box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(56,189,248,0.1);
+    }
 
     .package-img {
-        height: 140px; background: linear-gradient(135deg, var(--sea), #1a4f82);
-        display: flex; align-items: center; justify-content: center;
-        font-size: 3rem; position: relative; overflow: hidden;
+        height: 150px;
+        background: linear-gradient(135deg, var(--ocean-mid), var(--ocean-deep));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        position: relative;
+        overflow: hidden;
     }
 
     .package-img img {
-        width: 100%; height: 100%; object-fit: cover;
+        width: 100%; height: 100%;
+        object-fit: cover;
         position: absolute; inset: 0;
+        transition: transform 0.5s;
+    }
+
+    .package-card:hover .package-img img { transform: scale(1.06); }
+
+    .package-img::after {
+        content: '';
+        position: absolute; inset: 0;
+        background: linear-gradient(to top, rgba(2,12,27,0.7) 0%, transparent 50%);
     }
 
     .package-img-emoji { position: relative; z-index: 1; }
 
     .pkg-status-dot {
-        position: absolute; top: 0.75rem; right: 0.75rem; z-index: 2;
-        font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.55rem;
-        border-radius: 100px; letter-spacing: 0.06em;
+        position: absolute;
+        top: 0.75rem; right: 0.75rem;
+        z-index: 2;
+        font-size: 0.62rem;
+        font-weight: 700;
+        padding: 0.22rem 0.6rem;
+        border-radius: 100px;
+        letter-spacing: 0.08em;
+        font-family: 'Syne', sans-serif;
     }
 
-    .pkg-status-active   { background: rgba(39,174,96,0.9);  color: white; }
-    .pkg-status-inactive { background: rgba(231,76,60,0.85); color: white; }
+    .pkg-status-active   { background: rgba(52,211,153,0.2); color: #34d399; border: 1px solid rgba(52,211,153,0.3); }
+    .pkg-status-inactive { background: rgba(248,113,113,0.15); color: #f87171; border: 1px solid rgba(248,113,113,0.25); }
 
     .package-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
-    .package-category { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.35rem; }
 
-    .package-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.2rem; font-weight: 600; color: var(--ink); margin-bottom: 0.2rem;
+    .package-category {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--ocean-glow);
+        margin-bottom: 0.4rem;
+        font-family: 'Syne', sans-serif;
     }
 
-    .package-dest { font-size: 0.8125rem; color: var(--muted); margin-bottom: 0.75rem; }
+    .package-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: var(--white);
+        margin-bottom: 0.25rem;
+        line-height: 1.2;
+    }
+
+    .package-dest {
+        font-size: 0.78rem;
+        color: rgba(255,255,255,0.38);
+        margin-bottom: 0.875rem;
+        font-family: 'Syne', sans-serif;
+    }
 
     .pkg-analytics {
-        background: var(--cream);
-        border-radius: 8px;
+        background: rgba(2,12,27,0.4);
+        border: 1px solid rgba(56,189,248,0.08);
+        border-radius: 12px;
         padding: 0.875rem 1rem;
         display: grid;
         grid-template-columns: repeat(4, 1fr);
         gap: 0.5rem;
-        margin-bottom: 1rem;
-        border: 1px solid var(--cream-dark);
+        margin-bottom: 0.875rem;
     }
 
     .pkg-stat { text-align: center; }
 
     .pkg-stat-num {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.25rem; font-weight: 600; color: var(--sea); line-height: 1;
+        font-family: 'Playfair Display', serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--white);
+        line-height: 1;
     }
 
-    .pkg-stat-num.gold  { color: var(--gold); }
-    .pkg-stat-num.green { color: #27ae60; }
+    .pkg-stat-num.gold  {
+        background: linear-gradient(135deg, var(--gold), var(--gold-light));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .pkg-stat-num.green { color: #34d399; }
 
     .pkg-stat-label {
-        font-size: 0.6rem; font-weight: 600; letter-spacing: 0.08em;
-        text-transform: uppercase; color: var(--muted); margin-top: 0.2rem;
+        font-size: 0.58rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.3);
+        margin-top: 0.2rem;
+        font-family: 'Syne', sans-serif;
     }
 
     .package-price {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.375rem; font-weight: 600; color: var(--sea); margin-bottom: 1rem;
+        font-family: 'Playfair Display', serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--ocean-glow), var(--gold-light));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.875rem;
         margin-top: auto;
     }
 
-    .package-price span { font-size: 0.75rem; color: var(--muted); font-family: 'Outfit', sans-serif; font-weight: 400; }
+    .package-price span {
+        font-size: 0.72rem;
+        color: rgba(255,255,255,0.3);
+        font-family: 'Syne', sans-serif;
+        font-weight: 400;
+        -webkit-text-fill-color: rgba(255,255,255,0.3);
+    }
 
     .package-actions { display: flex; gap: 0.5rem; }
 
     .pkg-btn {
-        flex: 1; padding: 0.5rem; border-radius: var(--radius);
-        font-size: 0.8rem; font-weight: 600; text-align: center;
-        text-decoration: none; border: none; cursor: pointer;
-        font-family: 'Outfit', sans-serif; transition: all 0.2s;
+        flex: 1;
+        padding: 0.55rem;
+        border-radius: 10px;
+        font-size: 0.775rem;
+        font-weight: 700;
+        text-align: center;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        font-family: 'Syne', sans-serif;
+        transition: all 0.2s;
+        letter-spacing: 0.03em;
     }
 
-    .pkg-btn-edit   { background: var(--cream); color: var(--sea); border: 1px solid var(--cream-dark); }
-    .pkg-btn-edit:hover { border-color: var(--sea); }
-    .pkg-btn-toggle { background: rgba(201,168,76,0.1); color: #a07c20; border: 1px solid rgba(201,168,76,0.25); }
-    .pkg-btn-toggle:hover { background: rgba(201,168,76,0.2); }
-    .pkg-btn-del    { background: rgba(231,76,60,0.08); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
-    .pkg-btn-del:hover { background: rgba(231,76,60,0.15); }
+    .pkg-btn-edit {
+        background: rgba(56,189,248,0.07);
+        color: var(--ocean-glow);
+        border: 1px solid rgba(56,189,248,0.15);
+    }
+    .pkg-btn-edit:hover { background: rgba(56,189,248,0.15); border-color: rgba(56,189,248,0.3); }
 
-    .conversion-bar-wrap { margin-top: 0.35rem; }
+    .pkg-btn-toggle {
+        background: rgba(245,158,11,0.08);
+        color: var(--gold-light);
+        border: 1px solid rgba(245,158,11,0.2);
+    }
+    .pkg-btn-toggle:hover { background: rgba(245,158,11,0.15); }
+
+    .pkg-btn-del {
+        background: rgba(248,113,113,0.06);
+        color: #f87171;
+        border: 1px solid rgba(248,113,113,0.15);
+    }
+    .pkg-btn-del:hover { background: rgba(248,113,113,0.12); }
+
+    .conversion-bar-wrap { margin-top: 0.5rem; }
 
     .conversion-track {
-        height: 4px; background: var(--cream-dark); border-radius: 100px; overflow: hidden;
+        height: 3px;
+        background: rgba(56,189,248,0.1);
+        border-radius: 100px;
+        overflow: hidden;
     }
 
     .conversion-fill {
-        height: 100%; border-radius: 100px; background: var(--gold);
+        height: 100%;
+        border-radius: 100px;
+        background: linear-gradient(90deg, var(--ocean-glow), var(--gold-light));
         transition: width 0.6s ease;
     }
 
     /* ── TABLE ── */
     .table-wrap {
-        background: white; border-radius: 12px;
-        box-shadow: var(--shadow); overflow: hidden;
+        background: rgba(10,37,64,0.5);
+        border: 1px solid rgba(56,189,248,0.1);
+        border-radius: 18px;
+        overflow: hidden;
+        backdrop-filter: blur(16px);
     }
 
     .data-table { width: 100%; border-collapse: collapse; }
 
     .data-table th {
-        text-align: left; padding: 1rem 1.5rem; font-size: 0.7rem;
-        font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
-        color: var(--muted); background: var(--cream);
-        border-bottom: 1px solid var(--cream-dark);
+        text-align: left;
+        padding: 1rem 1.5rem;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.3);
+        background: rgba(2,12,27,0.3);
+        border-bottom: 1px solid rgba(56,189,248,0.08);
+        font-family: 'Syne', sans-serif;
     }
 
     .data-table td {
-        padding: 1rem 1.5rem; border-bottom: 1px solid var(--cream-dark);
-        font-size: 0.9rem; color: var(--ink); vertical-align: middle;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid rgba(56,189,248,0.06);
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.75);
+        vertical-align: middle;
+        font-family: 'Syne', sans-serif;
     }
 
     .data-table tr:last-child td { border-bottom: none; }
-    .data-table tr:hover td { background: rgba(15,52,96,0.02); }
+    .data-table tr:hover td { background: rgba(56,189,248,0.03); }
 
     /* ── BADGES ── */
     .badge {
-        display: inline-flex; align-items: center; gap: 0.25rem;
-        font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em;
-        text-transform: uppercase; padding: 0.25rem 0.65rem; border-radius: 2px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        padding: 0.22rem 0.65rem;
+        border-radius: 100px;
+        font-family: 'Syne', sans-serif;
     }
 
-    .badge-paid    { background: rgba(39,174,96,0.1);  color: #27ae60; border: 1px solid rgba(39,174,96,0.2); }
-    .badge-pending { background: rgba(243,156,18,0.1); color: #e67e22; border: 1px solid rgba(243,156,18,0.2); }
-    .badge-new     { background: rgba(15,52,96,0.08);  color: var(--sea); border: 1px solid rgba(15,52,96,0.15); }
-    .badge-pkg     { background: rgba(201,168,76,0.1); color: #a07c20; border: 1px solid rgba(201,168,76,0.25); }
+    .badge-paid    { background: rgba(52,211,153,0.1);  color: #34d399; border: 1px solid rgba(52,211,153,0.2); }
+    .badge-pending { background: rgba(245,158,11,0.1);  color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
+    .badge-new     { background: rgba(56,189,248,0.08); color: var(--ocean-glow); border: 1px solid rgba(56,189,248,0.18); }
+    .badge-pkg     { background: rgba(245,158,11,0.08); color: var(--gold-light); border: 1px solid rgba(245,158,11,0.18); }
 
     /* ── CHAT LIST ── */
-    .chat-list { display: flex; flex-direction: column; gap: 0.875rem; }
+    .chat-list { display: flex; flex-direction: column; gap: 0.75rem; }
 
     .chat-list-item {
-        background: white; border-radius: 12px; box-shadow: var(--shadow);
-        padding: 1.25rem 1.5rem; display: flex; align-items: center; gap: 1.25rem;
-        text-decoration: none; color: inherit; transition: all 0.25s;
-        border: 1.5px solid transparent;
+        background: rgba(10,37,64,0.5);
+        border: 1px solid rgba(56,189,248,0.08);
+        border-radius: 16px;
+        padding: 1.25rem 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.25s;
+        backdrop-filter: blur(12px);
     }
 
-    .chat-list-item:hover { border-color: rgba(15,52,96,0.2); transform: translateX(4px); }
+    .chat-list-item:hover {
+        border-color: rgba(56,189,248,0.25);
+        background: rgba(14,77,146,0.25);
+        transform: translateX(4px);
+    }
 
     .chat-list-avatar {
-        width: 48px; height: 48px; background: var(--cream); border-radius: 12px;
-        display: grid; place-items: center; font-size: 1.25rem; flex-shrink: 0;
-        border: 1px solid var(--cream-dark);
+        width: 48px; height: 48px;
+        background: rgba(2,12,27,0.5);
+        border: 1px solid rgba(56,189,248,0.12);
+        border-radius: 14px;
+        display: grid;
+        place-items: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
     }
 
     .chat-list-info { flex: 1; min-width: 0; }
-    .chat-list-name { font-weight: 600; font-size: 0.9375rem; color: var(--ink); margin-bottom: 0.2rem; }
-    .chat-list-preview { font-size: 0.8125rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .chat-list-time { font-size: 0.72rem; color: var(--muted); }
+    .chat-list-name { font-weight: 600; font-size: 0.9rem; color: var(--white); margin-bottom: 0.2rem; font-family: 'Syne', sans-serif; }
+    .chat-list-preview { font-size: 0.775rem; color: rgba(255,255,255,0.35); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .chat-list-time { font-size: 0.7rem; color: rgba(255,255,255,0.25); font-family: 'Syne', sans-serif; }
 
     .raise-btn {
-        display: inline-flex; align-items: center; gap: 0.35rem;
-        padding: 0.4rem 0.875rem; background: var(--sea); color: white;
-        border-radius: var(--radius); font-size: 0.775rem; font-weight: 600;
-        text-decoration: none; transition: all 0.2s; white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.45rem 1rem;
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        color: white;
+        border-radius: 100px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-decoration: none;
+        transition: all 0.2s;
+        white-space: nowrap;
+        font-family: 'Syne', sans-serif;
+        box-shadow: 0 4px 16px rgba(14,77,146,0.3);
     }
 
-    .raise-btn:hover { background: #0a2240; }
-    .raise-btn-gold  { background: var(--gold); color: var(--ink); }
-    .raise-btn-gold:hover { background: #e8c97a; }
+    .raise-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(56,189,248,0.35); }
+
+    .raise-btn-gold {
+        background: linear-gradient(135deg, #d97706, var(--gold-light));
+        color: var(--ocean-deep);
+        box-shadow: 0 4px 16px rgba(245,158,11,0.25);
+    }
+
+    .raise-btn-gold:hover { box-shadow: 0 8px 24px rgba(245,158,11,0.4); }
 
     /* ── PROFILE ── */
     .profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
 
     .profile-info-card {
-        background: white; border-radius: 12px; padding: 1.75rem;
-        box-shadow: var(--shadow);
+        background: rgba(10,37,64,0.5);
+        border: 1px solid rgba(56,189,248,0.1);
+        border-radius: 20px;
+        padding: 1.75rem;
+        backdrop-filter: blur(16px);
     }
 
     .profile-card-label {
-        font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em;
-        text-transform: uppercase; color: var(--muted); margin-bottom: 1.25rem;
-        display: flex; align-items: center; gap: 0.5rem;
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: var(--ocean-glow);
+        margin-bottom: 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-family: 'Syne', sans-serif;
     }
 
     .profile-card-label::before {
-        content: ''; width: 3px; height: 14px; background: var(--gold);
-        border-radius: 2px; flex-shrink: 0;
+        content: '';
+        width: 20px; height: 1.5px;
+        background: var(--ocean-glow);
+        flex-shrink: 0;
     }
 
     .profile-row {
-        display: flex; align-items: flex-start; gap: 0.875rem;
-        padding: 0.75rem 0; border-bottom: 1px solid var(--cream-dark);
+        display: flex;
+        align-items: flex-start;
+        gap: 0.875rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(56,189,248,0.06);
     }
 
     .profile-row:last-child { border-bottom: none; }
-    .profile-row-icon { font-size: 1.1rem; flex-shrink: 0; margin-top: 0.1rem; }
-    .profile-row-lbl { font-size: 0.72rem; color: var(--muted); margin-bottom: 0.15rem; }
-    .profile-row-val { font-size: 0.9rem; font-weight: 500; color: var(--ink); word-break: break-word; }
-    .profile-row-val a { color: var(--sea); text-decoration: none; }
-    .profile-row-val a:hover { text-decoration: underline; }
+    .profile-row-icon { font-size: 1rem; flex-shrink: 0; margin-top: 0.1rem; opacity: 0.7; }
+    .profile-row-lbl { font-size: 0.68rem; color: rgba(255,255,255,0.3); margin-bottom: 0.15rem; font-family: 'Syne', sans-serif; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+    .profile-row-val { font-size: 0.875rem; font-weight: 500; color: rgba(255,255,255,0.82); word-break: break-word; font-family: 'Syne', sans-serif; }
+    .profile-row-val a { color: var(--ocean-glow); text-decoration: none; }
+    .profile-row-val a:hover { color: var(--white); }
 
     .profile-desc-card {
-        background: white; border-radius: 12px; padding: 1.75rem;
-        box-shadow: var(--shadow); grid-column: 1 / -1;
+        background: rgba(10,37,64,0.5);
+        border: 1px solid rgba(56,189,248,0.1);
+        border-radius: 20px;
+        padding: 1.75rem;
+        backdrop-filter: blur(16px);
+        grid-column: 1 / -1;
     }
 
-    .profile-desc-text { font-size: 0.9375rem; color: var(--ink); line-height: 1.8; white-space: pre-wrap; }
-    .profile-empty-desc { font-size: 0.875rem; color: var(--muted); font-style: italic; text-align: center; padding: 1rem 0; }
+    .profile-desc-text {
+        font-size: 0.9rem;
+        color: rgba(255,255,255,0.65);
+        line-height: 1.85;
+        white-space: pre-wrap;
+        font-family: 'Syne', sans-serif;
+    }
+
+    .profile-empty-desc {
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.25);
+        font-style: italic;
+        text-align: center;
+        padding: 1rem 0;
+    }
 
     .status-chip {
-        display: inline-flex; align-items: center; gap: 0.35rem;
-        padding: 0.2rem 0.65rem; border-radius: 100px;
-        font-size: 0.75rem; font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 100px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        font-family: 'Syne', sans-serif;
+        letter-spacing: 0.06em;
     }
 
-    .status-approved { background: rgba(39,174,96,0.1);  color: #27ae60; border: 1px solid rgba(39,174,96,0.2); }
-    .status-pending  { background: rgba(243,156,18,0.1); color: #e67e22; border: 1px solid rgba(243,156,18,0.2); }
-    .status-rejected { background: rgba(231,76,60,0.08); color: #e74c3c; border: 1px solid rgba(231,76,60,0.2); }
+    .status-approved { background: rgba(52,211,153,0.1);  color: #34d399; border: 1px solid rgba(52,211,153,0.2); }
+    .status-pending  { background: rgba(245,158,11,0.1);  color: #fcd34d; border: 1px solid rgba(245,158,11,0.2); }
+    .status-rejected { background: rgba(248,113,113,0.08); color: #f87171; border: 1px solid rgba(248,113,113,0.18); }
 
     .warning-bar {
-        display: flex; align-items: center; gap: 0.75rem;
-        background: rgba(231,76,60,0.05); border: 1px solid rgba(231,76,60,0.15);
-        border-radius: 10px; padding: 0.875rem 1.25rem; margin-top: 1.25rem;
-        font-size: 0.8375rem; color: #c0392b; font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: rgba(248,113,113,0.06);
+        border: 1px solid rgba(248,113,113,0.15);
+        border-radius: 12px;
+        padding: 0.875rem 1.25rem;
+        margin-top: 1.25rem;
+        font-size: 0.8rem;
+        color: #fca5a5;
+        font-weight: 600;
+        font-family: 'Syne', sans-serif;
     }
 
     .warning-pips { display: flex; gap: 0.35rem; }
 
     .warning-pip {
-        width: 10px; height: 10px; border-radius: 50%;
-        background: var(--cream-dark); border: 1.5px solid #e0c0b0;
+        width: 10px; height: 10px;
+        border-radius: 50%;
+        background: rgba(248,113,113,0.12);
+        border: 1px solid rgba(248,113,113,0.2);
     }
 
-    .warning-pip.filled { background: #e74c3c; border-color: #c0392b; }
+    .warning-pip.filled { background: #f87171; border-color: #ef4444; }
+
+    /* ── ANALYTICS SUMMARY STRIP ── */
+    .analytics-summary {
+        background: rgba(10,37,64,0.5);
+        border: 1px solid rgba(56,189,248,0.1);
+        border-radius: 18px;
+        padding: 1.5rem 2rem;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        text-align: center;
+        backdrop-filter: blur(16px);
+        margin-top: 1.5rem;
+    }
+
+    .analytics-summary-num {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--white), var(--ocean-glow));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+    }
+
+    .analytics-summary-lbl {
+        font-size: 0.68rem;
+        color: rgba(255,255,255,0.3);
+        margin-top: 0.25rem;
+        font-family: 'Syne', sans-serif;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
 
     /* ── EMPTY STATE ── */
-    .empty-state { text-align: center; padding: 3rem; color: var(--muted); }
-    .empty-state-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: rgba(255,255,255,0.25);
+    }
+
+    .empty-state-icon { font-size: 2.5rem; margin-bottom: 0.75rem; opacity: 0.5; }
+    .empty-state p { font-family: 'Syne', sans-serif; font-size: 0.9rem; }
+    .empty-state a { color: var(--ocean-glow); text-decoration: none; font-weight: 600; }
+    .empty-state a:hover { color: var(--white); }
 
     @keyframes fadeUp {
-        from { opacity: 0; transform: translateY(16px); }
+        from { opacity: 0; transform: translateY(12px); }
         to   { opacity: 1; transform: translateY(0); }
     }
 
@@ -457,6 +869,7 @@
         .table-wrap { overflow-x: auto; }
         .profile-grid { grid-template-columns: 1fr; }
         .packages-grid { grid-template-columns: 1fr; }
+        .analytics-summary { grid-template-columns: repeat(2, 1fr); }
     }
 
     @media (max-width: 600px) {
@@ -466,6 +879,7 @@
         .pkg-analytics { grid-template-columns: repeat(2, 1fr); }
         .kyc-notice { flex-direction: column; align-items: flex-start; }
         .kyc-notice-btn { width: 100%; justify-content: center; }
+        .analytics-summary { grid-template-columns: repeat(2, 1fr); }
     }
 </style>
 {% endblock %}
@@ -488,20 +902,19 @@
                 </div>
             </div>
             <div class="agency-banner-actions">
-                <!-- KYC button — adapts to current KYC state -->
                 {% if not bank or bank.kyc_status == 'pending' %}
                     <a href="{% url 'agency_bank_details' %}" class="btn btn-gold">🏦 Submit KYC</a>
                 {% elif bank.kyc_status == 'submitted' %}
-                    <a href="{% url 'agency_bank_details' %}" class="btn btn-outline" style="color:#fcd34d; border-color:#fcd34d;">🔍 KYC Under Review</a>
+                    <a href="{% url 'agency_bank_details' %}" class="btn btn-glass" style="border-color:rgba(56,189,248,0.3); color:var(--ocean-glow);">🔍 KYC Under Review</a>
                 {% elif bank.kyc_status == 'rejected' %}
-                    <a href="{% url 'agency_bank_details' %}" class="btn btn-gold" style="background:#ef4444; border-color:#ef4444;">⚠️ Resubmit KYC</a>
+                    <a href="{% url 'agency_bank_details' %}" class="btn btn-primary" style="background:linear-gradient(135deg,#ef4444,#f87171);">⚠️ Resubmit KYC</a>
                 {% elif bank.kyc_status == 'verified' %}
                     <a href="{% url 'agency_earnings' %}" class="btn btn-gold">💰 Earnings & Payouts</a>
                 {% endif %}
-                <a href="{% url 'agency_bank_details' %}" class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.3);">🏦 Bank Details</a>
-                <a href="{% url 'agency_profile_edit' %}" class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.3);">🏢 Profile</a>
-                <a href="{% url 'package_create' %}" class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.3);">+ Package</a>
-                <a href="{% url 'agency_logout' %}" class="btn btn-outline" style="color:white; border-color:rgba(255,255,255,0.3);">Logout</a>
+                <a href="{% url 'agency_bank_details' %}" class="btn btn-glass">🏦 Bank Details</a>
+                <a href="{% url 'agency_profile_edit' %}" class="btn btn-glass">🏢 Profile</a>
+                <a href="{% url 'package_create' %}" class="btn btn-glass">+ Package</a>
+                <a href="{% url 'agency_logout' %}" class="btn btn-glass">Logout</a>
             </div>
         </div>
 
@@ -527,7 +940,7 @@
                     <div class="kyc-notice-sub">Our team will verify your bank details within 24 hours. Payouts activate automatically once approved.</div>
                 </div>
             </div>
-            <a href="{% url 'agency_bank_details' %}" class="kyc-notice-btn" style="background:#3b82f6; color:white;">View Submitted Details</a>
+            <a href="{% url 'agency_bank_details' %}" class="kyc-notice-btn">View Submitted Details</a>
         </div>
 
         {% elif bank.kyc_status == 'rejected' %}
@@ -561,22 +974,22 @@
         <!-- ── STATS ── -->
         <div class="stats-row">
             <div class="stat-card">
-                <div class="stat-card-icon">📦</div>
+                <span class="stat-card-icon">📦</span>
                 <div class="stat-card-num">{{ packages|length }}</div>
                 <div class="stat-card-label">Active Packages</div>
             </div>
             <div class="stat-card">
-                <div class="stat-card-icon">✉️</div>
+                <span class="stat-card-icon">✉️</span>
                 <div class="stat-card-num">{{ offers|length }}</div>
                 <div class="stat-card-label">Offers Sent</div>
             </div>
             <div class="stat-card">
-                <div class="stat-card-icon">✅</div>
+                <span class="stat-card-icon">✅</span>
                 <div class="stat-card-num">{{ bookings|length }}</div>
                 <div class="stat-card-label">Total Bookings</div>
             </div>
             <div class="stat-card">
-                <div class="stat-card-icon">💰</div>
+                <span class="stat-card-icon">💰</span>
                 <div class="stat-card-num">₹{{ revenue }}</div>
                 <div class="stat-card-label">Revenue Earned</div>
             </div>
@@ -596,9 +1009,7 @@
         <!-- ── TAB: PACKAGES ── -->
         <div class="tab-content active" id="tab-packages">
             <div class="section-header">
-                <h2 class="section-title">My Packages
-                    <span style="font-size:0.8125rem; color:var(--muted); background:var(--cream-dark); padding:0.2rem 0.65rem; border-radius:100px; font-family:'Outfit',sans-serif; font-weight:400;">{{ packages|length }}</span>
-                </h2>
+                <h2 class="section-title">My Packages <span class="section-count">{{ packages|length }}</span></h2>
                 <a href="{% url 'package_create' %}" class="btn btn-primary">+ Create Package</a>
             </div>
 
@@ -658,7 +1069,7 @@
                         <div class="package-price" style="margin-top:0.875rem;">
                             ₹{{ pkg.price }} <span>+ 5% GST</span>
                             {% if stat.revenue %}
-                            <span style="display:block; font-size:0.75rem; color:#27ae60; font-family:'Outfit',sans-serif; font-weight:500; margin-top:0.2rem;">
+                            <span style="display:block; font-size:0.75rem; color:#34d399; font-family:'Syne',sans-serif; font-weight:600; margin-top:0.2rem; -webkit-text-fill-color:#34d399;">
                                 ₹{{ stat.revenue }} earned
                             </span>
                             {% endif %}
@@ -681,7 +1092,7 @@
             {% else %}
             <div class="empty-state">
                 <div class="empty-state-icon">📦</div>
-                <p>No packages yet. <a href="{% url 'package_create' %}" style="color:var(--sea);">Create your first one →</a></p>
+                <p>No packages yet. <a href="{% url 'package_create' %}">Create your first one →</a></p>
             </div>
             {% endif %}
         </div>
@@ -689,7 +1100,7 @@
         <!-- ── TAB: ANALYTICS ── -->
         <div class="tab-content" id="tab-analytics">
             <div class="section-header">
-                <h2 class="section-title">Package Analytics</h2>
+                <h2 class="section-title">Package <em>Analytics</em></h2>
             </div>
 
             {% if package_stats %}
@@ -706,17 +1117,19 @@
                         {% for stat in package_stats %}
                         <tr>
                             <td>
-                                <strong style="color:var(--sea);">{{ stat.pkg.title }}</strong>
-                                <div style="font-size:0.72rem; color:var(--muted);">{{ stat.pkg.get_category_display }}</div>
+                                <strong style="color:var(--white);">{{ stat.pkg.title }}</strong>
+                                <div style="font-size:0.7rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;">{{ stat.pkg.get_category_display }}</div>
                             </td>
-                            <td style="font-size:0.875rem;">{{ stat.pkg.destination }}</td>
-                            <td><strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--sea);">₹{{ stat.pkg.price }}</strong></td>
-                            <td><strong>{{ stat.views }}</strong></td>
-                            <td><strong style="color:var(--sea);">{{ stat.chats }}</strong></td>
-                            <td><strong style="color:#27ae60;">{{ stat.bookings }}</strong></td>
+                            <td>{{ stat.pkg.destination }}</td>
                             <td>
-                                <div style="display:flex; align-items:center; gap:0.5rem;">
-                                    <strong style="color:{% if stat.conversion >= 10 %}#27ae60{% elif stat.conversion >= 3 %}var(--gold){% else %}var(--muted){% endif %};">
+                                <strong style="font-family:'Playfair Display',serif; font-size:1.1rem; background:linear-gradient(135deg,var(--ocean-glow),var(--gold-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">₹{{ stat.pkg.price }}</strong>
+                            </td>
+                            <td><strong style="color:var(--white);">{{ stat.views }}</strong></td>
+                            <td><strong style="color:var(--ocean-glow);">{{ stat.chats }}</strong></td>
+                            <td><strong style="color:#34d399;">{{ stat.bookings }}</strong></td>
+                            <td>
+                                <div style="display:flex; align-items:center; gap:0.6rem;">
+                                    <strong style="color:{% if stat.conversion >= 10 %}#34d399{% elif stat.conversion >= 3 %}#fcd34d{% else %}rgba(255,255,255,0.4){% endif %};">
                                         {{ stat.conversion }}%
                                     </strong>
                                     <div class="conversion-track" style="width:60px;">
@@ -725,7 +1138,7 @@
                                 </div>
                             </td>
                             <td>
-                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--sea);">
+                                <strong style="font-family:'Playfair Display',serif; font-size:1.1rem; color:#34d399;">
                                     {% if stat.revenue %}₹{{ stat.revenue }}{% else %}—{% endif %}
                                 </strong>
                             </td>
@@ -742,24 +1155,24 @@
                 </table>
             </div>
 
-            <div style="background:white; border-radius:12px; box-shadow:var(--shadow); padding:1.5rem 2rem; display:grid; grid-template-columns:repeat(4,1fr); gap:1.5rem; text-align:center;">
+            <div class="analytics-summary">
                 <div>
-                    <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; color:var(--sea); line-height:1;">
+                    <div class="analytics-summary-num">
                         {% for s in package_stats %}{{ s.views }}{% if not forloop.last %}+{% endif %}{% endfor %}
                     </div>
-                    <div style="font-size:0.75rem; color:var(--muted); margin-top:0.2rem;">Total Views</div>
+                    <div class="analytics-summary-lbl">Total Views</div>
                 </div>
                 <div>
-                    <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; color:var(--sea); line-height:1;">{{ bookings|length }}</div>
-                    <div style="font-size:0.75rem; color:var(--muted); margin-top:0.2rem;">Total Bookings</div>
+                    <div class="analytics-summary-num">{{ bookings|length }}</div>
+                    <div class="analytics-summary-lbl">Total Bookings</div>
                 </div>
                 <div>
-                    <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; color:var(--gold); line-height:1;">₹{{ revenue }}</div>
-                    <div style="font-size:0.75rem; color:var(--muted); margin-top:0.2rem;">Total Revenue</div>
+                    <div class="analytics-summary-num" style="background:linear-gradient(135deg,var(--gold),var(--gold-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">₹{{ revenue }}</div>
+                    <div class="analytics-summary-lbl">Total Revenue</div>
                 </div>
                 <div>
-                    <div style="font-family:'Cormorant Garamond',serif; font-size:2rem; font-weight:600; color:#27ae60; line-height:1;">{{ packages|length }}</div>
-                    <div style="font-size:0.75rem; color:var(--muted); margin-top:0.2rem;">Live Packages</div>
+                    <div class="analytics-summary-num" style="background:linear-gradient(135deg,#34d399,#6ee7b7); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">{{ packages|length }}</div>
+                    <div class="analytics-summary-lbl">Live Packages</div>
                 </div>
             </div>
             {% else %}
@@ -773,7 +1186,7 @@
         <!-- ── TAB: TRIP REQUESTS ── -->
         <div class="tab-content" id="tab-trips">
             <div class="section-header">
-                <h2 class="section-title">Trip Requests</h2>
+                <h2 class="section-title">Trip <em>Requests</em></h2>
             </div>
             <div class="table-wrap">
                 {% if trips %}
@@ -787,25 +1200,25 @@
                     <tbody>
                         {% for trip in trips %}
                         <tr>
-                            <td><strong>{{ trip.destination }}</strong></td>
-                            <td style="color:var(--muted);">{{ trip.origin|default:"—" }}</td>
+                            <td><strong style="color:var(--white);">{{ trip.destination }}</strong></td>
+                            <td>{{ trip.origin|default:"—" }}</td>
                             <td>{{ trip.days }} days</td>
-                            <td>₹{{ trip.budget }}</td>
+                            <td style="color:var(--ocean-glow); font-weight:600;">₹{{ trip.budget }}</td>
                             <td>{{ trip.num_people|default:1 }}</td>
                             <td><span class="badge badge-new">{{ trip.travel_type|capfirst }}</span></td>
-                            <td style="font-size:0.8rem;">
+                            <td>
                                 {% if trip.travel_mode == 'flight' %}✈️
                                 {% elif trip.travel_mode == 'train' %}🚂
                                 {% elif trip.travel_mode == 'bus' %}🚌
                                 {% elif trip.travel_mode == 'car' %}🚗
                                 {% else %}🚀{% endif %}
                             </td>
-                            <td style="color:var(--muted); font-size:0.8rem;">{{ trip.created_at|date:"N j" }}</td>
+                            <td>{{ trip.created_at|date:"N j" }}</td>
                             <td>
                                 {% if trip.id in sent_offer_trip_ids %}
-                                    <span style="color:#27ae60; font-size:0.8rem; font-weight:600;">✅ Sent</span>
+                                    <span style="color:#34d399; font-size:0.8rem; font-weight:700; font-family:'Syne',sans-serif;">✅ Sent</span>
                                 {% else %}
-                                    <a href="{% url 'send_offer' trip.id %}" class="btn btn-primary" style="padding:0.4rem 1rem; font-size:0.8rem;">Send Offer</a>
+                                    <a href="{% url 'send_offer' trip.id %}" class="raise-btn" style="font-size:0.78rem; padding:0.4rem 0.875rem;">Send Offer</a>
                                 {% endif %}
                             </td>
                         </tr>
@@ -824,7 +1237,7 @@
         <!-- ── TAB: OFFERS ── -->
         <div class="tab-content" id="tab-offers">
             <div class="section-header">
-                <h2 class="section-title">Offers Sent</h2>
+                <h2 class="section-title">Offers <em>Sent</em></h2>
             </div>
             <div class="table-wrap">
                 {% if offers %}
@@ -836,21 +1249,21 @@
                         {% for offer in offers %}
                         <tr>
                             <td>
-                                <strong>{{ offer.trip.destination }}</strong>
-                                <div style="font-size:0.75rem; color:var(--muted);">
+                                <strong style="color:var(--white);">{{ offer.trip.destination }}</strong>
+                                <div style="font-size:0.7rem; color:rgba(255,255,255,0.3); margin-top:0.15rem;">
                                     {{ offer.trip.days }} days · {{ offer.trip.num_people|default:1 }} people
                                 </div>
                             </td>
                             <td>
-                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--sea);">₹{{ offer.price }}</strong>
+                                <strong style="font-family:'Playfair Display',serif; font-size:1.15rem; background:linear-gradient(135deg,var(--ocean-glow),var(--gold-light)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">₹{{ offer.price }}</strong>
                             </td>
-                            <td style="max-width:220px; font-size:0.8375rem; color:var(--muted);">
+                            <td style="max-width:220px; color:rgba(255,255,255,0.45); font-size:0.8rem;">
                                 {{ offer.message|truncatechars:70 }}
                             </td>
-                            <td style="font-size:0.8rem; color:var(--muted);">{{ offer.created_at|date:"N j, Y" }}</td>
+                            <td>{{ offer.created_at|date:"N j, Y" }}</td>
                             <td>
                                 {% if offer.chatroom %}
-                                <a href="{% url 'chat_room' offer.chatroom.id %}" class="raise-btn">💬 Open</a>
+                                <a href="{% url 'chat_room' offer.chatroom.id %}" class="raise-btn" style="font-size:0.75rem; padding:0.4rem 0.875rem;">💬 Open</a>
                                 {% else %}—{% endif %}
                             </td>
                         </tr>
@@ -869,7 +1282,7 @@
         <!-- ── TAB: BOOKINGS ── -->
         <div class="tab-content" id="tab-bookings">
             <div class="section-header">
-                <h2 class="section-title">Confirmed Bookings</h2>
+                <h2 class="section-title">Confirmed <em>Bookings</em></h2>
             </div>
             <div class="table-wrap">
                 {% if bookings %}
@@ -883,39 +1296,39 @@
                     <tbody>
                         {% for booking in bookings %}
                         <tr>
-                            <td style="font-size:0.8rem; color:var(--muted);">#TRV{{ booking.id|stringformat:"05d" }}</td>
+                            <td style="color:rgba(255,255,255,0.3); font-size:0.78rem; font-family:'Syne',sans-serif;">#TRV{{ booking.id|stringformat:"05d" }}</td>
                             <td>
                                 {% if booking.offer %}
-                                    <strong>{{ booking.offer.trip.destination }}</strong>
-                                    <div style="font-size:0.72rem; color:var(--muted);">✈️ Trip offer · {{ booking.offer.trip.days }} days</div>
+                                    <strong style="color:var(--white);">{{ booking.offer.trip.destination }}</strong>
+                                    <div style="font-size:0.7rem; color:rgba(255,255,255,0.3);">✈️ Trip offer · {{ booking.offer.trip.days }} days</div>
                                 {% elif booking.package %}
-                                    <strong>{{ booking.package.title }}</strong>
-                                    <div style="font-size:0.72rem; color:var(--muted);">📦 Package · {{ booking.package.destination }}</div>
+                                    <strong style="color:var(--white);">{{ booking.package.title }}</strong>
+                                    <div style="font-size:0.7rem; color:rgba(255,255,255,0.3);">📦 Package · {{ booking.package.destination }}</div>
                                 {% endif %}
                             </td>
-                            <td style="font-size:0.875rem;">{{ booking.user.username }}</td>
+                            <td>{{ booking.user.username }}</td>
                             <td>
-                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--sea);">₹{{ booking.total_amount }}</strong>
-                                <div style="font-size:0.72rem; color:var(--muted);">incl. 5% GST</div>
+                                <strong style="font-family:'Playfair Display',serif; font-size:1.1rem; color:var(--ocean-glow);">₹{{ booking.total_amount }}</strong>
+                                <div style="font-size:0.7rem; color:rgba(255,255,255,0.3);">incl. 5% GST</div>
                             </td>
                             <td>
-                                <strong style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:#27ae60;">₹{{ booking.agency_payout }}</strong>
-                                <div style="font-size:0.72rem; color:var(--muted);">after 10% commission</div>
+                                <strong style="font-family:'Playfair Display',serif; font-size:1.1rem; color:#34d399;">₹{{ booking.agency_payout }}</strong>
+                                <div style="font-size:0.7rem; color:rgba(255,255,255,0.3);">after 10% commission</div>
                             </td>
-                            <td style="font-size:0.8rem; color:var(--muted);">{{ booking.created_at|date:"N j, Y" }}</td>
+                            <td>{{ booking.created_at|date:"N j, Y" }}</td>
                             <td><span class="badge badge-paid">✅ Paid</span></td>
                             <td>
                                 <div style="display:flex; gap:0.5rem; flex-wrap:wrap;">
                                     {% if booking.offer and booking.offer.chatroom %}
-                                        <a href="{% url 'chat_room' booking.offer.chatroom.id %}" class="raise-btn">💬</a>
+                                        <a href="{% url 'chat_room' booking.offer.chatroom.id %}" class="raise-btn" style="padding:0.4rem 0.75rem; font-size:0.75rem;">💬</a>
                                     {% elif booking.package %}
                                         {% for room in booking.package.chatrooms.all %}
                                             {% if room.user == booking.user %}
-                                            <a href="{% url 'chat_room' room.id %}" class="raise-btn">💬</a>
+                                            <a href="{% url 'chat_room' room.id %}" class="raise-btn" style="padding:0.4rem 0.75rem; font-size:0.75rem;">💬</a>
                                             {% endif %}
                                         {% endfor %}
                                     {% endif %}
-                                    <a href="{% url 'update_trip_status' booking.id %}" class="raise-btn raise-btn-gold">📍 Status</a>
+                                    <a href="{% url 'update_trip_status' booking.id %}" class="raise-btn raise-btn-gold" style="font-size:0.75rem; padding:0.4rem 0.875rem;">📍 Status</a>
                                 </div>
                             </td>
                         </tr>
@@ -934,9 +1347,7 @@
         <!-- ── TAB: CHATS ── -->
         <div class="tab-content" id="tab-chats">
             <div class="section-header">
-                <h2 class="section-title">Active Chats
-                    <span style="font-size:0.8125rem; color:var(--muted); background:var(--cream-dark); padding:0.2rem 0.65rem; border-radius:100px; font-family:'Outfit',sans-serif; font-weight:400;">{{ chatrooms|length }}</span>
-                </h2>
+                <h2 class="section-title">Active <em>Chats</em> <span class="section-count">{{ chatrooms|length }}</span></h2>
             </div>
             {% if chatrooms %}
             <div class="chat-list">
@@ -949,16 +1360,15 @@
                         <div class="chat-list-name">
                             {{ room.user.username }}
                             {% if room.package %}
-                                <span class="badge badge-pkg" style="margin-left:0.5rem;">📦 {{ room.package.title|truncatechars:25 }}</span>
+                                <span class="badge badge-pkg" style="margin-left:0.5rem; font-size:0.62rem;">📦 {{ room.package.title|truncatechars:22 }}</span>
                             {% elif room.offer %}
-                                — {{ room.offer.trip.destination }}
+                                <span style="color:rgba(255,255,255,0.3); font-size:0.8rem; font-weight:400;"> — {{ room.offer.trip.destination }}</span>
                             {% endif %}
                         </div>
                         <div class="chat-list-preview">
-                            {% if room.package %}📍 {{ room.package.destination }} ·
-                            {% elif room.offer %}₹{{ room.offer.price }} offer ·{% endif %}
+                            {% if room.package %}📍 {{ room.package.destination }} · {% elif room.offer %}₹{{ room.offer.price }} offer · {% endif %}
                             {% with last=room.messages.last %}
-                                {% if last %}{{ last.content|truncatechars:50 }}{% else %}No messages yet{% endif %}
+                                {% if last %}{{ last.content|truncatechars:55 }}{% else %}No messages yet{% endif %}
                             {% endwith %}
                         </div>
                     </div>
@@ -968,8 +1378,8 @@
                                 {% if last %}{{ last.created_at|timesince }} ago{% endif %}
                             {% endwith %}
                         </div>
-                        <div style="margin-top:0.35rem;">
-                            <span class="raise-btn" style="font-size:0.72rem; padding:0.3rem 0.75rem;">💳 Raise Payment</span>
+                        <div style="margin-top:0.4rem;">
+                            <span class="raise-btn" style="font-size:0.7rem; padding:0.3rem 0.75rem;">💳 Raise Payment</span>
                         </div>
                     </div>
                 </a>
@@ -986,7 +1396,7 @@
         <!-- ── TAB: PROFILE ── -->
         <div class="tab-content" id="tab-profile">
             <div class="section-header">
-                <h2 class="section-title">Agency Profile</h2>
+                <h2 class="section-title">Agency <em>Profile</em></h2>
                 <a href="{% url 'agency_profile_edit' %}" class="btn btn-primary">✏️ Edit Profile</a>
             </div>
 
@@ -1006,7 +1416,7 @@
                             <div class="profile-row-lbl">Phone</div>
                             <div class="profile-row-val">
                                 {% if agency.phone %}<a href="tel:{{ agency.phone }}">{{ agency.phone }}</a>
-                                {% else %}<span style="color:var(--muted); font-style:italic;">Not set</span>{% endif %}
+                                {% else %}<span style="color:rgba(255,255,255,0.2); font-style:italic;">Not set</span>{% endif %}
                             </div>
                         </div>
                     </div>
@@ -1023,7 +1433,7 @@
                             <div class="profile-row-lbl">Website</div>
                             <div class="profile-row-val">
                                 {% if agency.website %}<a href="{{ agency.website }}" target="_blank">{{ agency.website }}</a>
-                                {% else %}<span style="color:var(--muted); font-style:italic;">Not set</span>{% endif %}
+                                {% else %}<span style="color:rgba(255,255,255,0.2); font-style:italic;">Not set</span>{% endif %}
                             </div>
                         </div>
                     </div>
@@ -1033,15 +1443,15 @@
                             <div class="profile-row-lbl">Bank & KYC Status</div>
                             <div class="profile-row-val">
                                 {% if not bank %}
-                                    <a href="{% url 'agency_bank_details' %}" style="color:#f59e0b; font-weight:600;">⚠️ Not submitted — Submit KYC</a>
+                                    <a href="{% url 'agency_bank_details' %}" style="color:#fcd34d; font-weight:700;">⚠️ Not submitted — Submit KYC</a>
                                 {% elif bank.kyc_status == 'submitted' %}
-                                    <span style="color:#3b82f6; font-weight:600;">🔍 Under Review</span>
+                                    <span style="color:var(--ocean-glow); font-weight:700;">🔍 Under Review</span>
                                 {% elif bank.kyc_status == 'verified' %}
-                                    <span style="color:#10b981; font-weight:600;">✅ Verified — {{ bank.bank_name|default:"Bank account" }}</span>
+                                    <span style="color:#34d399; font-weight:700;">✅ Verified — {{ bank.bank_name|default:"Bank account" }}</span>
                                 {% elif bank.kyc_status == 'rejected' %}
-                                    <a href="{% url 'agency_bank_details' %}" style="color:#ef4444; font-weight:600;">❌ Rejected — Resubmit</a>
+                                    <a href="{% url 'agency_bank_details' %}" style="color:#f87171; font-weight:700;">❌ Rejected — Resubmit</a>
                                 {% else %}
-                                    <a href="{% url 'agency_bank_details' %}" style="color:#f59e0b; font-weight:600;">⚠️ Pending — Submit KYC</a>
+                                    <a href="{% url 'agency_bank_details' %}" style="color:#fcd34d; font-weight:700;">⚠️ Pending — Submit KYC</a>
                                 {% endif %}
                             </div>
                         </div>
@@ -1071,7 +1481,7 @@
                                 {% if agency.plan == 'enterprise' %}🏆 Enterprise
                                 {% elif agency.plan == 'professional' %}💼 Professional
                                 {% else %}🌱 Starter{% endif %}
-                                <span style="font-size:0.75rem; color:#10b981; font-weight:600; margin-left:0.5rem;">· Free for founding agencies</span>
+                                <span style="font-size:0.72rem; color:#34d399; font-weight:700; margin-left:0.5rem;">· Free for founding agencies</span>
                             </div>
                         </div>
                     </div>
@@ -1088,9 +1498,9 @@
                             <div class="profile-row-lbl">Earnings</div>
                             <div class="profile-row-val">
                                 {% if bank and bank.kyc_status == 'verified' %}
-                                    <a href="{% url 'agency_earnings' %}" style="color:var(--sea); font-weight:600;">View payout history →</a>
+                                    <a href="{% url 'agency_earnings' %}" style="color:var(--ocean-glow); font-weight:700;">View payout history →</a>
                                 {% else %}
-                                    <span style="color:var(--muted); font-style:italic;">KYC required to activate</span>
+                                    <span style="color:rgba(255,255,255,0.2); font-style:italic;">KYC required to activate</span>
                                 {% endif %}
                             </div>
                         </div>
@@ -1115,7 +1525,7 @@
                         <div class="profile-desc-text">{{ agency.description }}</div>
                     {% else %}
                         <div class="profile-empty-desc">
-                            No description yet. <a href="{% url 'agency_profile_edit' %}" style="color:var(--sea);">Add one →</a>
+                            No description yet. <a href="{% url 'agency_profile_edit' %}" style="color:var(--ocean-glow);">Add one →</a>
                         </div>
                     {% endif %}
                 </div>

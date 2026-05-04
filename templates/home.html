@@ -3,508 +3,1148 @@
 
 {% block extra_css %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Outfit:wght@300;400;500;600;700&display=swap');
-
-    :root {
-        --font-display: 'Cormorant Garamond', Georgia, serif;
-        --font-body: 'Outfit', sans-serif;
-    }
-    * { font-family: var(--font-body); }
-
-    /* ── HERO ─────────────────────────────────── */
-    .hero {
-        min-height: 100vh;
-        position: relative;
-        display: flex;
-        align-items: center;
-        overflow: hidden;
-    }
-
-    .hero-bg {
-        position: absolute; inset: 0;
-        background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=85');
-        background-size: cover;
-        background-position: center;
-        transform: scale(1.05);
-        animation: heroZoom 20s ease-in-out infinite alternate;
-    }
-
-    @keyframes heroZoom {
-        from { transform: scale(1.05); }
-        to   { transform: scale(1.12); }
-    }
-
-    .hero-overlay {
-        position: absolute; inset: 0;
-        background: linear-gradient(135deg, rgba(13,17,23,0.88) 0%, rgba(15,52,96,0.65) 50%, rgba(13,17,23,0.4) 100%);
-    }
-
-    .hero-content {
-        position: relative;
-        z-index: 2;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 2rem;
-        padding-top: 68px;
-    }
-
-    .hero-eyebrow {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.75rem;
-        background: rgba(201,168,76,0.15);
-        border: 1px solid rgba(201,168,76,0.35);
-        padding: 0.45rem 1.1rem;
-        border-radius: 2px;
-        font-size: 0.72rem;
-        font-weight: 600;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: #e8c97a;
-        margin-bottom: 2rem;
-        opacity: 0;
-        animation: fadeUp 0.8s 0.3s forwards;
-    }
-
-    .hero-headline {
-        font-family: var(--font-display);
-        font-size: clamp(3.5rem, 7vw, 7rem);
-        font-weight: 300;
-        color: white;
-        line-height: 1.0;
-        margin-bottom: 1.5rem;
-        opacity: 0;
-        animation: fadeUp 0.8s 0.5s forwards;
-        max-width: 800px;
-    }
-
-    .hero-headline em { font-style: italic; color: #e8c97a; display: block; }
-
-    .hero-sub {
-        font-size: 1.125rem;
-        color: rgba(255,255,255,0.65);
-        line-height: 1.7;
-        max-width: 520px;
-        margin-bottom: 2.5rem;
-        opacity: 0;
-        animation: fadeUp 0.8s 0.7s forwards;
-        font-weight: 300;
-    }
-
-    .hero-actions {
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-        flex-wrap: wrap;
-        opacity: 0;
-        animation: fadeUp 0.8s 0.9s forwards;
-        margin-bottom: 5rem;
-    }
-
-    /* Floating destination cards */
-    .hero-float-cards {
-        position: absolute;
-        right: 5%; top: 50%;
-        transform: translateY(-50%);
-        display: flex;
-        flex-direction: column;
-        gap: 0.875rem;
-        z-index: 2;
-    }
-
-    .float-card {
-        background: rgba(255,255,255,0.08);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255,255,255,0.15);
-        border-radius: 12px;
-        padding: 0.875rem 1.25rem;
-        display: flex;
-        align-items: center;
-        gap: 0.875rem;
-        min-width: 240px;
-        opacity: 0;
-        transform: translateX(40px);
-        animation: slideLeft 0.7s forwards;
-        transition: transform 0.3s, background 0.3s;
-    }
-
-    .float-card:hover { background: rgba(255,255,255,0.13); transform: translateX(-4px); }
-    .float-card:nth-child(1) { animation-delay: 1.0s; }
-    .float-card:nth-child(2) { animation-delay: 1.2s; }
-    .float-card:nth-child(3) { animation-delay: 1.4s; }
-    .float-card:nth-child(4) { animation-delay: 1.6s; }
-
-    @keyframes slideLeft { to { opacity: 1; transform: translateX(0); } }
-
-    .float-card-img {
-        width: 44px; height: 44px;
-        border-radius: 8px;
-        background: linear-gradient(135deg, var(--sea), #0a2240);
-        display: grid;
-        place-items: center;
-        font-size: 1.25rem;
-        flex-shrink: 0;
-    }
-
-    .float-card-name { font-family: var(--font-display); font-size: 1rem; font-weight: 600; color: white; }
-    .float-card-meta { font-size: 0.75rem; color: rgba(255,255,255,0.5); margin-top: 0.1rem; }
-    .float-card-price { margin-left: auto; font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; color: #e8c97a; flex-shrink: 0; }
-
-    .scroll-indicator {
-        position: absolute;
-        bottom: 2.5rem; left: 50%;
-        transform: translateX(-50%);
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
-        color: rgba(255,255,255,0.4);
-        font-size: 0.72rem;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        animation: bounce 2s ease-in-out infinite;
-        z-index: 2;
-    }
-
-    .scroll-indicator::after {
-        content: '';
-        width: 1px; height: 40px;
-        background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
-    }
-
-    @keyframes bounce {
-        0%, 100% { transform: translateX(-50%) translateY(0); }
-        50%       { transform: translateX(-50%) translateY(8px); }
-    }
-
-    /* ── PACKAGES ─────────────────────────────── */
-    .packages-section {
-        background: var(--ink);
-        padding: 6rem 0;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .packages-section::before {
-        content: '';
-        position: absolute; inset: 0;
-        background:
-            radial-gradient(ellipse 60% 50% at 20% 50%, rgba(201,168,76,0.06) 0%, transparent 60%),
-            radial-gradient(ellipse 40% 60% at 80% 50%, rgba(15,52,96,0.3) 0%, transparent 60%);
-        pointer-events: none;
-    }
-
-    .packages-header {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 2rem;
-        display: flex;
-        align-items: flex-end;
-        justify-content: space-between;
-        margin-bottom: 3rem;
-        gap: 2rem;
-    }
-
-    .packages-header-left .section-eyebrow {
-        font-size: 0.72rem;
-        font-weight: 600;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: #e8c97a;
-        margin-bottom: 0.75rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .packages-header-left .section-eyebrow::before { content: ''; width: 28px; height: 1px; background: #e8c97a; }
-
-    .packages-header-left h2 { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.5rem); font-weight: 300; color: white; line-height: 1.1; }
-    .packages-header-left h2 em { font-style: italic; color: #e8c97a; }
-
-    .carousel-controls { display: flex; gap: 0.75rem; flex-shrink: 0; }
-
-    .carousel-btn {
-        width: 48px; height: 48px;
-        border-radius: 50%;
-        border: 1px solid rgba(255,255,255,0.15);
-        background: rgba(255,255,255,0.06);
-        color: white;
-        font-size: 1.1rem;
-        cursor: pointer;
-        display: grid;
-        place-items: center;
-        transition: all 0.3s;
-    }
-
-    .carousel-btn:hover { background: #c9a84c; border-color: #c9a84c; color: #0d1117; transform: scale(1.05); }
-
-    .carousel-track-wrap { overflow: hidden; padding: 0 2rem; }
-
-    .carousel-track {
-        display: flex;
-        gap: 1.5rem;
-        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-        will-change: transform;
-    }
-
-    /* Package Card */
-    .pkg-card {
-        flex: 0 0 340px;
-        background: rgba(255,255,255,0.04);
-        border: 1px solid rgba(255,255,255,0.08);
-        border-radius: 16px;
-        overflow: hidden;
-        transition: transform 0.4s, border-color 0.4s, box-shadow 0.4s;
-        cursor: pointer;
-        text-decoration: none;
-        color: inherit;
-        display: block;
-    }
-
-    .pkg-card:hover { transform: translateY(-8px); border-color: rgba(201,168,76,0.4); box-shadow: 0 24px 60px rgba(0,0,0,0.4); }
-
-    .pkg-card-img {
-        height: 220px;
-        position: relative;
-        overflow: hidden;
-        background: linear-gradient(135deg, #0f3460, #0a2240);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 4rem;
-    }
-
-    .pkg-card-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; transition: transform 0.6s; }
-    .pkg-card:hover .pkg-card-img img { transform: scale(1.08); }
-
-    .pkg-card-img-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(13,17,23,0.8) 0%, transparent 50%); }
-
-    .pkg-card-category {
-        position: absolute; top: 1rem; left: 1rem;
-        background: rgba(201,168,76,0.9);
-        color: #0d1117;
-        font-size: 0.7rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-        padding: 0.3rem 0.75rem; border-radius: 2px;
-    }
-
-    .pkg-card-agency { position: absolute; bottom: 1rem; left: 1rem; font-size: 0.75rem; color: rgba(255,255,255,0.7); display: flex; align-items: center; gap: 0.4rem; }
-
-    .pkg-card-body { padding: 1.5rem; }
-
-    .pkg-card-title { font-family: var(--font-display); font-size: 1.375rem; font-weight: 600; color: white; line-height: 1.2; margin-bottom: 0.4rem; }
-    .pkg-card-dest  { font-size: 0.8125rem; color: rgba(255,255,255,0.45); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.35rem; }
-
-    .pkg-card-meta { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
-
-    .pkg-chip { font-size: 0.72rem; font-weight: 500; color: rgba(255,255,255,0.6); background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.1); padding: 0.25rem 0.65rem; border-radius: 100px; }
-
-    .pkg-card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.08); }
-
-    .pkg-card-price { font-family: var(--font-display); font-size: 1.625rem; font-weight: 600; color: #e8c97a; }
-    .pkg-card-price span { font-size: 0.75rem; color: rgba(255,255,255,0.4); font-family: var(--font-body); font-weight: 400; }
-
-    .pkg-card-btn { background: rgba(201,168,76,0.15); border: 1px solid rgba(201,168,76,0.35); color: #e8c97a; padding: 0.5rem 1.1rem; border-radius: var(--radius); font-size: 0.8rem; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-block; }
-    .pkg-card-btn:hover { background: #c9a84c; color: #0d1117; }
-
-    .no-packages { text-align: center; padding: 4rem 2rem; color: rgba(255,255,255,0.4); max-width: 1200px; margin: 0 auto; }
-    .no-packages h3 { font-family: var(--font-display); font-size: 1.75rem; font-weight: 300; color: rgba(255,255,255,0.6); margin-bottom: 0.5rem; }
-
-    /* ── DESTINATIONS — India only ────────────── */
-    .destinations-section { background: var(--cream); padding: 6rem 0; }
-
-    .dest-grid { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: auto auto; gap: 1.25rem; margin-top: 3rem; }
-
-    .dest-card { border-radius: 16px; overflow: hidden; position: relative; cursor: pointer; box-shadow: var(--shadow); }
-
-    .dest-card-img { width: 100%; height: 280px; object-fit: cover; display: block; transition: transform 0.6s; background: linear-gradient(135deg, var(--sea), #0a2240); }
-    .dest-card:hover .dest-card-img { transform: scale(1.06); }
-
-    .dest-card-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(13,17,23,0.85) 0%, rgba(13,17,23,0.1) 60%); display: flex; flex-direction: column; justify-content: flex-end; padding: 1.75rem; }
-
-    .dest-card-name { font-family: var(--font-display); font-size: 1.625rem; font-weight: 600; color: white; line-height: 1.1; margin-bottom: 0.35rem; }
-    .dest-card-meta { font-size: 0.8125rem; color: rgba(255,255,255,0.6); margin-bottom: 0.75rem; }
-    .dest-card-price { font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; color: #e8c97a; }
-
-    .dest-card.featured { grid-row: span 2; min-height: 580px; }
-    .dest-card.featured .dest-card-img { height: 100%; position: absolute; inset: 0; width: 100%; }
-    .dest-card.featured .dest-card-name { font-size: 2.25rem; }
-
-    /* ── HOW IT WORKS ─────────────────────────── */
-    .how-section { background: white; padding: 6rem 0; position: relative; overflow: hidden; }
-
-    .how-section::before {
-        content: 'JOURNEY';
-        position: absolute; top: 50%; left: 50%;
-        transform: translate(-50%, -50%);
-        font-family: var(--font-display);
-        font-size: 16rem; font-weight: 600;
-        color: rgba(15,52,96,0.025);
-        white-space: nowrap; pointer-events: none;
-    }
-
-    .steps-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; position: relative; margin-top: 4rem; }
-
-    .steps-grid::before {
-        content: '';
-        position: absolute;
-        top: 2.5rem; left: 12.5%; right: 12.5%;
-        height: 1px;
-        background: linear-gradient(90deg, transparent, var(--gold), var(--gold), transparent);
-        opacity: 0.3; z-index: 0;
-    }
-
-    .step-item { text-align: center; padding: 0 2rem 3rem; position: relative; }
-
-    .step-num-wrap {
-        width: 56px; height: 56px; border-radius: 50%;
-        background: white; border: 2px solid var(--cream-dark);
-        display: flex; align-items: center; justify-content: center;
-        margin: 0 auto 1.5rem; position: relative; z-index: 1;
-        transition: all 0.3s; font-size: 1.5rem;
-    }
-
-    .step-item:hover .step-num-wrap { border-color: var(--gold); background: rgba(201,168,76,0.08); transform: scale(1.1); }
-
-    .step-title { font-weight: 600; font-size: 1rem; color: var(--ink); margin-bottom: 0.5rem; }
-    .step-desc  { font-size: 0.875rem; color: var(--muted); line-height: 1.65; }
-
-    /* ── AGENCY CTA ───────────────────────────── */
-    .agency-cta {
-        background: linear-gradient(135deg, #0f3460 0%, #0a2240 100%);
-        padding: 5rem 2rem; position: relative; overflow: hidden;
-    }
-
-    .agency-cta::before {
-        content: '';
-        position: absolute; inset: 0;
-        background-image:
-            linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
-        background-size: 60px 60px;
-    }
-
-    .agency-cta-inner { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 3rem; position: relative; }
-    .agency-cta h2 { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); font-weight: 300; color: white; line-height: 1.15; margin-bottom: 0.75rem; }
-    .agency-cta h2 em { font-style: italic; color: #e8c97a; }
-    .agency-cta p { color: rgba(255,255,255,0.55); font-size: 0.9375rem; line-height: 1.7; max-width: 500px; }
-    .agency-cta-btns { display: flex; gap: 0.75rem; flex-shrink: 0; }
-
-    /* ── FINAL CTA ────────────────────────────── */
-    .final-cta { background: var(--cream); padding: 7rem 2rem; text-align: center; position: relative; overflow: hidden; }
-
-    .final-cta::before { content: ''; position: absolute; width: 800px; height: 800px; border-radius: 50%; border: 1px solid rgba(201,168,76,0.1); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
-    .final-cta::after  { content: ''; position: absolute; width: 500px; height: 500px; border-radius: 50%; border: 1px solid rgba(201,168,76,0.08); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
-
-    .final-cta-content { position: relative; z-index: 1; }
-    .final-cta h2 { font-family: var(--font-display); font-size: clamp(3rem, 6vw, 5.5rem); font-weight: 300; color: var(--ink); line-height: 1.05; margin-bottom: 1.25rem; }
-    .final-cta h2 em { font-style: italic; color: var(--sea); }
-    .final-cta p { font-size: 1.0625rem; color: var(--muted); max-width: 480px; margin: 0 auto 2.5rem; line-height: 1.7; }
-
-    /* ── SHARED ───────────────────────────────── */
-    .section-eyebrow { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
-    .section-eyebrow::before { content: ''; width: 28px; height: 1px; background: var(--gold); }
-    .section-title { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3.25rem); font-weight: 300; color: var(--ink); line-height: 1.1; }
-    .section-title em { font-style: italic; color: var(--sea); }
-
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
-
-    @media (max-width: 1024px) {
-        .hero-float-cards { display: none; }
-        .dest-grid { grid-template-columns: 1fr 1fr; }
-        .dest-card.featured { grid-row: span 1; min-height: 280px; }
-        .dest-card.featured .dest-card-img { position: relative; inset: auto; height: 280px; width: 100%; }
-        .steps-grid { grid-template-columns: repeat(2, 1fr); }
-        .steps-grid::before { display: none; }
-        .agency-cta-inner { grid-template-columns: 1fr; }
-        .agency-cta-btns { flex-wrap: wrap; }
-    }
-
-    @media (max-width: 768px) {
-        .hero-headline { font-size: 3rem; }
-        .dest-grid { grid-template-columns: 1fr; }
-        .pkg-card { flex: 0 0 280px; }
-        .steps-grid { grid-template-columns: 1fr; }
-    }
+/* ════════════════════════════════════════════════════════
+   HERO — CINEMATIC MULTI-LAYER 3D PARALLAX
+════════════════════════════════════════════════════════ */
+.hero {
+    height: 100vh;
+    min-height: 700px;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    perspective: 1200px;
+}
+
+/* Stacked parallax layers */
+.hero-layer {
+    position: absolute; inset: 0;
+    background-size: cover;
+    background-position: center;
+    will-change: transform;
+    transition: transform 0.1s linear;
+}
+
+.hero-layer-sky {
+    background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&q=90');
+    transform: scale(1.15);
+    z-index: 1;
+}
+
+.hero-layer-mist {
+    background: linear-gradient(180deg,
+        rgba(255,107,53,0.0) 0%,
+        rgba(245,166,35,0.12) 40%,
+        rgba(255,248,238,0.7) 85%,
+        rgba(255,248,238,1) 100%);
+    z-index: 2;
+}
+
+.hero-layer-vignette {
+    background: radial-gradient(ellipse 100% 60% at 50% 0%, rgba(26,18,9,0.5) 0%, transparent 70%);
+    z-index: 3;
+}
+
+/* Floating text marquee strip */
+.hero-marquee-strip {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 38px;
+    background: linear-gradient(135deg, var(--sun), var(--gold));
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    z-index: 20;
+}
+
+.hero-marquee-inner {
+    display: flex;
+    gap: 0;
+    animation: marqueeScroll 18s linear infinite;
+    white-space: nowrap;
+}
+
+.hero-marquee-inner span {
+    font-family: var(--font-bold);
+    font-size: 0.85rem;
+    letter-spacing: 0.18em;
+    color: var(--white);
+    padding: 0 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.hero-marquee-inner span::after { content: '✦'; opacity: 0.6; }
+
+@keyframes marqueeScroll {
+    from { transform: translateX(0); }
+    to   { transform: translateX(-50%); }
+}
+
+/* Hero content */
+.hero-content {
+    position: relative;
+    z-index: 10;
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 3rem 5rem;
+}
+
+.hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    background: rgba(255,107,53,0.12);
+    border: 1px solid rgba(255,107,53,0.3);
+    padding: 0.4rem 1.1rem;
+    border-radius: 100px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--sun-deep);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.4s forwards;
+}
+
+.hero-headline {
+    font-family: var(--font-bold);
+    font-size: clamp(5rem, 11vw, 12rem);
+    line-height: 0.9;
+    letter-spacing: 0.04em;
+    color: var(--ink);
+    margin-bottom: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.55s forwards;
+    position: relative;
+}
+
+.hero-headline .line-2 {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 300;
+    font-size: clamp(3rem, 6vw, 6.5rem);
+    display: block;
+    background: linear-gradient(135deg, var(--sun), var(--gold), var(--sky));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    letter-spacing: 0.01em;
+    line-height: 1.1;
+}
+
+.hero-bottom {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+    flex-wrap: wrap;
+    opacity: 0;
+    animation: fadeUp 0.9s 0.75s forwards;
+}
+
+.hero-sub {
+    font-size: 1.05rem;
+    color: var(--ink-mid);
+    line-height: 1.75;
+    max-width: 440px;
+    font-weight: 400;
+}
+
+.hero-actions { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+
+/* 3D scroll hint */
+.hero-scroll-hint {
+    position: absolute;
+    bottom: 3.5rem; right: 3rem;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    opacity: 0;
+    animation: fadeUp 1s 1.4s forwards;
+}
+
+.scroll-track {
+    width: 2px; height: 60px;
+    background: rgba(26,18,9,0.15);
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+}
+
+.scroll-thumb {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 30%;
+    background: linear-gradient(to bottom, var(--sun), var(--gold));
+    border-radius: 2px;
+    animation: scrollThumb 2s ease-in-out infinite;
+}
+
+@keyframes scrollThumb {
+    0%   { top: 0; }
+    80%  { top: 70%; }
+    100% { top: 70%; opacity: 0; }
+}
+
+.scroll-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(26,18,9,0.35); }
+
+/* ════════════════════════════════════════════════════════
+   BIOME BAND — Horizontal scrolling terrain explorer
+════════════════════════════════════════════════════════ */
+.biome-section {
+    padding: 0;
+    position: relative;
+    overflow: hidden;
+    background: var(--cream);
+}
+
+.biome-label-row {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 5rem 3rem 2rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 2rem;
+}
+
+.biome-track-outer {
+    overflow-x: auto;
+    padding: 0 3rem 3rem;
+    scrollbar-width: none;
+    cursor: grab;
+}
+
+.biome-track-outer:active { cursor: grabbing; }
+.biome-track-outer::-webkit-scrollbar { display: none; }
+
+.biome-track {
+    display: flex;
+    gap: 1.25rem;
+    width: max-content;
+}
+
+/* Each biome card — tall, immersive */
+.biome-card {
+    width: 320px;
+    height: 480px;
+    border-radius: 28px;
+    overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
+    transform-style: preserve-3d;
+    transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.5s;
+    cursor: pointer;
+}
+
+.biome-card:hover {
+    transform: translateY(-16px) rotateX(4deg) scale(1.02);
+    box-shadow: 0 40px 80px rgba(26,18,9,0.3), 0 0 0 1px rgba(245,166,35,0.2);
+}
+
+.biome-img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.7s;
+}
+
+.biome-card:hover .biome-img { transform: scale(1.08); }
+
+.biome-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(26,18,9,0.95) 0%, rgba(26,18,9,0.1) 55%);
+    transition: background 0.5s;
+}
+
+.biome-card:hover .biome-overlay {
+    background: linear-gradient(to top, rgba(26,18,9,0.98) 0%, rgba(255,107,53,0.15) 55%);
+}
+
+.biome-tag {
+    position: absolute;
+    top: 1.25rem; left: 1.25rem;
+    padding: 0.3rem 0.85rem;
+    border-radius: 100px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--white);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.biome-info {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 1.75rem;
+}
+
+.biome-name {
+    font-family: var(--font-bold);
+    font-size: 2.4rem;
+    letter-spacing: 0.06em;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.biome-dest {
+    font-size: 0.825rem;
+    color: rgba(255,255,255,0.55);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.biome-price {
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--gold-light);
+}
+
+.biome-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+    background: rgba(255,107,53,0.2);
+    border: 1px solid rgba(255,107,53,0.4);
+    color: var(--amber);
+    padding: 0.45rem 1rem;
+    border-radius: 100px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    transition: all var(--transition);
+    transform: translateY(8px);
+    opacity: 0;
+    transition: opacity 0.3s, transform 0.3s, background 0.3s;
+}
+
+.biome-card:hover .biome-cta { opacity: 1; transform: translateY(0); }
+.biome-cta:hover { background: var(--sun); color: var(--white); border-color: var(--sun); }
+
+/* ════════════════════════════════════════════════════════
+   HOW IT WORKS — 3D CARD FLIP STEPS
+════════════════════════════════════════════════════════ */
+.how-section {
+    padding: 8rem 0;
+    background: var(--ink);
+    position: relative;
+    overflow: hidden;
+}
+
+.how-section::before {
+    content: 'JOURNEY';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-bold);
+    font-size: 22vw;
+    color: rgba(255,255,255,0.025);
+    white-space: nowrap;
+    pointer-events: none;
+    letter-spacing: 0.1em;
+}
+
+.how-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-top: 4rem;
+}
+
+.how-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 24px;
+    padding: 2.5rem 1.75rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1), border-color 0.4s, box-shadow 0.4s;
+    cursor: pointer;
+}
+
+.how-card::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.4s, transform 0.4s;
+}
+
+.how-card:nth-child(1)::before { background: radial-gradient(circle, rgba(255,107,53,0.2), transparent 70%); }
+.how-card:nth-child(2)::before { background: radial-gradient(circle, rgba(245,166,35,0.2), transparent 70%); }
+.how-card:nth-child(3)::before { background: radial-gradient(circle, rgba(6,174,213,0.2), transparent 70%); }
+.how-card:nth-child(4)::before { background: radial-gradient(circle, rgba(82,183,136,0.2), transparent 70%); }
+
+.how-card:hover { transform: translateY(-12px) rotateZ(-1deg); box-shadow: 0 30px 70px rgba(0,0,0,0.5); }
+.how-card:nth-child(even):hover { transform: translateY(-12px) rotateZ(1deg); }
+.how-card:hover::before { opacity: 1; transform: scale(1.4); }
+
+.how-card:nth-child(1):hover { border-color: rgba(255,107,53,0.3); }
+.how-card:nth-child(2):hover { border-color: rgba(245,166,35,0.3); }
+.how-card:nth-child(3):hover { border-color: rgba(6,174,213,0.3); }
+.how-card:nth-child(4):hover { border-color: rgba(82,183,136,0.3); }
+
+.how-num {
+    font-family: var(--font-bold);
+    font-size: 5rem;
+    line-height: 1;
+    letter-spacing: 0.04em;
+    margin-bottom: 1.25rem;
+    display: block;
+}
+
+.how-card:nth-child(1) .how-num { color: var(--sun); }
+.how-card:nth-child(2) .how-num { color: var(--gold); }
+.how-card:nth-child(3) .how-num { color: var(--sky); }
+.how-card:nth-child(4) .how-num { color: var(--jungle-light); }
+
+.how-icon { font-size: 2rem; margin-bottom: 0.75rem; display: block; }
+.how-title { font-size: 1.1rem; font-weight: 800; color: var(--white); margin-bottom: 0.6rem; }
+.how-desc  { font-size: 0.875rem; color: rgba(255,255,255,0.4); line-height: 1.7; }
+
+/* ════════════════════════════════════════════════════════
+   PACKAGES — Ocean dark theme
+════════════════════════════════════════════════════════ */
+.packages-section {
+    padding: 8rem 0;
+    background: var(--ocean-deep, #020c1b);
+    position: relative;
+    overflow: hidden;
+}
+
+.packages-section::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 300px;
+    background: linear-gradient(to top, rgba(56,189,248,0.04), transparent);
+    pointer-events: none;
+}
+
+.pkg-header {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 3rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 3.5rem;
+    gap: 2rem;
+}
+
+.carousel-track-wrap { overflow: hidden; padding: 0 3rem 2rem; }
+
+.carousel-track {
+    display: flex;
+    gap: 1.5rem;
+    transition: transform 0.65s cubic-bezier(0.4,0,0.2,1);
+    will-change: transform;
+}
+
+.carousel-btns { display: flex; gap: 0.75rem; flex-shrink: 0; }
+
+.carousel-btn {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    border: 1px solid rgba(56,189,248,0.2);
+    background: rgba(10,37,64,0.6);
+    color: var(--white);
+    font-size: 1.1rem;
+    cursor: pointer;
+    display: grid; place-items: center;
+    transition: all var(--transition);
+    backdrop-filter: blur(12px);
+}
+
+.carousel-btn:hover {
+    background: linear-gradient(135deg, #38bdf8, #7dd3fc);
+    border-color: transparent;
+    transform: scale(1.08);
+    box-shadow: 0 8px 30px rgba(56,189,248,0.35);
+}
+
+/* Package Card with 3D tilt */
+.pkg-card {
+    flex: 0 0 350px;
+    background: rgba(10,37,64,0.6);
+    border: 1px solid rgba(56,189,248,0.1);
+    border-radius: 24px;
+    overflow: visible;
+    transition: box-shadow 0.4s;
+    cursor: pointer;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transform-style: preserve-3d;
+    transform: perspective(1200px);
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+}
+
+.pkg-card:hover {
+    box-shadow: 0 30px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(56,189,248,0.2);
+}
+
+.pkg-card-inner { border-radius: 24px; overflow: hidden; }
+
+.pkg-card-img {
+    height: 230px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0a2540, #020c1b);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+}
+
+.pkg-card-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; transition: transform 0.7s; }
+.pkg-card:hover .pkg-card-img img { transform: scale(1.1); }
+
+.pkg-card-img-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(2,12,27,0.8) 0%, transparent 55%);
+}
+
+.pkg-category-badge {
+    position: absolute;
+    top: 1rem; left: 1rem;
+    padding: 0.3rem 0.85rem;
+    border-radius: 100px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--white);
+    background: rgba(14,77,146,0.75);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(56,189,248,0.3);
+}
+
+.pkg-agency-badge {
+    position: absolute; bottom: 1rem; left: 1rem;
+    font-size: 0.75rem; color: rgba(255,255,255,0.7);
+    display: flex; align-items: center; gap: 0.35rem;
+}
+
+.pkg-card-body { padding: 1.75rem; }
+
+.pkg-card-title {
+    font-family: var(--font-display);
+    font-size: 1.4rem; font-weight: 700;
+    color: var(--white); line-height: 1.2; margin-bottom: 0.35rem;
+}
+
+.pkg-card-dest {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 0.35rem;
+}
+
+.pkg-chips { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.25rem; }
+
+.pkg-chip {
+    font-size: 0.72rem; font-weight: 600;
+    color: rgba(255,255,255,0.55);
+    background: rgba(56,189,248,0.07);
+    border: 1px solid rgba(56,189,248,0.12);
+    padding: 0.28rem 0.7rem; border-radius: 100px;
+}
+
+.pkg-chip-verified {
+    color: #34d399 !important;
+    border-color: rgba(52,211,153,0.2) !important;
+    background: rgba(52,211,153,0.06) !important;
+}
+
+.pkg-card-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-top: 1.25rem; border-top: 1px solid rgba(56,189,248,0.08);
+}
+
+.pkg-price {
+    font-family: var(--font-display);
+    font-size: 1.7rem; font-weight: 900;
+    background: linear-gradient(135deg, #38bdf8, #fde68a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.pkg-price span {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.35);
+    font-family: var(--font-body);
+    font-weight: 400;
+    -webkit-text-fill-color: rgba(255,255,255,0.35);
+}
+
+.pkg-btn {
+    background: linear-gradient(135deg, #38bdf8, #7dd3fc);
+    color: var(--white);
+    padding: 0.55rem 1.2rem;
+    border-radius: 100px;
+    font-size: 0.8rem; font-weight: 700;
+    transition: all var(--transition);
+    text-decoration: none;
+    display: inline-block;
+    box-shadow: 0 4px 16px rgba(14,77,146,0.3);
+}
+
+.pkg-btn:hover { transform: scale(1.05); box-shadow: 0 6px 24px rgba(56,189,248,0.4); }
+
+/* Packages section title overrides */
+.packages-section .title-serif {
+    color: var(--white, #fff);
+}
+
+.packages-section .title-serif em {
+    background: linear-gradient(135deg, #38bdf8, #fde68a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.no-packages {
+    text-align: center; padding: 5rem 2rem;
+    color: rgba(255,255,255,0.3);
+    max-width: 1280px; margin: 0 auto;
+}
+
+.no-packages h3 {
+    font-family: var(--font-display);
+    font-size: 2rem; font-weight: 300;
+    color: rgba(255,255,255,0.5); margin-bottom: 0.5rem;
+}
+
+.no-packages a { color: #38bdf8; text-decoration: none; font-weight: 700; }
+
+/* ════════════════════════════════════════════════════════
+   INDIA MOSAIC — Destinations bento grid
+════════════════════════════════════════════════════════ */
+.destinations-section {
+    padding: 8rem 0;
+    background: var(--ink);
+    position: relative;
+    overflow: hidden;
+}
+
+.dest-bento {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: 280px 280px;
+    gap: 1rem;
+    margin-top: 3.5rem;
+}
+
+.dest-tile {
+    border-radius: 20px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transform: perspective(1000px);
+    transition: transform 0.5s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.5s;
+}
+
+.dest-tile:hover {
+    transform: perspective(1000px) rotateY(-3deg) rotateX(3deg) scale(1.02);
+    box-shadow: 0 30px 70px rgba(0,0,0,0.6), 20px 0 50px rgba(255,107,53,0.1);
+    z-index: 2;
+}
+
+.dest-tile img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.7s;
+}
+
+.dest-tile:hover img { transform: scale(1.08); }
+
+.dest-tile-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(26,18,9,0.9) 0%, rgba(26,18,9,0.05) 60%);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 1.5rem;
+    transition: background 0.4s;
+}
+
+.dest-tile:hover .dest-tile-overlay {
+    background: linear-gradient(to top, rgba(26,18,9,0.97) 0%, rgba(255,107,53,0.12) 60%);
+}
+
+.dest-tile-name {
+    font-family: var(--font-bold);
+    font-size: 1.9rem;
+    letter-spacing: 0.05em;
+    color: var(--white); line-height: 1; margin-bottom: 0.3rem;
+}
+
+.dest-tile-meta { font-size: 0.78rem; color: rgba(255,255,255,0.5); margin-bottom: 0.6rem; }
+.dest-tile-price { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--gold-light); }
+
+.dest-tile-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    margin-top: 0.75rem;
+    background: rgba(255,107,53,0.15);
+    border: 1px solid rgba(255,107,53,0.35);
+    color: var(--amber);
+    padding: 0.35rem 0.9rem;
+    border-radius: 100px;
+    font-size: 0.73rem; font-weight: 700;
+    opacity: 0; transform: translateY(6px);
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.dest-tile:hover .dest-tile-btn { opacity: 1; transform: translateY(0); }
+
+/* Grid placement */
+.dest-tile.t1 { grid-column: 1 / 5;  grid-row: 1 / 2; }
+.dest-tile.t2 { grid-column: 5 / 9;  grid-row: 1 / 2; }
+.dest-tile.t3 { grid-column: 9 / 13; grid-row: 1 / 3; }
+.dest-tile.t4 { grid-column: 1 / 4;  grid-row: 2 / 3; }
+.dest-tile.t5 { grid-column: 4 / 9;  grid-row: 2 / 3; }
+
+.dest-tile.t3 .dest-tile-name { font-size: 2.8rem; }
+
+/* ════════════════════════════════════════════════════════
+   AGENCY CTA — Split screen with image
+════════════════════════════════════════════════════════ */
+.agency-section {
+    min-height: 600px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    overflow: hidden;
+}
+
+.agency-image-side {
+    position: relative;
+    overflow: hidden;
+    min-height: 500px;
+}
+
+.agency-image-side img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    transition: transform 0.8s;
+}
+
+.agency-section:hover .agency-image-side img { transform: scale(1.04); }
+
+.agency-image-side::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent 60%, var(--ink) 100%);
+}
+
+.agency-content-side {
+    background: var(--ink);
+    padding: 5rem 4rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.agency-content-side::before {
+    content: '';
+    position: absolute;
+    bottom: -100px; right: -100px;
+    width: 400px; height: 400px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255,107,53,0.08), transparent 70%);
+    pointer-events: none;
+}
+
+/* ════════════════════════════════════════════════════════
+   FINAL CTA — Immersive with 3D depth
+════════════════════════════════════════════════════════ */
+.final-cta {
+    min-height: 700px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    text-align: center;
+}
+
+.final-cta-bg {
+    position: absolute; inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1920&q=85');
+    background-size: cover;
+    background-position: center 40%;
+    transform: scale(1.1);
+    animation: subtleZoom 20s ease-in-out infinite alternate;
+}
+
+@keyframes subtleZoom {
+    from { transform: scale(1.1) translateY(0); }
+    to   { transform: scale(1.18) translateY(-2%); }
+}
+
+.final-cta::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(26,18,9,0.55) 0%, rgba(255,107,53,0.25) 50%, rgba(26,18,9,0.8) 100%);
+    z-index: 1;
+}
+
+.final-cta-content {
+    position: relative; z-index: 2;
+    padding: 4rem 3rem;
+}
+
+.final-cta-big {
+    font-family: var(--font-bold);
+    font-size: clamp(5rem, 13vw, 14rem);
+    line-height: 0.9;
+    letter-spacing: 0.05em;
+    color: var(--white);
+    margin-bottom: 0.25rem;
+    text-shadow: 0 10px 60px rgba(26,18,9,0.5);
+}
+
+.final-cta-sub {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(1.5rem, 3vw, 2.75rem);
+    font-weight: 300;
+    background: linear-gradient(135deg, var(--gold-light), var(--amber));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 2rem;
+}
+
+.final-cta p { font-size: 1.05rem; color: rgba(255,255,255,0.65); max-width: 440px; margin: 0 auto 2.75rem; line-height: 1.75; }
+
+/* ════════════════════════════════════════════════════════
+   STATS BAND
+════════════════════════════════════════════════════════ */
+.stats-band {
+    background: linear-gradient(135deg, var(--sun), var(--gold), #FFD166);
+    padding: 2rem 3rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.stats-band::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px);
+    background-size: 40px 40px;
+}
+
+.stats-inner {
+    max-width: 1280px; margin: 0 auto;
+    display: flex; justify-content: space-around; align-items: center;
+    gap: 2rem; flex-wrap: wrap;
+    position: relative;
+}
+
+.stat-item { text-align: center; }
+
+.stat-num {
+    font-family: var(--font-bold);
+    font-size: 3.5rem;
+    color: var(--white);
+    line-height: 1;
+    letter-spacing: 0.04em;
+    margin-bottom: 0.25rem;
+    text-shadow: 0 4px 20px rgba(26,18,9,0.2);
+}
+
+.stat-lbl { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.75); }
+
+/* ════════════════════════════════════════════════════════
+   TYPOGRAPHY HELPERS
+════════════════════════════════════════════════════════ */
+.eyebrow {
+    font-size: 0.7rem; font-weight: 700;
+    letter-spacing: 0.22em; text-transform: uppercase;
+    display: flex; align-items: center; gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.eyebrow::before { content: ''; width: 36px; height: 2px; background: currentColor; flex-shrink: 0; }
+
+.title-xl {
+    font-family: var(--font-bold);
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    letter-spacing: 0.04em;
+    line-height: 1.0;
+}
+
+.title-serif {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 300;
+    line-height: 1.1;
+}
+
+.title-serif em {
+    font-style: italic; font-weight: 700;
+    background: linear-gradient(135deg, var(--sun), var(--gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* ════════════════════════════════════════════════════════
+   ANIMATIONS
+════════════════════════════════════════════════════════ */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(32px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ════════════════════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════════════════════ */
+@media (max-width: 1100px) {
+    .dest-bento { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
+    .dest-tile.t1, .dest-tile.t2, .dest-tile.t3, .dest-tile.t4, .dest-tile.t5 { grid-column: auto; grid-row: auto; }
+    .dest-tile.t3 { grid-column: span 2; }
+    .how-grid { grid-template-columns: repeat(2, 1fr); }
+    .agency-section { grid-template-columns: 1fr; }
+    .agency-image-side { min-height: 350px; }
+    .agency-image-side::after { background: linear-gradient(to top, var(--ink) 0%, transparent 60%); }
+}
+
+@media (max-width: 768px) {
+    .hero-headline { font-size: 4.5rem; }
+    .dest-bento { grid-template-columns: 1fr; }
+    .dest-tile.t3 { grid-column: span 1; }
+    .how-grid { grid-template-columns: 1fr; }
+    .biome-card { width: 260px; height: 380px; }
+    .final-cta-big { font-size: 5rem; }
+    .pkg-card { flex: 0 0 300px; }
+    .container { padding: 0 1.5rem; }
+    .hero-content { padding: 0 1.5rem 4rem; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
 
-<!-- HERO -->
-<section class="hero">
-    <div class="hero-bg"></div>
-    <div class="hero-overlay"></div>
+<!-- ══ HERO ══════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+    <div class="hero-marquee-strip" style="top:76px;">
+        <div class="hero-marquee-inner">
+            {% for item in "RAJASTHAN · KERALA · LEH LADAKH · GOA · AGRA · ANDAMAN · COORG · SPITI · VARANASI · MUNNAR · RISHIKESH · HAMPI · "|make_list %}{% endfor %}
+            <span>RAJASTHAN</span><span>KERALA</span><span>LEH LADAKH</span><span>GOA</span><span>AGRA</span><span>ANDAMAN</span><span>COORG</span><span>SPITI VALLEY</span><span>VARANASI</span><span>MUNNAR</span><span>RISHIKESH</span><span>HAMPI</span>
+            <!-- duplicate for infinite scroll -->
+            <span>RAJASTHAN</span><span>KERALA</span><span>LEH LADAKH</span><span>GOA</span><span>AGRA</span><span>ANDAMAN</span><span>COORG</span><span>SPITI VALLEY</span><span>VARANASI</span><span>MUNNAR</span><span>RISHIKESH</span><span>HAMPI</span>
+        </div>
+    </div>
+
+    <div class="hero-layer hero-layer-sky" id="heroSky"></div>
+    <div class="hero-layer hero-layer-mist"></div>
+    <div class="hero-layer hero-layer-vignette"></div>
 
     <div class="hero-content">
-        <div class="hero-eyebrow">✦ AI-Powered Travel Planning</div>
+        <div class="hero-tag">
+            <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#FF6B35"/></svg>
+            AI-Powered Travel Planning
+        </div>
 
         {% if user_agency %}
-        <h1 class="hero-headline">Welcome back,<em>{{ user_agency.name }}</em></h1>
-        <p class="hero-sub">Manage your packages, respond to trip requests and grow your revenue — all from your agency dashboard.</p>
-        <div class="hero-actions">
-            <a href="{% url 'agency_dashboard' %}" class="btn btn-gold" style="font-size:1rem;padding:1rem 2.25rem;">🏢 Go to Dashboard</a>
-            <a href="#packages" class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.3);font-size:1rem;">Browse Packages</a>
+        <h1 class="hero-headline">
+            WELCOME<br>
+            <span class="line-2">{{ user_agency.name }}</span>
+        </h1>
+        <div class="hero-bottom">
+            <p class="hero-sub">Manage your packages, respond to trip requests and grow your revenue — all from your agency dashboard.</p>
+            <div class="hero-actions">
+                <a href="{% url 'agency_dashboard' %}" class="btn btn-primary" style="font-size:1rem;padding:1.1rem 2.5rem;">🏢 Go to Dashboard</a>
+                <a href="#packages" class="btn btn-glass" style="font-size:1rem;padding:1.1rem 2.5rem;">Browse Packages</a>
+            </div>
         </div>
 
         {% elif user.is_authenticated %}
-        <h1 class="hero-headline">Welcome back,<em>{{ user.username }}</em></h1>
-        <p class="hero-sub">Ready for your next adventure? Plan a new trip or explore packages from verified agencies.</p>
-        <div class="hero-actions">
-            <a href="{% url 'planner' %}" class="btn btn-gold" style="font-size:1rem;padding:1rem 2.25rem;">✦ Plan a New Trip</a>
-            <a href="{% url 'dashboard' %}" class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.3);font-size:1rem;">My Dashboard</a>
+        <h1 class="hero-headline">
+            WELCOME<br>
+            <span class="line-2">{{ user.username }}</span>
+        </h1>
+        <div class="hero-bottom">
+            <p class="hero-sub">Ready for your next adventure? Plan a new trip or explore packages from verified agencies.</p>
+            <div class="hero-actions">
+                <a href="{% url 'planner' %}" class="btn btn-primary" style="font-size:1rem;padding:1.1rem 2.5rem;">✦ Plan a New Trip</a>
+                <a href="{% url 'dashboard' %}" class="btn btn-glass" style="font-size:1rem;padding:1.1rem 2.5rem;">My Dashboard</a>
+            </div>
         </div>
 
         {% else %}
-        <h1 class="hero-headline">Discover India<em>your way</em></h1>
-        <p class="hero-sub">Tell us your dream destination. Our AI crafts a personalised itinerary in seconds, then connects you with verified travel agencies competing for your business.</p>
-        <div class="hero-actions">
-            <a href="{% url 'planner' %}" class="btn btn-gold" style="font-size:1rem;padding:1rem 2.25rem;">✦ Plan My Trip — Free</a>
-            <a href="#packages" class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.3);font-size:1rem;">Browse Packages</a>
+        <h1 class="hero-headline">
+            TRIVASTA<br>
+            <span class="line-2">India your way</span>
+        </h1>
+        <div class="hero-bottom">
+            <p class="hero-sub">Tell us your dream destination. Our AI crafts a personalised itinerary in seconds, then connects you with verified travel agencies competing for your business.</p>
+            <div class="hero-actions">
+                <a href="{% url 'planner' %}" class="btn btn-primary" style="font-size:1rem;padding:1.1rem 2.5rem;">✦ Plan My Trip — Free</a>
+                <a href="#packages" class="btn btn-glass" style="font-size:1rem;padding:1.1rem 2.5rem;">Browse Packages</a>
+            </div>
         </div>
         {% endif %}
     </div>
 
-    {% if not user_agency %}
-    <div class="hero-float-cards">
-        <div class="float-card">
-            <div class="float-card-img">🏔️</div>
-            <div><div class="float-card-name">Leh–Ladakh</div><div class="float-card-meta">7 days · Adventure</div></div>
-            <div class="float-card-price">₹45K</div>
-        </div>
-        <div class="float-card">
-            <div class="float-card-img">🌴</div>
-            <div><div class="float-card-name">Kerala Backwaters</div><div class="float-card-meta">6 days · Leisure</div></div>
-            <div class="float-card-price">₹28K</div>
-        </div>
-        <div class="float-card">
-            <div class="float-card-img">🏯</div>
-            <div><div class="float-card-name">Rajasthan</div><div class="float-card-meta">8 days · Heritage</div></div>
-            <div class="float-card-price">₹32K</div>
-        </div>
-        <div class="float-card">
-            <div class="float-card-img">🏖️</div>
-            <div><div class="float-card-name">Goa</div><div class="float-card-meta">5 days · Beach</div></div>
-            <div class="float-card-price">₹18K</div>
-        </div>
+    <div class="hero-scroll-hint">
+        <div class="scroll-track"><div class="scroll-thumb"></div></div>
+        <span class="scroll-label">Scroll</span>
     </div>
-    {% endif %}
-
-    <div class="scroll-indicator">Scroll</div>
 </section>
 
 
-<!-- PACKAGES CAROUSEL -->
-<section class="packages-section" id="packages">
-    <div class="packages-header">
-        <div class="packages-header-left">
-            <div class="section-eyebrow" style="color:#e8c97a;">Featured Packages</div>
-            <h2>Curated by our <em>partner agencies</em></h2>
+<!-- ══ STATS BAND ════════════════════════════════════════ -->
+<div class="stats-band">
+    <div class="stats-inner">
+        <div class="stat-item reveal"><div class="stat-num">100+</div><div class="stat-lbl">Happy Travellers</div></div>
+        <div class="stat-item reveal" style="transition-delay:0.1s;"><div class="stat-num">10+</div><div class="stat-lbl">Partner Agencies</div></div>
+        <div class="stat-item reveal" style="transition-delay:0.2s;"><div class="stat-num">20+</div><div class="stat-lbl">Curated Packages</div></div>
+        <div class="stat-item reveal" style="transition-delay:0.3s;"><div class="stat-num">30+</div><div class="stat-lbl">Destinations</div></div>
+    </div>
+</div>
+
+
+<!-- ══ BIOME EXPLORER ═══════════════════════════════════ -->
+<section class="biome-section">
+    <div class="biome-label-row reveal">
+        <div>
+            <p class="eyebrow" style="color:var(--sun);">Explore by Terrain</p>
+            <h2 class="title-xl">Every landscape,<br><span style="font-family:var(--font-display);font-style:italic;font-size:0.6em;font-weight:300;letter-spacing:0.01em;">one journey</span></h2>
         </div>
-        <div class="carousel-controls">
+        <p style="max-width:320px;color:var(--muted);font-size:0.95rem;line-height:1.7;">From sun-baked deserts to misty jungles — drag to explore India's breathtaking biomes.</p>
+    </div>
+
+    <div class="biome-track-outer" id="biomeTrack">
+        <div class="biome-track">
+
+            <!-- Beach -->
+            <div class="biome-card reveal" style="transition-delay:0.05s;">
+                <img class="biome-img" src="https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800&q=85" alt="Beaches" loading="lazy">
+                <div class="biome-overlay"></div>
+                <div class="biome-tag" style="background:rgba(6,174,213,0.35);border-color:rgba(6,174,213,0.4);">🏖️ Beach</div>
+                <div class="biome-info">
+                    <div class="biome-name">BEACHES</div>
+                    <div class="biome-dest">📍 Goa · Andaman · Kerala</div>
+                    <div class="biome-price">From ₹15,000</div>
+                    <a href="{% url 'planner' %}" class="biome-cta">Explore ↗️</a>
+                </div>
+            </div>
+
+            <!-- Mountain -->
+            <div class="biome-card reveal" style="transition-delay:0.1s;">
+                <img class="biome-img" src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=85" alt="Mountains" loading="lazy">
+                <div class="biome-overlay"></div>
+                <div class="biome-tag" style="background:rgba(82,183,136,0.35);border-color:rgba(82,183,136,0.4);">🏔️ Mountain</div>
+                <div class="biome-info">
+                    <div class="biome-name">MOUNTAINS</div>
+                    <div class="biome-dest">📍 Ladakh · Spiti · Uttarakhand</div>
+                    <div class="biome-price">From ₹35,000</div>
+                    <a href="{% url 'planner' %}" class="biome-cta">Explore ↗️</a>
+                </div>
+            </div>
+
+            <!-- Desert -->
+            <div class="biome-card reveal" style="transition-delay:0.15s;">
+                <img class="biome-img" src="https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&q=85" alt="Desert" loading="lazy">
+                <div class="biome-overlay"></div>
+                <div class="biome-tag" style="background:rgba(245,166,35,0.35);border-color:rgba(245,166,35,0.4);">🏜️ Desert</div>
+                <div class="biome-info">
+                    <div class="biome-name">DESERT</div>
+                    <div class="biome-dest">📍 Rajasthan · Rann of Kutch</div>
+                    <div class="biome-price">From ₹22,000</div>
+                    <a href="{% url 'planner' %}" class="biome-cta">Explore ↗️</a>
+                </div>
+            </div>
+
+            <!-- Jungle -->
+            <div class="biome-card reveal" style="transition-delay:0.2s;">
+                <img class="biome-img" src="https://images.unsplash.com/photo-1448375240586-882707db888b?w=800&q=85" alt="Jungle" loading="lazy">
+                <div class="biome-overlay"></div>
+                <div class="biome-tag" style="background:rgba(45,106,79,0.5);border-color:rgba(82,183,136,0.4);">🌿 Jungle</div>
+                <div class="biome-info">
+                    <div class="biome-name">JUNGLE</div>
+                    <div class="biome-dest">📍 Coorg · Wayanad · Kaziranga</div>
+                    <div class="biome-price">From ₹20,000</div>
+                    <a href="{% url 'planner' %}" class="biome-cta">Explore ↗️</a>
+                </div>
+            </div>
+
+            <!-- Waterfall -->
+            <div class="biome-card reveal" style="transition-delay:0.25s;">
+                <img class="biome-img" src="https://images.unsplash.com/photo-1432405972618-c60b0225b8f9?w=800&q=85" alt="Waterfall" loading="lazy">
+                <div class="biome-overlay"></div>
+                <div class="biome-tag" style="background:rgba(6,174,213,0.35);border-color:rgba(6,174,213,0.4);">💧 Waterfall</div>
+                <div class="biome-info">
+                    <div class="biome-name">WATERFALLS</div>
+                    <div class="biome-dest">📍 Meghalaya · Goa · Sikkim</div>
+                    <div class="biome-price">From ₹18,000</div>
+                    <a href="{% url 'planner' %}" class="biome-cta">Explore ↗️</a>
+                </div>
+            </div>
+
+            <!-- Heritage -->
+            <div class="biome-card reveal" style="transition-delay:0.3s;">
+                <img class="biome-img" src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=85" alt="Heritage" loading="lazy">
+                <div class="biome-overlay"></div>
+                <div class="biome-tag" style="background:rgba(255,107,53,0.35);border-color:rgba(255,107,53,0.4);">🏯 Heritage</div>
+                <div class="biome-info">
+                    <div class="biome-name">HERITAGE</div>
+                    <div class="biome-dest">📍 Rajasthan · Hampi · Agra</div>
+                    <div class="biome-price">From ₹25,000</div>
+                    <a href="{% url 'planner' %}" class="biome-cta">Explore ↗️</a>
+                </div>
+            </div>
+
+            <!-- Backwaters -->
+            <div class="biome-card reveal" style="transition-delay:0.35s;">
+                <img class="biome-img" src="https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800&q=85" alt="Backwaters" loading="lazy">
+                <div class="biome-overlay"></div>
+                <div class="biome-tag" style="background:rgba(45,106,79,0.4);border-color:rgba(82,183,136,0.4);">🌊 Backwaters</div>
+                <div class="biome-info">
+                    <div class="biome-name">BACKWATERS</div>
+                    <div class="biome-dest">📍 Kerala · Sundarbans</div>
+                    <div class="biome-price">From ₹22,000</div>
+                    <a href="{% url 'planner' %}" class="biome-cta">Explore ↗️</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</section>
+
+
+<!-- ══ PACKAGES ══════════════════════════════════════════ -->
+<section class="packages-section" id="packages">
+    <div class="pkg-header reveal">
+        <div>
+            <p class="eyebrow" style="color:#38bdf8;">Featured Packages</p>
+            <h2 class="title-serif">Curated by our <em>partner agencies</em></h2>
+        </div>
+        <div class="carousel-btns">
             <button class="carousel-btn" id="prevBtn" onclick="moveCarousel(-1)" aria-label="Previous">←</button>
-            <button class="carousel-btn" id="nextBtn" onclick="moveCarousel(1)"  aria-label="Next">→</button>
+            <button class="carousel-btn" id="nextBtn" onclick="moveCarousel(1)" aria-label="Next">→</button>
         </div>
     </div>
 
@@ -512,42 +1152,33 @@
     <div class="carousel-track-wrap">
         <div class="carousel-track" id="carouselTrack">
             {% for pkg in packages %}
-            <a href="{% url 'package_detail' pkg.id %}" class="pkg-card">
-                <div class="pkg-card-img">
-                    {% if pkg.images.first %}
-                        <img src="{{ pkg.images.first.get_url }}" alt="{{ pkg.title }}" loading="lazy">
-                        <div class="pkg-card-img-overlay"></div>
-                    {% elif pkg.image_url %}
-                        <img src="{{ pkg.image_url }}" alt="{{ pkg.title }}" loading="lazy">
-                        <div class="pkg-card-img-overlay"></div>
-                    {% else %}
-                        {% if pkg.category == 'adventure' %}🏔️
-                        {% elif pkg.category == 'cultural' %}🏛️
-                        {% elif pkg.category == 'leisure' %}🌴
-                        {% elif pkg.category == 'romantic' %}💑
-                        {% elif pkg.category == 'family' %}👨‍👩‍👧
-                        {% elif pkg.category == 'luxury' %}✨
-                        {% elif pkg.category == 'solo' %}🎒
-                        {% else %}✈️{% endif %}
-                    {% endif %}
-                    <div class="pkg-card-category">{{ pkg.get_category_display }}</div>
-                    <div class="pkg-card-agency">🏢 {{ pkg.agency.name }}</div>
-                </div>
-                <div class="pkg-card-body">
-                    <div class="pkg-card-title">{{ pkg.title }}</div>
-                    <div class="pkg-card-dest">📍 {{ pkg.destination }}</div>
-                    <div class="pkg-card-meta">
-                        <span class="pkg-chip">📅 {{ pkg.duration }} days</span>
-                        {% if pkg.agency.avg_overall_rating > 0 %}
-                        <span class="pkg-chip">⭐ {{ pkg.agency.avg_overall_rating }}</span>
+            <a href="{% url 'package_detail' pkg.id %}" class="pkg-card tilt-card">
+                <div class="pkg-card-inner">
+                    <div class="pkg-card-img">
+                        {% if pkg.images.first %}
+                            <img src="{{ pkg.images.first.get_url }}" alt="{{ pkg.title }}" loading="lazy">
+                            <div class="pkg-card-img-overlay"></div>
+                        {% elif pkg.image_url %}
+                            <img src="{{ pkg.image_url }}" alt="{{ pkg.title }}" loading="lazy">
+                            <div class="pkg-card-img-overlay"></div>
+                        {% else %}
+                            {% if pkg.category == 'adventure' %}🏔️{% elif pkg.category == 'cultural' %}🏛️{% elif pkg.category == 'leisure' %}🌴{% elif pkg.category == 'romantic' %}💑{% elif pkg.category == 'family' %}👨‍👩‍👧{% elif pkg.category == 'luxury' %}✨{% elif pkg.category == 'solo' %}🎒{% else %}✈️{% endif %}
                         {% endif %}
-                        {% if pkg.agency.status == 'approved' %}
-                        <span class="pkg-chip" style="color:#27ae60;border-color:rgba(39,174,96,0.3);">✓ Verified</span>
-                        {% endif %}
+                        <div class="pkg-category-badge">{{ pkg.get_category_display }}</div>
+                        <div class="pkg-agency-badge">🏢 {{ pkg.agency.name }}</div>
                     </div>
-                    <div class="pkg-card-footer">
-                        <div class="pkg-card-price">₹{{ pkg.price|floatformat:0 }} <span>/ person</span></div>
-                        <span class="pkg-card-btn">View →</span>
+                    <div class="pkg-card-body">
+                        <div class="pkg-card-title">{{ pkg.title }}</div>
+                        <div class="pkg-card-dest">📍 {{ pkg.destination }}</div>
+                        <div class="pkg-chips">
+                            <span class="pkg-chip">📅 {{ pkg.duration }} days</span>
+                            {% if pkg.agency.avg_overall_rating > 0 %}<span class="pkg-chip">⭐ {{ pkg.agency.avg_overall_rating }}</span>{% endif %}
+                            {% if pkg.agency.status == 'approved' %}<span class="pkg-chip pkg-chip-verified">✓ Verified</span>{% endif %}
+                        </div>
+                        <div class="pkg-card-footer">
+                            <div class="pkg-price">₹{{ pkg.price|floatformat:0 }} <span>/ person</span></div>
+                            <span class="pkg-btn">View →</span>
+                        </div>
                     </div>
                 </div>
             </a>
@@ -556,78 +1187,73 @@
     </div>
     {% else %}
     <div class="no-packages">
-        <div style="font-size:3rem;margin-bottom:1rem;">📦</div>
+        <div style="font-size:3.5rem;margin-bottom:1rem;">📦</div>
         <h3>No packages yet</h3>
         {% if not user.is_authenticated %}
-        <p style="margin-top:0.5rem;">Are you a travel agency? <a href="{% url 'agency_register' %}" style="color:#e8c97a;text-decoration:none;font-weight:600;">Join Trivasta →</a></p>
+        <p style="margin-top:0.5rem;">Are you a travel agency? <a href="{% url 'agency_register' %}">Join Trivasta →</a></p>
         {% endif %}
     </div>
     {% endif %}
 </section>
 
 
-<!-- DESTINATIONS — India only -->
+<!-- ══ DESTINATIONS BENTO ════════════════════════════════ -->
 <section class="destinations-section">
     <div class="container">
-        <div class="section-eyebrow">Explore India</div>
-        <h2 class="section-title">Popular <em>destinations</em></h2>
-        <p style="color:var(--muted);margin-top:0.75rem;font-size:1rem;max-width:480px;line-height:1.7;">
-            From snow-capped peaks to tropical backwaters — India's diversity is unmatched.
-        </p>
+        <div class="reveal">
+            <p class="eyebrow" style="color:var(--gold);">Explore India</p>
+            <h2 class="title-xl" style="color:var(--white);">POPULAR<br><span style="font-family:var(--font-display);font-style:italic;font-size:0.55em;font-weight:300;color:var(--gold-light);">destinations</span></h2>
+            <p style="color:rgba(255,255,255,0.4);margin-top:0.75rem;font-size:1rem;max-width:480px;line-height:1.7;">From snow-capped peaks to tropical backwaters — India's diversity is unmatched.</p>
+        </div>
 
-        <div class="dest-grid">
-            <div class="dest-card featured">
-                <img class="dest-card-img"
-                     src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=800&q=80"
-                     alt="Rajasthan" loading="lazy">
-                <div class="dest-card-overlay">
-                    <div class="dest-card-name">Rajasthan</div>
-                    <div class="dest-card-meta">6–10 days · Heritage & Culture</div>
-                    <div class="dest-card-price">From ₹25,000</div>
+        <div class="dest-bento">
+            <div class="dest-tile t1 reveal" style="transition-delay:0.1s;">
+                <img src="https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=900&q=85" alt="Rajasthan" loading="lazy">
+                <div class="dest-tile-overlay">
+                    <div class="dest-tile-name">RAJASTHAN</div>
+                    <div class="dest-tile-meta">6–10 days · Heritage & Culture</div>
+                    <div class="dest-tile-price">From ₹25,000</div>
+                    <a href="{% url 'planner' %}" class="dest-tile-btn">Plan Trip ↗️</a>
                 </div>
             </div>
 
-            <div class="dest-card">
-                <img class="dest-card-img"
-                     src="https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=800&q=80"
-                     alt="Kerala" loading="lazy">
-                <div class="dest-card-overlay">
-                    <div class="dest-card-name">Kerala</div>
-                    <div class="dest-card-meta">5–8 days · Backwaters & Nature</div>
-                    <div class="dest-card-price">From ₹22,000</div>
+            <div class="dest-tile t2 reveal" style="transition-delay:0.15s;">
+                <img src="https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=900&q=85" alt="Kerala" loading="lazy">
+                <div class="dest-tile-overlay">
+                    <div class="dest-tile-name">KERALA</div>
+                    <div class="dest-tile-meta">5–8 days · Backwaters & Nature</div>
+                    <div class="dest-tile-price">From ₹22,000</div>
+                    <a href="{% url 'planner' %}" class="dest-tile-btn">Plan Trip ↗️</a>
                 </div>
             </div>
 
-            <div class="dest-card">
-                <img class="dest-card-img"
-                     src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&q=80"
-                     alt="Leh Ladakh" loading="lazy">
-                <div class="dest-card-overlay">
-                    <div class="dest-card-name">Leh–Ladakh</div>
-                    <div class="dest-card-meta">7–10 days · Mountains & Adventure</div>
-                    <div class="dest-card-price">From ₹40,000</div>
+            <div class="dest-tile t3 reveal" style="transition-delay:0.2s;">
+                <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=900&q=85" alt="Leh Ladakh" loading="lazy">
+                <div class="dest-tile-overlay">
+                    <div class="dest-tile-name">LEH–LADAKH</div>
+                    <div class="dest-tile-meta">7–10 days · Mountains & Adventure</div>
+                    <div class="dest-tile-price">From ₹40,000</div>
+                    <a href="{% url 'planner' %}" class="dest-tile-btn">Plan Trip ↗️</a>
                 </div>
             </div>
 
-            <div class="dest-card">
-                <img class="dest-card-img"
-                     src="https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=800&q=80"
-                     alt="Goa" loading="lazy">
-                <div class="dest-card-overlay">
-                    <div class="dest-card-name">Goa</div>
-                    <div class="dest-card-meta">4–6 days · Beaches & Nightlife</div>
-                    <div class="dest-card-price">From ₹15,000</div>
+            <div class="dest-tile t4 reveal" style="transition-delay:0.25s;">
+                <img src="https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=900&q=85" alt="Goa" loading="lazy">
+                <div class="dest-tile-overlay">
+                    <div class="dest-tile-name">GOA</div>
+                    <div class="dest-tile-meta">4–6 days · Beaches & Nightlife</div>
+                    <div class="dest-tile-price">From ₹15,000</div>
+                    <a href="{% url 'planner' %}" class="dest-tile-btn">Plan Trip ↗️</a>
                 </div>
             </div>
 
-            <div class="dest-card">
-                <img class="dest-card-img"
-                     src="https://images.unsplash.com/photo-1548013146-72479768bada?w=800&q=80"
-                     alt="Agra" loading="lazy">
-                <div class="dest-card-overlay">
-                    <div class="dest-card-name">Agra & Golden Triangle</div>
-                    <div class="dest-card-meta">4–6 days · History & Architecture</div>
-                    <div class="dest-card-price">From ₹18,000</div>
+            <div class="dest-tile t5 reveal" style="transition-delay:0.3s;">
+                <img src="https://images.unsplash.com/photo-1548013146-72479768bada?w=900&q=85" alt="Agra" loading="lazy">
+                <div class="dest-tile-overlay">
+                    <div class="dest-tile-name">AGRA & GOLDEN TRIANGLE</div>
+                    <div class="dest-tile-meta">4–6 days · History & Architecture</div>
+                    <div class="dest-tile-price">From ₹18,000</div>
+                    <a href="{% url 'planner' %}" class="dest-tile-btn">Plan Trip ↗️</a>
                 </div>
             </div>
         </div>
@@ -635,37 +1261,39 @@
 </section>
 
 
-<!-- HOW IT WORKS -->
+<!-- ══ HOW IT WORKS ══════════════════════════════════════ -->
 {% if not user_agency %}
 <section class="how-section">
     <div class="container">
-        <div style="text-align:center;">
-            <div class="section-eyebrow" style="justify-content:center;">The Process</div>
-            <h2 class="section-title">Travel planning, <em>reimagined</em></h2>
-            <p style="color:var(--muted);margin-top:0.75rem;font-size:1rem;max-width:500px;margin-left:auto;margin-right:auto;line-height:1.7;">
-                Four steps from dream to departure — powered by AI and trusted agencies.
-            </p>
+        <div style="text-align:center;" class="reveal">
+            <p class="eyebrow" style="color:var(--gold);justify-content:center;">The Process</p>
+            <h2 class="title-xl" style="color:var(--white);">HOW IT<br><span style="font-family:var(--font-display);font-style:italic;font-size:0.55em;font-weight:300;color:var(--gold-light);">works</span></h2>
+            <p style="color:rgba(255,255,255,0.4);margin-top:1rem;font-size:1rem;max-width:460px;margin-left:auto;margin-right:auto;line-height:1.7;">Four steps from dream to departure — powered by AI and trusted agencies.</p>
         </div>
-        <div class="steps-grid">
-            <div class="step-item">
-                <div class="step-num-wrap">✏️</div>
-                <div class="step-title">Tell us your dream</div>
-                <div class="step-desc">Enter your destination, budget, duration and travel style. That's all we need.</div>
+        <div class="how-grid">
+            <div class="how-card reveal" style="transition-delay:0.1s;">
+                <span class="how-num">01</span>
+                <span class="how-icon">✏️</span>
+                <div class="how-title">Tell us your dream</div>
+                <div class="how-desc">Enter your destination, budget, duration and travel style. That's all we need.</div>
             </div>
-            <div class="step-item">
-                <div class="step-num-wrap">🤖</div>
-                <div class="step-title">AI builds your plan</div>
-                <div class="step-desc">Our AI crafts a detailed day-by-day itinerary tailored to your preferences in seconds.</div>
+            <div class="how-card reveal" style="transition-delay:0.2s;">
+                <span class="how-num">02</span>
+                <span class="how-icon">🤖</span>
+                <div class="how-title">AI builds your plan</div>
+                <div class="how-desc">Our AI crafts a detailed day-by-day itinerary tailored to your preferences in seconds.</div>
             </div>
-            <div class="step-item">
-                <div class="step-num-wrap">🏢</div>
-                <div class="step-title">Agencies compete</div>
-                <div class="step-desc">Verified travel agencies send you their best offers — you compare and choose.</div>
+            <div class="how-card reveal" style="transition-delay:0.3s;">
+                <span class="how-num">03</span>
+                <span class="how-icon">🏢</span>
+                <div class="how-title">Agencies compete</div>
+                <div class="how-desc">Verified travel agencies send you their best offers — you compare and choose.</div>
             </div>
-            <div class="step-item">
-                <div class="step-num-wrap">✈️</div>
-                <div class="step-title">Book &amp; travel</div>
-                <div class="step-desc">Pay securely through Trivasta and embark on your journey with full support.</div>
+            <div class="how-card reveal" style="transition-delay:0.4s;">
+                <span class="how-num">04</span>
+                <span class="how-icon">✈️</span>
+                <div class="how-title">Book &amp; travel</div>
+                <div class="how-desc">Pay securely through Trivasta and embark on your journey with full support.</div>
             </div>
         </div>
     </div>
@@ -673,61 +1301,73 @@
 {% endif %}
 
 
-<!-- AGENCY CTA -->
-<section class="agency-cta">
-    <div class="agency-cta-inner">
+<!-- ══ AGENCY CTA ══════════════════════════════════════════ -->
+<section class="agency-section">
+    <div class="agency-image-side">
         {% if user_agency %}
-        <div>
-            <div class="section-eyebrow" style="color:#e8c97a;">Your Agency</div>
-            <h2>You're part of<br><em>Trivasta</em></h2>
-            <p>Manage your packages, view incoming trip requests and grow your bookings — everything is in your dashboard.</p>
-        </div>
-        <div class="agency-cta-btns">
-            <a href="{% url 'agency_dashboard' %}" class="btn btn-gold">🏢 Go to Dashboard →</a>
+        <img src="https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=1200&q=85" alt="Agency" loading="lazy">
+        {% elif user.is_authenticated %}
+        <img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200&q=85" alt="Travel" loading="lazy">
+        {% else %}
+        <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=1200&q=85" alt="Agencies" loading="lazy">
+        {% endif %}
+    </div>
+
+    <div class="agency-content-side">
+        {% if user_agency %}
+        <div class="reveal-right">
+            <p class="eyebrow" style="color:var(--gold);">Your Agency</p>
+            <h2 class="title-xl" style="color:var(--white);">YOU'RE PART<br>OF <span style="background:linear-gradient(135deg,var(--sun),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">TRIVASTA</span></h2>
+            <p style="color:rgba(255,255,255,0.45);margin-top:1.25rem;margin-bottom:2rem;font-size:0.95rem;line-height:1.75;max-width:380px;">Manage your packages, view incoming trip requests and grow your bookings — everything is in your dashboard.</p>
+            <a href="{% url 'agency_dashboard' %}" class="btn btn-primary">🏢 Go to Dashboard →</a>
         </div>
 
         {% elif user.is_authenticated %}
-        <div>
-            <div class="section-eyebrow" style="color:#e8c97a;">Ready to Explore?</div>
-            <h2>Plan your next<br><em>adventure</em></h2>
-            <p>Use our AI planner to build a personalised itinerary, then let verified agencies compete to give you the best deal.</p>
-        </div>
-        <div class="agency-cta-btns">
-            <a href="{% url 'planner' %}" class="btn btn-gold">✦ Plan a Trip →</a>
-            <a href="{% url 'dashboard' %}" class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.3);">My Dashboard</a>
+        <div class="reveal-right">
+            <p class="eyebrow" style="color:var(--gold);">Ready to Explore?</p>
+            <h2 class="title-xl" style="color:var(--white);">PLAN YOUR<br>NEXT <span style="background:linear-gradient(135deg,var(--sun),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">ADVENTURE</span></h2>
+            <p style="color:rgba(255,255,255,0.45);margin-top:1.25rem;margin-bottom:2rem;font-size:0.95rem;line-height:1.75;max-width:380px;">Use our AI planner to build a personalised itinerary, then let verified agencies compete to give you the best deal.</p>
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                <a href="{% url 'planner' %}" class="btn btn-primary">✦ Plan a Trip →</a>
+                <a href="{% url 'dashboard' %}" class="btn btn-glass">My Dashboard</a>
+            </div>
         </div>
 
         {% else %}
-        <div>
-            <div class="section-eyebrow" style="color:#e8c97a;">For Travel Agencies</div>
-            <h2>Grow your business<br>with <em>Trivasta</em></h2>
-            <p>Join our marketplace and connect with travellers actively looking for their perfect trip. List your packages and respond to trip requests directly.</p>
-        </div>
-        <div class="agency-cta-btns">
-            <a href="{% url 'agency_register' %}" class="btn btn-gold">Join as Agency →</a>
-            <a href="{% url 'agency_login' %}" class="btn btn-outline" style="color:white;border-color:rgba(255,255,255,0.3);">Agency Login</a>
+        <div class="reveal-right">
+            <p class="eyebrow" style="color:var(--gold);">For Travel Agencies</p>
+            <h2 class="title-xl" style="color:var(--white);">GROW WITH<br><span style="background:linear-gradient(135deg,var(--sun),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">TRIVASTA</span></h2>
+            <p style="color:rgba(255,255,255,0.45);margin-top:1.25rem;margin-bottom:2rem;font-size:0.95rem;line-height:1.75;max-width:380px;">Join our marketplace and connect with travellers actively looking for their perfect trip. List your packages and respond to trip requests directly.</p>
+            <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                <a href="{% url 'agency_register' %}" class="btn btn-gold">Join as Agency →</a>
+                <a href="{% url 'agency_login' %}" class="btn btn-glass">Agency Login</a>
+            </div>
         </div>
         {% endif %}
     </div>
 </section>
 
 
-<!-- FINAL CTA -->
+<!-- ══ FINAL CTA ══════════════════════════════════════════ -->
 {% if not user_agency %}
 <section class="final-cta">
+    <div class="final-cta-bg" id="finalBg"></div>
     <div class="final-cta-content">
-        <div class="section-eyebrow" style="justify-content:center;margin-bottom:1.5rem;">Ready to Explore</div>
-        <h2>Your next adventure<br><em>starts here</em></h2>
-        <p>Plan your dream trip across India with AI-powered itineraries and verified travel agencies.</p>
+        <p class="eyebrow" style="color:var(--gold-light);justify-content:center;margin-bottom:1.5rem;">Ready to Explore</p>
+        <div class="final-cta-big reveal">YOUR NEXT</div>
+        <div class="final-cta-sub reveal" style="transition-delay:0.15s;">adventure starts here</div>
+        <p class="reveal" style="transition-delay:0.25s;">Plan your dream trip across India with AI-powered itineraries and verified travel agencies.</p>
 
-        {% if user.is_authenticated %}
-            <a href="{% url 'planner' %}" class="btn btn-primary" style="font-size:1rem;padding:1rem 2.5rem;">✦ Plan a New Trip</a>
-        {% else %}
-            <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
-                <a href="{% url 'planner' %}" class="btn btn-primary" style="font-size:1rem;padding:1rem 2.5rem;">✦ Generate My Itinerary</a>
-                <a href="{% url 'register' %}" class="btn btn-outline" style="font-size:1rem;padding:1rem 2.5rem;">Create Free Account</a>
-            </div>
-        {% endif %}
+        <div class="reveal" style="transition-delay:0.35s;">
+            {% if user.is_authenticated %}
+                <a href="{% url 'planner' %}" class="btn btn-primary" style="font-size:1.05rem;padding:1.1rem 2.75rem;">✦ Plan a New Trip</a>
+            {% else %}
+                <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;">
+                    <a href="{% url 'planner' %}" class="btn btn-primary" style="font-size:1.05rem;padding:1.1rem 2.75rem;">✦ Generate My Itinerary</a>
+                    <a href="{% url 'register' %}" class="btn btn-glass" style="font-size:1.05rem;padding:1.1rem 2.75rem;">Create Free Account</a>
+                </div>
+            {% endif %}
+        </div>
     </div>
 </section>
 {% endif %}
@@ -736,41 +1376,138 @@
 
 {% block extra_js %}
 <script>
-    let currentIndex = 0;
-    const cardWidth  = 340 + 24;
-
-    function moveCarousel(dir) {
-        const track = document.getElementById('carouselTrack');
-        if (!track) return;
-        const cards   = track.querySelectorAll('.pkg-card');
-        const visible = Math.max(1, Math.floor(track.parentElement.offsetWidth / cardWidth));
-        const maxIndex = Math.max(0, cards.length - visible);
-
-        currentIndex = Math.max(0, Math.min(currentIndex + dir, maxIndex));
-        track.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
-
-        document.getElementById('prevBtn').style.opacity = currentIndex === 0        ? '0.4' : '1';
-        document.getElementById('nextBtn').style.opacity = currentIndex >= maxIndex  ? '0.4' : '1';
-    }
-
-    // Auto-play carousel
-    setInterval(() => moveCarousel(1), 5000);
-
-    // Scroll reveal
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(el => {
-            if (el.isIntersecting) {
-                el.target.style.opacity   = '1';
-                el.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, { threshold: 0.1 });
-
-    document.querySelectorAll('.step-item, .dest-card').forEach(el => {
-        el.style.opacity   = '0';
-        el.style.transform = 'translateY(24px)';
-        el.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-        observer.observe(el);
+/* ══ HERO PARALLAX ════════════════════════════ */
+(function() {
+    const sky = document.getElementById('heroSky');
+    if (!sky) return;
+    let ticking = false;
+    window.addEventListener('scroll', () => {
+        if (!ticking) {
+            requestAnimationFrame(() => {
+                const y = window.scrollY;
+                sky.style.transform = `scale(1.15) translateY(${y * 0.25}px)`;
+                ticking = false;
+            });
+            ticking = true;
+        }
     });
+})();
+
+/* ══ 3D TILT ON PACKAGE CARDS ════════════════ */
+document.querySelectorAll('.tilt-card').forEach(card => {
+    card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = (e.clientX - cx) / (rect.width / 2);
+        const dy = (e.clientY - cy) / (rect.height / 2);
+        card.style.transform = `perspective(1200px) rotateY(${dx * 8}deg) rotateX(${-dy * 8}deg) scale(1.02)`;
+    });
+    card.addEventListener('mouseleave', () => {
+        card.style.transform = 'perspective(1200px) rotateY(0deg) rotateX(0deg) scale(1)';
+        card.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+    });
+    card.addEventListener('mouseenter', () => { card.style.transition = 'transform 0.1s linear, box-shadow 0.4s'; });
+});
+
+/* ══ DRAG-SCROLL BIOME TRACK ════════════════ */
+(function() {
+    const track = document.getElementById('biomeTrack');
+    if (!track) return;
+    let isDown = false, startX, scrollLeft;
+
+    track.addEventListener('mousedown', (e) => { isDown = true; track.style.cursor = 'grabbing'; startX = e.pageX - track.offsetLeft; scrollLeft = track.scrollLeft; });
+    track.addEventListener('mouseleave', () => { isDown = false; track.style.cursor = 'grab'; });
+    track.addEventListener('mouseup', () => { isDown = false; track.style.cursor = 'grab'; });
+    track.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - track.offsetLeft;
+        const walk = (x - startX) * 1.5;
+        track.scrollLeft = scrollLeft - walk;
+    });
+})();
+
+/* ══ CAROUSEL ════════════════════════════════ */
+let currentIndex = 0;
+const cardWidth  = 350 + 24;
+
+function moveCarousel(dir) {
+    const track = document.getElementById('carouselTrack');
+    if (!track) return;
+    const cards = track.querySelectorAll('.pkg-card');
+    const visible = Math.max(1, Math.floor(track.parentElement.offsetWidth / cardWidth));
+    const maxIndex = Math.max(0, cards.length - visible);
+    currentIndex = Math.max(0, Math.min(currentIndex + dir, maxIndex));
+    track.style.transform = `translateX(-${currentIndex * cardWidth}px)`;
+    document.getElementById('prevBtn').style.opacity = currentIndex === 0       ? '0.35' : '1';
+    document.getElementById('nextBtn').style.opacity = currentIndex >= maxIndex ? '0.35' : '1';
+}
+
+setInterval(() => {
+    const track = document.getElementById('carouselTrack');
+    if (!track) return;
+    const cards = track.querySelectorAll('.pkg-card');
+    const visible = Math.max(1, Math.floor(track.parentElement.offsetWidth / cardWidth));
+    const maxIndex = Math.max(0, cards.length - visible);
+    if (currentIndex >= maxIndex) currentIndex = -1;
+    moveCarousel(1);
+}, 5000);
+
+/* ══ DEST TILE 3D ════════════════════════════ */
+document.querySelectorAll('.dest-tile').forEach(tile => {
+    tile.addEventListener('mousemove', (e) => {
+        const rect = tile.getBoundingClientRect();
+        const dx = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
+        const dy = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
+        tile.style.transform = `perspective(1000px) rotateY(${dx * 6}deg) rotateX(${-dy * 6}deg) scale(1.02)`;
+        tile.style.transition = 'transform 0.1s linear';
+    });
+    tile.addEventListener('mouseleave', () => {
+        tile.style.transform = 'perspective(1000px) rotateY(0) rotateX(0) scale(1)';
+        tile.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+    });
+});
+
+/* ══ HOW CARD 3D ════════════════════════════ */
+document.querySelectorAll('.how-card').forEach(card => {
+    card.addEventListener('click', () => {
+        card.style.transform = 'scale(0.96)';
+        setTimeout(() => { card.style.transform = ''; }, 200);
+    });
+});
+
+/* ══ CLICK RIPPLE ════════════════════════════ */
+document.querySelectorAll('.btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+        const ripple = document.createElement('span');
+        const rect = btn.getBoundingClientRect();
+        ripple.style.cssText = `
+            position:absolute; border-radius:50%;
+            width:6px; height:6px;
+            background:rgba(255,255,255,0.6);
+            left:${e.clientX - rect.left - 3}px;
+            top:${e.clientY - rect.top - 3}px;
+            transform:scale(0); pointer-events:none;
+            animation: rippleOut 0.55s ease-out forwards;
+        `;
+        if (!document.querySelector('#ripple-style')) {
+            const style = document.createElement('style');
+            style.id = 'ripple-style';
+            style.textContent = '@keyframes rippleOut { to { transform:scale(60); opacity:0; } }';
+            document.head.appendChild(style);
+        }
+        btn.style.position = 'relative';
+        btn.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 600);
+    });
+});
+
+/* ══ SCROLL REVEAL ════════════════════════════ */
+const revObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.08 });
+
+document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => revObs.observe(el));
 </script>
 {% endblock %}

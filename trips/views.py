@@ -15,13 +15,13 @@ def home(request):
     packages = Package.objects.filter(
         is_active=True, agency__status='approved'
     ).select_related('agency').order_by('-created_at')[:12]
-
+ 
     return render(request, "home.html", {
         "page_title": "Trivasta — AI-Powered Travel Planning",
         "packages":   packages,
     })
-
-
+ 
+ 
 @login_required
 def planner(request):
     if request.method == "POST":
@@ -29,8 +29,43 @@ def planner(request):
         if form.is_valid():
             trip      = form.save(commit=False)
             trip.user = request.user
+ 
+            # ── Minimum budget validation ──────────────────────────────────
+            num_people  = trip.num_people or 1
+            budget      = trip.budget or 0
+            budget_type = trip.budget_type  # 'total' or 'per_person'
+ 
+            if budget_type == 'per_person':
+                total_budget = budget * num_people
+                per_person   = budget
+            else:
+                total_budget = budget
+                per_person   = budget // num_people if num_people > 1 else budget
+ 
+            is_group = num_people > 1
+ 
+            MIN_PER_PERSON = 8000
+            MIN_GROUP_TOTAL = 20000
+ 
+            if is_group and total_budget < MIN_GROUP_TOTAL:
+                messages.error(
+                    request,
+                    f"Minimum budget for a group trip is ₹{MIN_GROUP_TOTAL:,}. "
+                    f"Your current total is ₹{total_budget:,}."
+                )
+                return render(request, "trips/planner.html", {"form": form, "page_title": "Plan Your Trip"})
+ 
+            if per_person < MIN_PER_PERSON:
+                messages.error(
+                    request,
+                    f"Minimum budget per person is ₹{MIN_PER_PERSON:,}. "
+                    f"Your current per-person budget is ₹{per_person:,}."
+                )
+                return render(request, "trips/planner.html", {"form": form, "page_title": "Plan Your Trip"})
+            # ──────────────────────────────────────────────────────────────
+ 
             trip.save()
-
+ 
             try:
                 itinerary_content = generate_itinerary(
                     destination=trip.destination, days=trip.days,
@@ -51,7 +86,7 @@ def planner(request):
                     f"📅 Day {i}: Explore {trip.destination} — local sights, food & culture 🌍"
                     for i in range(1, trip.days + 1)
                 ])
-
+ 
             Itinerary.objects.create(
                 trip=trip, content=itinerary_content,
                 estimated_cost=trip.total_budget()
@@ -62,7 +97,7 @@ def planner(request):
             messages.error(request, "Please correct the errors below.")
     else:
         form = TripForm()
-
+ 
     return render(request, "trips/planner.html", {"form": form, "page_title": "Plan Your Trip"})
 
 

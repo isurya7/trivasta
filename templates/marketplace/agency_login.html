@@ -3,57 +3,71 @@
 
 {% block extra_css %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600&display=swap');
-
     .agency-login-page {
-        min-height: calc(100vh - 68px);
+        min-height: calc(100vh - 72px);
         display: flex;
         align-items: center;
         justify-content: center;
         padding: 2rem;
-        background: var(--cream);
         position: relative;
         overflow: hidden;
     }
 
+    /* Ambient glow rings */
     .agency-login-page::before {
         content: '';
         position: absolute;
-        width: 700px; height: 700px;
+        width: 600px; height: 600px;
         border-radius: 50%;
-        border: 1px solid rgba(201,168,76,0.08);
+        border: 1px solid rgba(56,189,248,0.08);
         top: 50%; left: 50%;
         transform: translate(-50%, -50%);
+        pointer-events: none;
+    }
+
+    .agency-login-page::after {
+        content: '';
+        position: absolute;
+        width: 900px; height: 900px;
+        border-radius: 50%;
+        border: 1px solid rgba(56,189,248,0.04);
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
     }
 
     .login-card {
-        background: var(--white);
-        border-radius: 12px;
-        box-shadow: var(--shadow-deep);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 20px;
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
         padding: 3rem;
         width: 100%;
         max-width: 420px;
         position: relative;
         z-index: 1;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.35);
     }
 
     .login-card-icon {
-        width: 60px; height: 60px;
-        background: linear-gradient(135deg, var(--sea), #0a2240);
-        border-radius: 12px;
+        width: 56px; height: 56px;
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        border-radius: 14px;
         display: grid;
         place-items: center;
-        font-size: 1.5rem;
+        font-size: 1.4rem;
         margin-bottom: 1.5rem;
-        box-shadow: 0 8px 24px rgba(15,52,96,0.25);
+        box-shadow: 0 8px 24px rgba(14,77,146,0.4);
     }
 
     .login-card h1 {
-        font-family: 'Fraunces', serif;
+        font-family: 'Playfair Display', Georgia, serif;
         font-size: 1.875rem;
-        font-weight: 600;
-        color: var(--ink);
+        font-weight: 700;
+        color: var(--white);
         margin-bottom: 0.35rem;
+        line-height: 1.2;
     }
 
     .login-card .sub {
@@ -62,58 +76,78 @@
         margin-bottom: 2rem;
     }
 
-    .login-card .sub a { color: var(--sea); text-decoration: none; font-weight: 500; }
+    .login-card .sub a {
+        color: var(--ocean-glow);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s;
+    }
 
-    .field { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 1rem; }
+    .login-card .sub a:hover { color: var(--white); }
+
+    .field {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-bottom: 1rem;
+    }
 
     .field label {
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.06em;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: var(--ink-light);
+        color: rgba(255,255,255,0.5);
     }
 
     .field input {
         width: 100%;
         padding: 0.85rem 1rem;
-        border: 1.5px solid var(--cream-dark);
+        border: 1px solid var(--glass-border);
         border-radius: var(--radius);
-        font-family: 'Outfit', sans-serif;
+        font-family: 'Syne', sans-serif;
         font-size: 0.9rem;
-        color: var(--ink);
-        background: var(--cream);
+        color: var(--white);
+        background: rgba(255,255,255,0.05);
         outline: none;
-        transition: all 0.2s;
+        transition: all 0.25s;
     }
 
+    .field input::placeholder { color: rgba(255,255,255,0.25); }
+
     .field input:focus {
-        border-color: var(--sea);
-        background: var(--white);
-        box-shadow: 0 0 0 3px rgba(15,52,96,0.08);
+        border-color: rgba(56,189,248,0.5);
+        background: rgba(56,189,248,0.06);
+        box-shadow: 0 0 0 3px rgba(56,189,248,0.1);
     }
 
     .submit-btn {
         width: 100%;
         padding: 0.9rem;
-        background: var(--sea);
-        color: white;
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        color: var(--white);
         border: none;
         border-radius: var(--radius);
-        font-family: 'Outfit', sans-serif;
+        font-family: 'Syne', sans-serif;
         font-size: 0.95rem;
         font-weight: 600;
         cursor: pointer;
         margin-top: 0.5rem;
         transition: all 0.3s;
+        letter-spacing: 0.03em;
+        box-shadow: 0 4px 20px rgba(14,77,146,0.4);
     }
 
-    .submit-btn:hover { background: var(--sea-mid); transform: translateY(-1px); }
+    .submit-btn:hover {
+        background: linear-gradient(135deg, var(--ocean-light), var(--ocean-glow));
+        transform: translateY(-2px);
+        box-shadow: 0 8px 30px rgba(56,189,248,0.35);
+    }
 
     .divider {
         text-align: center;
-        font-size: 0.775rem;
-        color: var(--muted);
+        font-size: 0.75rem;
+        color: rgba(255,255,255,0.2);
         margin: 1.5rem 0;
         position: relative;
     }
@@ -121,9 +155,9 @@
     .divider::before, .divider::after {
         content: '';
         position: absolute;
-        top: 50%; width: 40%;
+        top: 50%; width: 42%;
         height: 1px;
-        background: var(--cream-dark);
+        background: var(--glass-border);
     }
 
     .divider::before { left: 0; }
@@ -136,7 +170,14 @@
         color: var(--muted);
     }
 
-    .user-link a { color: var(--sea); font-weight: 500; text-decoration: none; }
+    .user-link a {
+        color: var(--ocean-glow);
+        font-weight: 500;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .user-link a:hover { color: var(--white); }
 </style>
 {% endblock %}
 

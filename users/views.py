@@ -36,7 +36,7 @@ def register_view(request):
         email            = request.POST.get("email", "").strip()
         password         = request.POST.get("password", "")
         confirm_password = request.POST.get("confirm_password", "")
-
+ 
         if not username or not email or not password:
             messages.error(request, "All fields are required.")
             return redirect("register")
@@ -49,16 +49,25 @@ def register_view(request):
         if User.objects.filter(email=email).exists():
             messages.error(request, "Email already registered.")
             return redirect("register")
-
+ 
         try:
             user = User.objects.create_user(username=username, email=email, password=password)
             Profile.objects.get_or_create(user=user)
+ 
+            # ── Send welcome email ────────────────────────────────────────────
+            try:
+                from users.emails import send_welcome_email
+                send_welcome_email(user)
+            except Exception:
+                pass
+            # ─────────────────────────────────────────────────────────────────
+ 
             messages.success(request, "Account created successfully. Please login.")
             return redirect("login")
         except IntegrityError:
             messages.error(request, "Something went wrong. Try again.")
             return redirect("register")
-
+ 
     return render(request, "users/register.html", {"page_title": "Create Account"})
 
 

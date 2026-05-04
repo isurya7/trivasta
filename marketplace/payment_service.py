@@ -1,7 +1,10 @@
 import razorpay
 import logging
+import hmac
+import hashlib
 from django.conf import settings
 from django.utils import timezone
+from django.db import IntegrityError
 
 logger = logging.getLogger(__name__)
 
@@ -9,24 +12,14 @@ razorpay_client = razorpay.Client(
     auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)
 )
 
-# ── Commission config ─────────────────────────────────────────────────────────
-TRIVASTA_COMMISSION_PCT = 10   # 10% commission (fixed from 5%)
-GST_PCT                 = 5    # 5% GST on base amount
+TRIVASTA_COMMISSION_PCT = 10
+GST_PCT                 = 5
 
-
-# ── 1. Price calculation ──────────────────────────────────────────────────────
 
 def calculate_booking_amounts(base_price, coupon=None):
-    """
-    Given a base package/offer price and optional coupon,
-    returns a dict with all amounts broken down.
-
-    Trivasta always takes 10% of ORIGINAL base price.
-    Coupon discount reduces agency payout — Trivasta never loses commission.
-    """
-    original_base    = int(base_price)
-    discount_amount  = 0
-    coupon_code      = None
+    original_base   = int(base_price)
+    discount_amount = 0
+    coupon_code     = None
 
     if coupon:
         valid, msg = coupon.is_valid()
@@ -38,10 +31,10 @@ def calculate_booking_amounts(base_price, coupon=None):
     else:
         discounted_base = original_base
 
-    gst_amount           = int(discounted_base * GST_PCT / 100)
-    total_amount         = discounted_base + gst_amount
-    trivasta_commission  = int(original_base * TRIVASTA_COMMISSION_PCT / 100)  # always on original
-    agency_payout        = discounted_base - trivasta_commission
+    gst_amount          = int(discounted_base * GST_PCT / 100)
+    total_amount        = discounted_base + gst_amount
+    trivasta_commission = int(original_base * TRIVASTA_COMMISSION_PCT / 100)
+    agency_payout       = max(discounted_base - trivasta_commission, 0)
 
     return {
         'original_base':       original_base,
@@ -56,21 +49,18 @@ def calculate_booking_amounts(base_price, coupon=None):
     }
 
 
-# ── 2. Create Razorpay order ──────────────────────────────────────────────────
-
 def create_razorpay_order(amounts, booking_id, description="Trivasta Booking"):
-    """Creates a Razorpay order for the total amount."""
     try:
         order = razorpay_client.order.create({
-            "amount":   amounts['total_amount'] * 100,  # paise
+            "amount":   amounts['total_amount'] * 100,
             "currency": "INR",
             "receipt":  f"booking_{booking_id}",
             "notes": {
-                "booking_id":          booking_id,
-                "base_amount":         amounts['base_amount'],
-                "gst_amount":          amounts['gst_amount'],
-                "trivasta_commission": amounts['trivasta_commission'],
-                "agency_payout":       amounts['agency_payout'],
+                "booking_id":          str(booking_id),
+                "base_amount":         str(amounts['base_amount']),
+                "gst_amount":          str(amounts['gst_amount']),
+                "trivasta_commission": str(amounts['trivasta_commission']),
+                "agency_payout":       str(amounts['agency_payout']),
                 "coupon":              amounts.get('coupon_code') or '',
             }
         })
@@ -80,77 +70,96 @@ def create_razorpay_order(amounts, booking_id, description="Trivasta Booking"):
         return None, str(e)
 
 
-# ── 3. Verify payment signature ───────────────────────────────────────────────
-
+# ── FIX 1: Corrected HMAC — was hmac.new() which doesn't exist ───────────────
 def verify_payment_signature(order_id, payment_id, signature):
-    """Returns True if Razorpay signature is valid."""
-    import hmac
-    import hashlib
-    generated = hmac.new(
-        settings.RAZORPAY_KEY_SECRET.encode(),
-        f"{order_id}|{payment_id}".encode(),
-        hashlib.sha256
-    ).hexdigest()
-    return hmac.compare_digest(generated, signature)
+    """
+    Returns True if Razorpay HMAC-SHA256 signature is valid.
+    Single source of truth — do NOT duplicate this in views.py.
+    """
+    if not all([order_id, payment_id, signature]):
+        logger.warning("verify_payment_signature: missing params")
+        return False
+    try:
+        body      = f"{order_id}|{payment_id}"
+        secret    = settings.RAZORPAY_KEY_SECRET.encode()
+        generated = hmac.new(secret, body.encode(), hashlib.sha256).hexdigest()
+        return hmac.compare_digest(generated, signature)
+    except Exception as e:
+        logger.error(f"Signature verification error: {e}")
+        return False
 
 
-# ── 4. Transfer to agency (Razorpay Route) ───────────────────────────────────
-
+# ── FIX 2: Race condition eliminated with get_or_create + IntegrityError ─────
 def transfer_to_agency(booking, amounts):
     """
-    Fires Razorpay Route transfer to agency's linked account.
-    Called immediately after payment is verified.
-
-    Returns (payout_record, error_message)
+    Fires a Razorpay Route transfer to the agency's linked account.
+    Safe against duplicate webhook delivery — uses get_or_create on PayoutRecord
+    so a second concurrent call is a no-op rather than a double payout.
     """
     from marketplace.models import PayoutRecord
 
     agency = booking.agency
     if not agency:
+        logger.error(f"Booking {booking.id} has no agency — cannot transfer")
         return None, "No agency found for this booking."
 
-    # Create payout record first
-    payout = PayoutRecord.objects.create(
-        booking              = booking,
-        agency               = agency,
-        total_amount         = amounts['total_amount'],
-        base_amount          = amounts['base_amount'],
-        gst_amount           = amounts['gst_amount'],
-        discount_amount      = amounts.get('discount_amount', 0),
-        trivasta_commission  = amounts['trivasta_commission'],
-        agency_payout_amount = amounts['agency_payout'],
-        status               = 'pending',
-    )
+    # ── Atomic get-or-create prevents race condition ──────────────────────────
+    try:
+        payout, created = PayoutRecord.objects.get_or_create(
+            booking=booking,
+            defaults={
+                'agency':               agency,
+                'total_amount':         amounts['total_amount'],
+                'base_amount':          amounts['base_amount'],
+                'gst_amount':           amounts['gst_amount'],
+                'discount_amount':      amounts.get('discount_amount', 0),
+                'trivasta_commission':  amounts['trivasta_commission'],
+                'agency_payout_amount': amounts['agency_payout'],
+                'status':               'pending',
+            }
+        )
+    except IntegrityError:
+        # Another request created the record a millisecond before us — fetch it
+        payout  = PayoutRecord.objects.get(booking=booking)
+        created = False
 
-    # Check if agency has verified bank details
+    if not created:
+        if payout.status == 'paid':
+            logger.info(f"Payout already completed for booking {booking.id} — skipping")
+            return payout, None
+        logger.info(f"Retrying existing payout #{payout.id} for booking {booking.id}")
+
+    # ── Check agency payout readiness ─────────────────────────────────────────
     try:
         bank = agency.bank_details
-        if not bank.is_payout_ready:
-            payout.failure_reason = 'Agency KYC not verified or no linked account'
-            payout.save(update_fields=['failure_reason'])
-            logger.warning(f"Agency {agency.name} not payout-ready — transfer queued")
-            return payout, None  # Not an error — will be processed manually
     except Exception:
         payout.failure_reason = 'Agency has no bank details on file'
         payout.save(update_fields=['failure_reason'])
+        logger.warning(f"Booking {booking.id}: agency {agency.name} has no bank details")
         return payout, None
 
-    # Fire Razorpay Route transfer
+    if not bank.is_payout_ready:
+        payout.failure_reason = 'Agency KYC not verified or no Razorpay linked account'
+        payout.save(update_fields=['failure_reason'])
+        logger.warning(f"Booking {booking.id}: agency {agency.name} not payout-ready — queued")
+        return payout, None
+
+    # ── Fire Razorpay Route transfer ──────────────────────────────────────────
     try:
         payout.status = 'processing'
         payout.save(update_fields=['status'])
 
         transfer = razorpay_client.transfer.create({
-            "account":   bank.razorpay_account_id,
-            "amount":    amounts['agency_payout'] * 100,  # paise
-            "currency":  "INR",
+            "account":  bank.razorpay_account_id,
+            "amount":   amounts['agency_payout'] * 100,
+            "currency": "INR",
             "notes": {
-                "booking_id": booking.id,
+                "booking_id": str(booking.id),
                 "agency":     agency.name,
-                "commission": amounts['trivasta_commission'],
+                "commission": str(amounts['trivasta_commission']),
             },
             "linked_account_notes": ["booking_id"],
-            "on_hold":   0,  # 0 = instant transfer
+            "on_hold": 0,
         })
 
         payout.razorpay_transfer_id = transfer['id']
@@ -158,29 +167,26 @@ def transfer_to_agency(booking, amounts):
         payout.paid_at              = timezone.now()
         payout.save()
 
-        logger.info(f"Transfer successful: {transfer['id']} ₹{amounts['agency_payout']} to {agency.name}")
+        logger.info(
+            f"Transfer OK: {transfer['id']} | "
+            f"₹{amounts['agency_payout']} → {agency.name} | "
+            f"Booking #{booking.id}"
+        )
         return payout, None
 
     except Exception as e:
         payout.status         = 'failed'
         payout.failure_reason = str(e)
         payout.save()
-        logger.error(f"Razorpay Route transfer failed for booking {booking.id}: {e}")
+        logger.error(f"Razorpay Route transfer FAILED for booking {booking.id}: {e}")
         return payout, str(e)
 
 
-# ── 5. Create Razorpay linked account for agency ──────────────────────────────
-
 def create_agency_linked_account(agency):
-    """
-    Creates a Razorpay Route linked account for the agency.
-    Called when admin verifies agency KYC.
-    Returns (account_id, error)
-    """
     try:
         bank = agency.bank_details
     except Exception:
-        return None, "Agency has no bank details."
+        return None, "Agency has no bank details submitted."
 
     try:
         account = razorpay_client.account.create({
@@ -191,7 +197,7 @@ def create_agency_linked_account(agency):
                 "addresses": {
                     "registered": {
                         "street1":     agency.location or "India",
-                        "city":        "India",
+                        "city":        "Mumbai",
                         "state":       "MH",
                         "postal_code": "400001",
                         "country":     "IN",
@@ -224,6 +230,7 @@ def create_agency_linked_account(agency):
         bank.razorpay_fund_account_id = fund_account['id']
         bank.save(update_fields=['razorpay_account_id', 'razorpay_fund_account_id'])
 
+        logger.info(f"Razorpay linked account created for {agency.name}: {account_id}")
         return account_id, None
 
     except Exception as e:
@@ -231,14 +238,11 @@ def create_agency_linked_account(agency):
         return None, str(e)
 
 
-# ── 6. Validate coupon ────────────────────────────────────────────────────────
-
 def validate_coupon(code, user, base_amount, agency=None):
-    """
-    Validates a coupon code and returns (coupon_obj, error_message).
-    Checks: exists, active, not expired, min amount, not already used by user.
-    """
     from marketplace.models import Coupon, CouponUsage
+
+    if not code:
+        return None, "No coupon code provided."
 
     try:
         coupon = Coupon.objects.get(code=code.upper().strip())

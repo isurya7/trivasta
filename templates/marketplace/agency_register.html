@@ -3,20 +3,13 @@
 
 {% block extra_css %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600&display=swap');
-
-    .reg-page {
-        font-family: 'Outfit', sans-serif;
-        background: var(--cream);
-    }
-
     /* ── HERO ── */
     .reg-hero {
-        background: linear-gradient(135deg, #0f3460 0%, #0a2240 100%);
-        padding: 5rem 2rem;
+        padding: 6rem 2rem;
         text-align: center;
         position: relative;
         overflow: hidden;
+        background: var(--ocean-deep);
     }
 
     .reg-hero::before {
@@ -26,16 +19,17 @@
         background-image: url('https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1400&q=60');
         background-size: cover;
         background-position: center;
-        opacity: 0.08;
+        opacity: 0.06;
     }
 
     .reg-hero::after {
         content: '';
         position: absolute;
         inset: 0;
-        background-image: linear-gradient(rgba(201,168,76,0.04) 1px, transparent 1px),
-                          linear-gradient(90deg, rgba(201,168,76,0.04) 1px, transparent 1px);
-        background-size: 50px 50px;
+        background:
+            radial-gradient(ellipse 70% 60% at 20% 50%, rgba(14,77,146,0.45) 0%, transparent 60%),
+            radial-gradient(ellipse 50% 50% at 80% 30%, rgba(56,189,248,0.1) 0%, transparent 55%);
+        pointer-events: none;
     }
 
     .reg-hero-content { position: relative; z-index: 2; }
@@ -44,55 +38,44 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        background: rgba(201,168,76,0.15);
-        border: 1px solid rgba(201,168,76,0.3);
+        background: rgba(56,189,248,0.1);
+        border: 1px solid rgba(56,189,248,0.25);
         padding: 0.4rem 1rem;
-        border-radius: 2px;
+        border-radius: 100px;
         font-size: 0.72rem;
         font-weight: 600;
         letter-spacing: 0.14em;
         text-transform: uppercase;
-        color: #e8c97a;
+        color: var(--ocean-glow);
         margin-bottom: 1.5rem;
     }
 
     .reg-hero h1 {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: clamp(2.5rem, 5vw, 4rem);
-        font-weight: 300;
-        color: white;
+        font-weight: 400;
+        color: var(--white);
         line-height: 1.1;
         margin-bottom: 1rem;
     }
 
-    .reg-hero h1 em { font-style: italic; color: #e8c97a; }
+    .reg-hero h1 em { font-style: italic; color: var(--gold-light); }
 
     .reg-hero p {
         font-size: 1rem;
-        color: rgba(255,255,255,0.55);
+        color: var(--muted);
         max-width: 520px;
         margin: 0 auto;
         line-height: 1.7;
     }
 
-    /* ── PRICING SECTION ── */
-    .pricing-section {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 5rem 2rem;
-    }
-
-    .pricing-header {
-        text-align: center;
-        margin-bottom: 3rem;
-    }
-
+    /* ── SHARED ── */
     .section-eyebrow {
         font-size: 0.72rem;
         font-weight: 600;
         letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: var(--gold);
+        color: var(--ocean-glow);
         margin-bottom: 0.75rem;
         display: flex;
         align-items: center;
@@ -100,20 +83,31 @@
         gap: 0.5rem;
     }
 
-    .section-eyebrow::before, .section-eyebrow::after {
+    .section-eyebrow::before,
+    .section-eyebrow::after {
         content: '';
-        width: 28px; height: 1px;
-        background: var(--gold);
+        width: 28px;
+        height: 1px;
+        background: var(--ocean-glow);
     }
+
+    /* ── PRICING ── */
+    .pricing-section {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 5rem 2rem;
+    }
+
+    .pricing-header { text-align: center; margin-bottom: 3rem; }
 
     .pricing-header h2 {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 2.5rem;
-        font-weight: 300;
-        color: var(--ink);
+        font-weight: 400;
+        color: var(--white);
     }
 
-    .pricing-header h2 em { font-style: italic; color: var(--sea); }
+    .pricing-header h2 em { font-style: italic; color: var(--ocean-glow); }
 
     .pricing-grid {
         display: grid;
@@ -123,35 +117,45 @@
     }
 
     .plan-card {
-        background: var(--white);
-        border-radius: 16px;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
         padding: 2.5rem 2rem;
-        box-shadow: var(--shadow);
-        border: 2px solid transparent;
-        transition: all 0.3s;
+        backdrop-filter: blur(20px);
+        transition: transform 0.3s, border-color 0.3s, box-shadow 0.3s;
         position: relative;
         overflow: hidden;
     }
 
-    .plan-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-deep); }
+    .plan-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(56,189,248,0.3);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+    }
 
     .plan-card.featured {
-        border-color: var(--gold);
-        background: linear-gradient(160deg, #0f3460 0%, #0a2240 100%);
-        color: white;
+        border-color: rgba(245,158,11,0.45);
+        background: linear-gradient(160deg, rgba(14,77,146,0.3) 0%, rgba(10,37,64,0.4) 100%);
+        box-shadow: 0 0 40px rgba(245,158,11,0.1);
+    }
+
+    .plan-card.featured:hover {
+        border-color: rgba(245,158,11,0.65);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 40px rgba(245,158,11,0.15);
     }
 
     .plan-badge {
         position: absolute;
-        top: 1.25rem; right: 1.25rem;
-        background: var(--gold);
-        color: var(--ink);
+        top: 1.25rem;
+        right: 1.25rem;
+        background: linear-gradient(135deg, var(--gold), var(--gold-light));
+        color: var(--ocean-deep);
         font-size: 0.65rem;
         font-weight: 800;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        padding: 0.25rem 0.65rem;
-        border-radius: 2px;
+        padding: 0.3rem 0.65rem;
+        border-radius: 100px;
     }
 
     .plan-name {
@@ -159,41 +163,34 @@
         font-weight: 700;
         letter-spacing: 0.14em;
         text-transform: uppercase;
-        color: var(--gold);
+        color: var(--ocean-glow);
         margin-bottom: 1rem;
     }
 
+    .plan-card.featured .plan-name { color: var(--gold-light); }
+
     .plan-price {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 3rem;
-        font-weight: 600;
-        color: var(--sea);
+        font-weight: 700;
+        color: var(--white);
         line-height: 1;
         margin-bottom: 0.25rem;
     }
 
-    .plan-card.featured .plan-price { color: #e8c97a; }
-
     .plan-price span {
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-body);
         font-size: 1rem;
         font-weight: 400;
         color: var(--muted);
     }
-
-    .plan-card.featured .plan-price span { color: rgba(255,255,255,0.5); }
 
     .plan-billing {
         font-size: 0.8125rem;
         color: var(--muted);
         margin-bottom: 2rem;
         padding-bottom: 1.5rem;
-        border-bottom: 1px solid var(--cream-dark);
-    }
-
-    .plan-card.featured .plan-billing {
-        color: rgba(255,255,255,0.4);
-        border-bottom-color: rgba(255,255,255,0.1);
+        border-bottom: 1px solid var(--glass-border);
     }
 
     .plan-features { display: flex; flex-direction: column; gap: 0.875rem; margin-bottom: 2rem; }
@@ -203,13 +200,12 @@
         align-items: flex-start;
         gap: 0.625rem;
         font-size: 0.875rem;
-        color: var(--ink);
+        color: rgba(255,255,255,0.75);
         line-height: 1.4;
     }
 
-    .plan-card.featured .plan-feature { color: rgba(255,255,255,0.8); }
-
-    .plan-feature-icon { color: var(--gold); flex-shrink: 0; margin-top: 0.1rem; }
+    .plan-feature-icon { color: var(--ocean-glow); flex-shrink: 0; margin-top: 0.1rem; }
+    .plan-card.featured .plan-feature-icon { color: var(--gold-light); }
 
     .plan-cta {
         display: block;
@@ -220,25 +216,30 @@
         font-size: 0.9rem;
         text-decoration: none;
         transition: all 0.3s;
-        border: 2px solid var(--sea);
-        color: var(--sea);
-        background: transparent;
+        border: 1.5px solid rgba(56,189,248,0.35);
+        color: var(--ocean-glow);
+        background: rgba(56,189,248,0.08);
         cursor: pointer;
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-body);
         width: 100%;
     }
 
-    .plan-cta:hover { background: var(--sea); color: white; }
+    .plan-cta:hover {
+        background: rgba(56,189,248,0.18);
+        border-color: rgba(56,189,248,0.6);
+        color: var(--white);
+    }
 
     .plan-card.featured .plan-cta {
-        background: #c9a84c;
-        border-color: #c9a84c;
-        color: #0d1117;
+        background: linear-gradient(135deg, var(--gold), var(--gold-light));
+        border-color: transparent;
+        color: var(--ocean-deep);
+        box-shadow: 0 0 20px rgba(245,158,11,0.3);
     }
 
     .plan-card.featured .plan-cta:hover {
-        background: #e8c97a;
-        border-color: #e8c97a;
+        box-shadow: 0 0 30px rgba(245,158,11,0.5);
+        transform: translateY(-1px);
     }
 
     .pricing-note {
@@ -250,14 +251,23 @@
 
     /* ── HOW IT WORKS ── */
     .how-section {
-        background: white;
+        background: rgba(255,255,255,0.02);
+        border-top: 1px solid var(--glass-border);
+        border-bottom: 1px solid var(--glass-border);
         padding: 5rem 2rem;
     }
 
-    .how-inner {
-        max-width: 900px;
-        margin: 0 auto;
+    .how-inner { max-width: 900px; margin: 0 auto; }
+
+    .how-inner h2 {
+        font-family: var(--font-display);
+        font-size: 2.5rem;
+        font-weight: 400;
+        color: var(--white);
+        margin-top: 1rem;
     }
+
+    .how-inner h2 em { font-style: italic; color: var(--ocean-glow); }
 
     .how-steps {
         display: flex;
@@ -271,9 +281,10 @@
         content: '';
         position: absolute;
         left: 27px;
-        top: 0; bottom: 0;
-        width: 2px;
-        background: linear-gradient(to bottom, var(--gold), transparent);
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: linear-gradient(to bottom, rgba(56,189,248,0.4), transparent);
     }
 
     .how-step {
@@ -286,9 +297,10 @@
     .how-step:last-child { padding-bottom: 0; }
 
     .how-step-num {
-        width: 56px; height: 56px;
-        background: white;
-        border: 2px solid var(--gold);
+        width: 56px;
+        height: 56px;
+        background: var(--glass-bg);
+        border: 1.5px solid rgba(56,189,248,0.3);
         border-radius: 50%;
         display: grid;
         place-items: center;
@@ -297,17 +309,19 @@
         position: relative;
         z-index: 1;
         transition: all 0.3s;
+        backdrop-filter: blur(12px);
     }
 
     .how-step:hover .how-step-num {
-        background: var(--gold);
-        transform: scale(1.08);
+        border-color: var(--ocean-glow);
+        background: rgba(56,189,248,0.12);
+        box-shadow: 0 0 20px rgba(56,189,248,0.25);
     }
 
     .how-step-title {
         font-weight: 600;
         font-size: 1.0625rem;
-        color: var(--ink);
+        color: var(--white);
         margin-bottom: 0.4rem;
         margin-top: 0.75rem;
     }
@@ -318,7 +332,7 @@
         line-height: 1.65;
     }
 
-    /* ── TERMS SECTION ── */
+    /* ── TERMS ── */
     .terms-section {
         max-width: 860px;
         margin: 0 auto;
@@ -326,40 +340,40 @@
     }
 
     .terms-card {
-        background: var(--white);
-        border-radius: 16px;
-        box-shadow: var(--shadow);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
         overflow: hidden;
+        backdrop-filter: blur(20px);
     }
 
     .terms-header {
-        background: linear-gradient(135deg, #0f3460, #0a2240);
+        background: linear-gradient(135deg, var(--ocean-mid), var(--ocean-bright));
         padding: 2.5rem 3rem;
+        border-bottom: 1px solid var(--glass-border);
     }
 
     .terms-header h2 {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 2rem;
-        font-weight: 300;
-        color: white;
+        font-weight: 400;
+        color: var(--white);
         margin-bottom: 0.5rem;
     }
 
     .terms-header p {
         font-size: 0.875rem;
-        color: rgba(255,255,255,0.5);
+        color: var(--muted);
     }
 
-    .terms-body {
-        padding: 3rem;
-    }
+    .terms-body { padding: 3rem; }
 
     .terms-section-title {
         font-size: 0.72rem;
         font-weight: 700;
         letter-spacing: 0.14em;
         text-transform: uppercase;
-        color: var(--gold);
+        color: var(--ocean-glow);
         margin: 2rem 0 0.75rem;
         display: flex;
         align-items: center;
@@ -370,8 +384,9 @@
 
     .terms-section-title::before {
         content: '';
-        width: 16px; height: 1px;
-        background: var(--gold);
+        width: 16px;
+        height: 1px;
+        background: var(--ocean-glow);
     }
 
     .terms-body p {
@@ -401,12 +416,12 @@
 
     .terms-body ul li::before {
         content: '→';
-        color: var(--gold);
+        color: var(--ocean-glow);
         flex-shrink: 0;
         margin-top: 0.05rem;
     }
 
-    /* ── FORM SECTION ── */
+    /* ── FORM ── */
     .form-section {
         max-width: 860px;
         margin: 0 auto;
@@ -414,23 +429,24 @@
     }
 
     .form-card {
-        background: var(--white);
-        border-radius: 16px;
-        box-shadow: var(--shadow);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: var(--radius-lg);
         overflow: hidden;
+        backdrop-filter: blur(20px);
     }
 
     .form-card-header {
-        background: var(--cream);
-        border-bottom: 1px solid var(--cream-dark);
+        background: rgba(255,255,255,0.03);
+        border-bottom: 1px solid var(--glass-border);
         padding: 2rem 3rem;
     }
 
     .form-card-header h2 {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 1.875rem;
-        font-weight: 600;
-        color: var(--ink);
+        font-weight: 400;
+        color: var(--white);
         margin-bottom: 0.25rem;
     }
 
@@ -440,10 +456,12 @@
     }
 
     .form-card-header p a {
-        color: var(--sea);
+        color: var(--ocean-glow);
         text-decoration: none;
         font-weight: 600;
     }
+
+    .form-card-header p a:hover { color: var(--white); }
 
     .form-body { padding: 2.5rem 3rem; }
 
@@ -454,28 +472,39 @@
         font-weight: 700;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: var(--ink-light);
+        color: rgba(255,255,255,0.65);
     }
 
-    .field input, .field textarea, .field select {
+    .field input,
+    .field textarea,
+    .field select {
         width: 100%;
         padding: 0.875rem 1rem;
-        border: 1.5px solid var(--cream-dark);
+        border: 1.5px solid var(--glass-border);
         border-radius: var(--radius);
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-body);
         font-size: 0.9375rem;
-        color: var(--ink);
-        background: var(--cream);
+        color: var(--white);
+        background: rgba(255,255,255,0.05);
         outline: none;
         transition: all 0.2s;
         resize: vertical;
+        appearance: none;
+        -webkit-appearance: none;
     }
 
-    .field input:focus, .field textarea:focus, .field select:focus {
-        border-color: var(--sea);
-        background: var(--white);
-        box-shadow: 0 0 0 3px rgba(15,52,96,0.08);
+    .field input::placeholder,
+    .field textarea::placeholder { color: rgba(255,255,255,0.25); }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+        border-color: rgba(56,189,248,0.5);
+        background: rgba(56,189,248,0.06);
+        box-shadow: 0 0 0 3px rgba(56,189,248,0.1);
     }
+
+    .field select option { background: var(--ocean-mid); color: var(--white); }
 
     .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
 
@@ -486,7 +515,7 @@
         font-weight: 700;
         letter-spacing: 0.14em;
         text-transform: uppercase;
-        color: var(--gold);
+        color: var(--ocean-glow);
         margin: 2rem 0 1.25rem;
         display: flex;
         align-items: center;
@@ -497,10 +526,10 @@
         content: '';
         flex: 1;
         height: 1px;
-        background: var(--cream-dark);
+        background: var(--glass-border);
     }
 
-    /* Plan selector */
+    /* ── PLAN SELECTOR ── */
     .plan-selector {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
@@ -516,19 +545,20 @@
         align-items: center;
         gap: 0.35rem;
         padding: 1.25rem 1rem;
-        border: 2px solid var(--cream-dark);
-        border-radius: 10px;
+        border: 1.5px solid var(--glass-border);
+        border-radius: var(--radius);
         cursor: pointer;
         transition: all 0.25s;
         text-align: center;
-        background: var(--cream);
+        background: rgba(255,255,255,0.03);
     }
 
-    .plan-option-label:hover { border-color: var(--sea); }
+    .plan-option-label:hover { border-color: rgba(56,189,248,0.4); background: rgba(56,189,248,0.06); }
 
     .plan-option:checked + .plan-option-label {
-        border-color: var(--sea);
-        background: rgba(15,52,96,0.05);
+        border-color: rgba(56,189,248,0.55);
+        background: rgba(56,189,248,0.1);
+        box-shadow: 0 0 16px rgba(56,189,248,0.15);
     }
 
     .plan-option-name {
@@ -536,36 +566,33 @@
         font-weight: 700;
         letter-spacing: 0.1em;
         text-transform: uppercase;
-        color: var(--sea);
+        color: var(--ocean-glow);
     }
 
     .plan-option-price {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 1.5rem;
-        font-weight: 600;
-        color: var(--ink);
+        font-weight: 700;
+        color: var(--white);
     }
 
-    .plan-option-period {
-        font-size: 0.72rem;
-        color: var(--muted);
-    }
+    .plan-option-period { font-size: 0.72rem; color: var(--muted); }
 
     .plan-option-save {
-        background: var(--gold);
-        color: var(--ink);
+        background: linear-gradient(135deg, var(--gold), var(--gold-light));
+        color: var(--ocean-deep);
         font-size: 0.65rem;
         font-weight: 800;
         padding: 0.15rem 0.5rem;
-        border-radius: 2px;
+        border-radius: 100px;
         letter-spacing: 0.08em;
     }
 
-    /* Agree checkbox */
+    /* ── AGREE BOX ── */
     .agree-box {
-        background: var(--cream);
-        border: 1.5px solid var(--cream-dark);
-        border-radius: 10px;
+        background: rgba(255,255,255,0.03);
+        border: 1.5px solid var(--glass-border);
+        border-radius: var(--radius);
         padding: 1.25rem 1.5rem;
         display: flex;
         align-items: flex-start;
@@ -574,8 +601,9 @@
     }
 
     .agree-box input[type="checkbox"] {
-        width: 18px; height: 18px;
-        accent-color: var(--sea);
+        width: 18px;
+        height: 18px;
+        accent-color: var(--ocean-light);
         flex-shrink: 0;
         margin-top: 0.15rem;
         cursor: pointer;
@@ -588,20 +616,17 @@
         cursor: pointer;
     }
 
-    .agree-box label a {
-        color: var(--sea);
-        text-decoration: none;
-        font-weight: 600;
-    }
+    .agree-box label a { color: var(--ocean-glow); text-decoration: none; font-weight: 600; }
+    .agree-box label a:hover { color: var(--white); }
 
     .submit-btn {
         width: 100%;
         padding: 1.1rem;
-        background: var(--sea);
-        color: white;
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        color: var(--white);
         border: none;
         border-radius: var(--radius);
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-body);
         font-size: 1rem;
         font-weight: 600;
         cursor: pointer;
@@ -610,12 +635,12 @@
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
+        box-shadow: 0 0 24px rgba(26,127,212,0.3);
     }
 
     .submit-btn:hover {
-        background: #0a2240;
-        transform: translateY(-1px);
-        box-shadow: 0 10px 28px rgba(15,52,96,0.3);
+        transform: translateY(-2px);
+        box-shadow: 0 12px 36px rgba(56,189,248,0.4);
     }
 
     .submit-note {
@@ -720,9 +745,7 @@
 <section class="how-section">
     <div class="how-inner">
         <div class="section-eyebrow">The Process</div>
-        <h2 style="font-family:'Cormorant Garamond',serif; font-size:2.5rem; font-weight:300; color:var(--ink);">
-            How Trivasta works <em style="font-style:italic; color:var(--sea);">for agencies</em>
-        </h2>
+        <h2>How Trivasta works <em>for agencies</em></h2>
 
         <div class="how-steps">
             <div class="how-step">
@@ -743,21 +766,21 @@
                 <div class="how-step-num">3️⃣</div>
                 <div>
                     <div class="how-step-title">Respond to trip requests</div>
-                    <div class="how-step-desc">Travelers use our AI to plan trips and then look for agencies to execute them. You can see all live trip requests and send custom offers with your own pricing and message — creating a competitive marketplace that benefits travelers and agencies alike.</div>
+                    <div class="how-step-desc">Travelers use our AI to plan trips and then look for agencies to execute them. You can see all live trip requests and send custom offers — creating a competitive marketplace that benefits everyone.</div>
                 </div>
             </div>
             <div class="how-step">
                 <div class="how-step-num">4️⃣</div>
                 <div>
                     <div class="how-step-title">Receive secure payments</div>
-                    <div class="how-step-desc">When a traveler books your offer, payment is processed securely via Razorpay. Trivasta collects a platform fee (5–10% depending on your plan) and the rest is settled directly to your account within 3–5 business days.</div>
+                    <div class="how-step-desc">When a traveler books your offer, payment is processed securely via Razorpay. Trivasta collects a platform fee (5–10% depending on your plan) and the rest is settled within 3–5 business days.</div>
                 </div>
             </div>
             <div class="how-step">
                 <div class="how-step-num">5️⃣</div>
                 <div>
                     <div class="how-step-title">Build your reputation</div>
-                    <div class="how-step-desc">After each trip, travelers rate your agency. Higher ratings mean better placement on the homepage, more visibility, and ultimately more bookings. Consistent quality is rewarded on Trivasta.</div>
+                    <div class="how-step-desc">After each trip, travelers rate your agency. Higher ratings mean better placement on the homepage, more visibility, and ultimately more bookings.</div>
                 </div>
             </div>
         </div>
@@ -766,7 +789,7 @@
 
 
 <!-- ── TERMS & CONDITIONS ── -->
-<div class="terms-section">
+<div class="terms-section" id="terms">
     <div class="terms-card">
         <div class="terms-header">
             <h2>📋 Agency Terms & Conditions</h2>
@@ -775,7 +798,7 @@
         <div class="terms-body">
 
             <div class="terms-section-title">1. Eligibility & Registration</div>
-            <p>To register as a travel agency on Trivasta, you must be a legally registered travel business with a valid GST number (where applicable) operating in India. By registering, you confirm that your agency holds all necessary licenses and permits required under applicable Indian law to offer travel services.</p>
+            <p>To register as a travel agency on Trivasta, you must be a legally registered travel business with a valid GST number (where applicable) operating in India. By registering, you confirm that your agency holds all necessary licenses and permits required under applicable Indian law.</p>
             <ul>
                 <li>You must provide accurate and complete information during registration</li>
                 <li>One agency account per registered business entity</li>
@@ -793,7 +816,7 @@
             </ul>
 
             <div class="terms-section-title">3. Platform Commission</div>
-            <p>In addition to the annual subscription, Trivasta charges a platform fee on each completed booking. This fee varies by plan: 10% for Starter, 8% for Professional, and 5% for Enterprise. The platform fee is automatically deducted before payment settlement.</p>
+            <p>In addition to the annual subscription, Trivasta charges a platform fee on each completed booking. This fee varies by plan: 10% for Starter, 8% for Professional, and 5% for Enterprise. The fee is automatically deducted before payment settlement.</p>
             <ul>
                 <li>Fees are calculated on the total booking value including taxes</li>
                 <li>Payment settlements occur within 3–5 business days of trip confirmation</li>
@@ -819,7 +842,7 @@
             </ul>
 
             <div class="terms-section-title">6. Liability & Disputes</div>
-            <p>Trivasta acts solely as a marketplace connecting travelers with agencies. We are not responsible for the quality, safety or delivery of travel services. All disputes between agencies and travelers must be resolved between the parties, with Trivasta acting as a neutral mediator where necessary.</p>
+            <p>Trivasta acts solely as a marketplace connecting travelers with agencies. We are not responsible for the quality, safety or delivery of travel services. All disputes must be resolved between the parties, with Trivasta acting as a neutral mediator where necessary.</p>
 
             <div class="terms-section-title">7. Account Termination</div>
             <p>Trivasta reserves the right to suspend or terminate agency accounts for violations of these terms, repeated traveler complaints, fraudulent activity or breach of applicable law. Terminated agencies forfeit their annual subscription fee and any pending settlements may be withheld pending investigation.</p>
@@ -939,7 +962,6 @@
 
 {% block extra_js %}
 <script>
-    // Smooth scroll to form when plan buttons clicked
     document.querySelectorAll('.plan-cta').forEach(btn => {
         btn.addEventListener('click', () => {
             document.getElementById('reg-form').scrollIntoView({ behavior: 'smooth' });

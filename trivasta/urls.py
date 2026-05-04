@@ -13,6 +13,7 @@ urlpatterns = [
     path('privacy/',     trip_views.privacy, name='privacy'),
     path('terms/',       trip_views.terms,   name='terms'),
     path('trips/',       include('trips.urls')),
+    path('oauth/', include('social_django.urls', namespace='social')),
     path('marketplace/', include('marketplace.urls')),
     path('users/',       include('users.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
