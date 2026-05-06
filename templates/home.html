@@ -4,11 +4,18 @@
 {% block extra_css %}
 <style>
 /* ════════════════════════════════════════════════════════
+   BASE RESPONSIVE SETUP
+════════════════════════════════════════════════════════ */
+* {
+    box-sizing: border-box;
+}
+
+/* ════════════════════════════════════════════════════════
    HERO — CINEMATIC MULTI-LAYER 3D PARALLAX
 ════════════════════════════════════════════════════════ */
 .hero {
     height: 100vh;
-    min-height: 700px;
+    min-height: 600px;
     position: relative;
     display: flex;
     align-items: flex-end;
@@ -112,7 +119,7 @@
 
 .hero-headline {
     font-family: var(--font-bold);
-    font-size: clamp(5rem, 11vw, 12rem);
+    font-size: clamp(3rem, 11vw, 12rem);
     line-height: 0.9;
     letter-spacing: 0.04em;
     color: var(--ink);
@@ -120,13 +127,14 @@
     opacity: 0;
     animation: fadeUp 0.9s 0.55s forwards;
     position: relative;
+    word-wrap: break-word;
 }
 
 .hero-headline .line-2 {
     font-family: var(--font-display);
     font-style: italic;
     font-weight: 300;
-    font-size: clamp(3rem, 6vw, 6.5rem);
+    font-size: clamp(2rem, 6vw, 6.5rem);
     display: block;
     background: linear-gradient(135deg, var(--sun), var(--gold), var(--sky));
     -webkit-background-clip: text;
@@ -147,14 +155,19 @@
 }
 
 .hero-sub {
-    font-size: 1.05rem;
+    font-size: clamp(0.9rem, 2vw, 1.05rem);
     color: var(--ink-mid);
     line-height: 1.75;
     max-width: 440px;
     font-weight: 400;
 }
 
-.hero-actions { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+.hero-actions { 
+    display: flex; 
+    gap: 1rem; 
+    align-items: center; 
+    flex-wrap: wrap; 
+}
 
 /* 3D scroll hint */
 .hero-scroll-hint {
@@ -192,7 +205,13 @@
     100% { top: 70%; opacity: 0; }
 }
 
-.scroll-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(26,18,9,0.35); }
+.scroll-label { 
+    font-size: 0.65rem; 
+    font-weight: 700; 
+    letter-spacing: 0.18em; 
+    text-transform: uppercase; 
+    color: rgba(26,18,9,0.35); 
+}
 
 /* ════════════════════════════════════════════════════════
    BIOME BAND — Horizontal scrolling terrain explorer
@@ -358,7 +377,7 @@
 
 .how-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 1.5rem;
     margin-top: 4rem;
 }
@@ -400,7 +419,7 @@
 
 .how-num {
     font-family: var(--font-bold);
-    font-size: 5rem;
+    font-size: clamp(3.5rem, 8vw, 5rem);
     line-height: 1;
     letter-spacing: 0.04em;
     margin-bottom: 1.25rem;
@@ -444,6 +463,7 @@
     justify-content: space-between;
     margin-bottom: 3.5rem;
     gap: 2rem;
+    flex-wrap: wrap;
 }
 
 .carousel-track-wrap { overflow: hidden; padding: 0 3rem 2rem; }
@@ -690,7 +710,7 @@
 
 .dest-tile-name {
     font-family: var(--font-bold);
-    font-size: 1.9rem;
+    font-size: clamp(1.4rem, 3vw, 1.9rem);
     letter-spacing: 0.05em;
     color: var(--white); line-height: 1; margin-bottom: 0.3rem;
 }
@@ -720,7 +740,7 @@
 .dest-tile.t4 { grid-column: 1 / 4;  grid-row: 2 / 3; }
 .dest-tile.t5 { grid-column: 4 / 9;  grid-row: 2 / 3; }
 
-.dest-tile.t3 .dest-tile-name { font-size: 2.8rem; }
+.dest-tile.t3 .dest-tile-name { font-size: clamp(1.8rem, 4vw, 2.8rem); }
 
 /* ════════════════════════════════════════════════════════
    AGENCY CTA — Split screen with image
@@ -814,7 +834,7 @@
 
 .final-cta-big {
     font-family: var(--font-bold);
-    font-size: clamp(5rem, 13vw, 14rem);
+    font-size: clamp(3rem, 13vw, 14rem);
     line-height: 0.9;
     letter-spacing: 0.05em;
     color: var(--white);
@@ -825,7 +845,7 @@
 .final-cta-sub {
     font-family: var(--font-display);
     font-style: italic;
-    font-size: clamp(1.5rem, 3vw, 2.75rem);
+    font-size: clamp(1.2rem, 3vw, 2.75rem);
     font-weight: 300;
     background: linear-gradient(135deg, var(--gold-light), var(--amber));
     -webkit-background-clip: text;
@@ -834,7 +854,13 @@
     margin-bottom: 2rem;
 }
 
-.final-cta p { font-size: 1.05rem; color: rgba(255,255,255,0.65); max-width: 440px; margin: 0 auto 2.75rem; line-height: 1.75; }
+.final-cta p { 
+    font-size: clamp(0.9rem, 2vw, 1.05rem); 
+    color: rgba(255,255,255,0.65); 
+    max-width: 440px; 
+    margin: 0 auto 2.75rem; 
+    line-height: 1.75; 
+}
 
 /* ════════════════════════════════════════════════════════
    STATS BAND
@@ -865,7 +891,7 @@
 
 .stat-num {
     font-family: var(--font-bold);
-    font-size: 3.5rem;
+    font-size: clamp(2.5rem, 6vw, 3.5rem);
     color: var(--white);
     line-height: 1;
     letter-spacing: 0.04em;
@@ -873,7 +899,13 @@
     text-shadow: 0 4px 20px rgba(26,18,9,0.2);
 }
 
-.stat-lbl { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.75); }
+.stat-lbl { 
+    font-size: clamp(0.7rem, 1.5vw, 0.78rem); 
+    font-weight: 700; 
+    letter-spacing: 0.14em; 
+    text-transform: uppercase; 
+    color: rgba(255,255,255,0.75); 
+}
 
 /* ════════════════════════════════════════════════════════
    TYPOGRAPHY HELPERS
@@ -896,7 +928,7 @@
 
 .title-serif {
     font-family: var(--font-display);
-    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-size: clamp(1.8rem, 4vw, 3.5rem);
     font-weight: 300;
     line-height: 1.1;
 }
@@ -918,28 +950,287 @@
 }
 
 /* ════════════════════════════════════════════════════════
-   RESPONSIVE
+   RESPONSIVE BREAKPOINTS
 ════════════════════════════════════════════════════════ */
+
+/* Tablets and small desktops */
 @media (max-width: 1100px) {
-    .dest-bento { grid-template-columns: 1fr 1fr; grid-template-rows: auto; }
-    .dest-tile.t1, .dest-tile.t2, .dest-tile.t3, .dest-tile.t4, .dest-tile.t5 { grid-column: auto; grid-row: auto; }
+    .dest-bento { 
+        grid-template-columns: 1fr 1fr; 
+        grid-template-rows: auto; 
+        gap: 1rem;
+    }
+    .dest-tile.t1, .dest-tile.t2, .dest-tile.t3, .dest-tile.t4, .dest-tile.t5 { 
+        grid-column: auto; 
+        grid-row: auto; 
+        min-height: 250px;
+    }
     .dest-tile.t3 { grid-column: span 2; }
-    .how-grid { grid-template-columns: repeat(2, 1fr); }
-    .agency-section { grid-template-columns: 1fr; }
-    .agency-image-side { min-height: 350px; }
-    .agency-image-side::after { background: linear-gradient(to top, var(--ink) 0%, transparent 60%); }
+    
+    .how-grid { 
+        grid-template-columns: repeat(2, 1fr); 
+    }
+    
+    .agency-section { 
+        grid-template-columns: 1fr; 
+    }
+    .agency-image-side { 
+        min-height: 350px; 
+    }
+    .agency-image-side::after { 
+        background: linear-gradient(to top, var(--ink) 0%, transparent 60%); 
+    }
+    
+    .biome-label-row {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 3rem 2rem 2rem;
+    }
 }
 
+/* Mobile devices */
 @media (max-width: 768px) {
-    .hero-headline { font-size: 4.5rem; }
-    .dest-bento { grid-template-columns: 1fr; }
-    .dest-tile.t3 { grid-column: span 1; }
-    .how-grid { grid-template-columns: 1fr; }
-    .biome-card { width: 260px; height: 380px; }
-    .final-cta-big { font-size: 5rem; }
-    .pkg-card { flex: 0 0 300px; }
-    .container { padding: 0 1.5rem; }
-    .hero-content { padding: 0 1.5rem 4rem; }
+    /* Hero adjustments */
+    .hero {
+        min-height: 500px;
+    }
+    
+    .hero-marquee-strip {
+        height: 32px;
+        top: 60px !important;
+    }
+    
+    .hero-marquee-inner span {
+        font-size: 0.7rem;
+        padding: 0 1.5rem;
+    }
+    
+    .hero-content {
+        padding: 0 1.5rem 3rem;
+    }
+    
+    .hero-headline {
+        font-size: clamp(2.5rem, 10vw, 4rem);
+        margin-bottom: 1rem;
+    }
+    
+    .hero-bottom {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+    
+    .hero-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .hero-actions .btn {
+        width: 100%;
+        justify-content: center;
+        font-size: 0.9rem !important;
+        padding: 0.9rem 1.5rem !important;
+    }
+    
+    .hero-scroll-hint {
+        display: none;
+    }
+    
+    /* Stats band */
+    .stats-band {
+        padding: 1.5rem 1rem;
+    }
+    
+    .stats-inner {
+        gap: 1.5rem;
+    }
+    
+    .stat-item {
+        flex: 0 0 calc(50% - 0.75rem);
+    }
+    
+    /* Biome section */
+    .biome-label-row {
+        padding: 3rem 1.5rem 1.5rem;
+    }
+    
+    .biome-track-outer {
+        padding: 0 1.5rem 2rem;
+    }
+    
+    .biome-card {
+        width: 260px;
+        height: 380px;
+    }
+    
+    .biome-name {
+        font-size: 2rem;
+    }
+    
+    /* How it works */
+    .how-section {
+        padding: 5rem 0;
+    }
+    
+    .how-section::before {
+        font-size: 30vw;
+    }
+    
+    .how-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+        margin-top: 2.5rem;
+    }
+    
+    .how-card {
+        padding: 2rem 1.5rem;
+    }
+    
+    /* Packages */
+    .packages-section {
+        padding: 5rem 0;
+    }
+    
+    .pkg-header {
+        padding: 0 1.5rem;
+        margin-bottom: 2rem;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .carousel-track-wrap {
+        padding: 0 1.5rem 2rem;
+    }
+    
+    .pkg-card {
+        flex: 0 0 300px;
+    }
+    
+    .pkg-card-img {
+        height: 200px;
+    }
+    
+    /* Destinations */
+    .destinations-section {
+        padding: 5rem 0;
+    }
+    
+    .dest-bento {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+    
+    .dest-tile {
+        min-height: 220px;
+    }
+    
+    .dest-tile.t3 {
+        grid-column: span 1;
+    }
+    
+    /* Agency section */
+    .agency-content-side {
+        padding: 3rem 1.5rem;
+    }
+    
+    .agency-content-side .btn {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+    
+    /* Final CTA */
+    .final-cta {
+        min-height: 500px;
+    }
+    
+    .final-cta-content {
+        padding: 3rem 1.5rem;
+    }
+    
+    .final-cta p {
+        font-size: 0.95rem;
+    }
+    
+    .final-cta .btn {
+        width: 100%;
+        font-size: 0.9rem !important;
+        padding: 1rem 1.5rem !important;
+    }
+    
+    /* Container */
+    .container {
+        padding: 0 1.5rem;
+    }
+    
+    /* Typography */
+    .title-xl {
+        font-size: clamp(2rem, 8vw, 3rem);
+    }
+    
+    .title-serif {
+        font-size: clamp(1.5rem, 6vw, 2.5rem);
+    }
+    
+    /* Disable hover effects on touch devices */
+    .biome-card:hover,
+    .pkg-card:hover,
+    .dest-tile:hover,
+    .how-card:hover {
+        transform: none;
+    }
+}
+
+/* Very small mobile devices */
+@media (max-width: 480px) {
+    .hero-headline {
+        font-size: 2.5rem;
+    }
+    
+    .hero-headline .line-2 {
+        font-size: 1.8rem;
+    }
+    
+    .biome-card {
+        width: 240px;
+        height: 350px;
+    }
+    
+    .biome-name {
+        font-size: 1.7rem;
+    }
+    
+    .pkg-card {
+        flex: 0 0 280px;
+    }
+    
+    .stat-item {
+        flex: 0 0 100%;
+    }
+    
+    .how-num {
+        font-size: 3rem;
+    }
+    
+    .final-cta-big {
+        font-size: 2.5rem;
+    }
+    
+    .final-cta-sub {
+        font-size: 1.2rem;
+    }
+}
+
+/* Landscape mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+    .hero {
+        min-height: 400px;
+    }
+    
+    .final-cta {
+        min-height: 400px;
+    }
 }
 </style>
 {% endblock %}
@@ -1394,21 +1685,24 @@
 })();
 
 /* ══ 3D TILT ON PACKAGE CARDS ════════════════ */
-document.querySelectorAll('.tilt-card').forEach(card => {
-    card.addEventListener('mousemove', (e) => {
-        const rect = card.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-        const dx = (e.clientX - cx) / (rect.width / 2);
-        const dy = (e.clientY - cy) / (rect.height / 2);
-        card.style.transform = `perspective(1200px) rotateY(${dx * 8}deg) rotateX(${-dy * 8}deg) scale(1.02)`;
+// Only enable on non-touch devices
+if (!('ontouchstart' in window)) {
+    document.querySelectorAll('.tilt-card').forEach(card => {
+        card.addEventListener('mousemove', (e) => {
+            const rect = card.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const dx = (e.clientX - cx) / (rect.width / 2);
+            const dy = (e.clientY - cy) / (rect.height / 2);
+            card.style.transform = `perspective(1200px) rotateY(${dx * 8}deg) rotateX(${-dy * 8}deg) scale(1.02)`;
+        });
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = 'perspective(1200px) rotateY(0deg) rotateX(0deg) scale(1)';
+            card.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+        });
+        card.addEventListener('mouseenter', () => { card.style.transition = 'transform 0.1s linear, box-shadow 0.4s'; });
     });
-    card.addEventListener('mouseleave', () => {
-        card.style.transform = 'perspective(1200px) rotateY(0deg) rotateX(0deg) scale(1)';
-        card.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
-    });
-    card.addEventListener('mouseenter', () => { card.style.transition = 'transform 0.1s linear, box-shadow 0.4s'; });
-});
+}
 
 /* ══ DRAG-SCROLL BIOME TRACK ════════════════ */
 (function() {
@@ -1455,19 +1749,22 @@ setInterval(() => {
 }, 5000);
 
 /* ══ DEST TILE 3D ════════════════════════════ */
-document.querySelectorAll('.dest-tile').forEach(tile => {
-    tile.addEventListener('mousemove', (e) => {
-        const rect = tile.getBoundingClientRect();
-        const dx = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
-        const dy = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
-        tile.style.transform = `perspective(1000px) rotateY(${dx * 6}deg) rotateX(${-dy * 6}deg) scale(1.02)`;
-        tile.style.transition = 'transform 0.1s linear';
+// Only enable on non-touch devices
+if (!('ontouchstart' in window)) {
+    document.querySelectorAll('.dest-tile').forEach(tile => {
+        tile.addEventListener('mousemove', (e) => {
+            const rect = tile.getBoundingClientRect();
+            const dx = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
+            const dy = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
+            tile.style.transform = `perspective(1000px) rotateY(${dx * 6}deg) rotateX(${-dy * 6}deg) scale(1.02)`;
+            tile.style.transition = 'transform 0.1s linear';
+        });
+        tile.addEventListener('mouseleave', () => {
+            tile.style.transform = 'perspective(1000px) rotateY(0) rotateX(0) scale(1)';
+            tile.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
+        });
     });
-    tile.addEventListener('mouseleave', () => {
-        tile.style.transform = 'perspective(1000px) rotateY(0) rotateX(0) scale(1)';
-        tile.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1)';
-    });
-});
+}
 
 /* ══ HOW CARD 3D ════════════════════════════ */
 document.querySelectorAll('.how-card').forEach(card => {

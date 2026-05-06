@@ -3,125 +3,260 @@
 
 {% block extra_css %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600&family=Outfit:wght@300;400;500;600;700&display=swap');
-    body { font-family: 'Outfit', sans-serif; }
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,300;0,700;0,900;1,300;1,700&family=Syne:wght@300;400;500;600;700;800&display=swap');
 
+    /* ── PAGE SHELL ── */
     .form-page {
-        min-height: calc(100vh - 68px);
-        background: var(--cream);
-        padding: 3rem 1rem 5rem;
+        min-height: calc(100vh - 72px);
+        background: var(--ocean-deep);
+        padding: 3rem 1rem 6rem;
+        position: relative;
     }
 
-    .form-container { max-width: 800px; margin: 0 auto; }
+    .form-page::before {
+        content: '';
+        position: fixed;
+        inset: 0;
+        background:
+            radial-gradient(ellipse 80% 60% at 20% -10%, rgba(14,77,146,0.45) 0%, transparent 60%),
+            radial-gradient(ellipse 60% 50% at 90% 110%, rgba(56,189,248,0.12) 0%, transparent 55%);
+        pointer-events: none;
+        z-index: 0;
+    }
 
+    .form-container {
+        max-width: 820px;
+        margin: 0 auto;
+        position: relative;
+        z-index: 1;
+    }
+
+    /* ── HEADER BANNER ── */
     .form-header {
-        background: linear-gradient(135deg, var(--sea), #0a2240);
-        border-radius: 16px;
+        background: rgba(10,37,64,0.65);
+        border: 1px solid rgba(56,189,248,0.15);
+        border-radius: 24px;
         padding: 2.25rem 2.75rem;
-        margin-bottom: 1.75rem;
+        margin-bottom: 1.5rem;
         position: relative;
         overflow: hidden;
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 1.5rem;
+        backdrop-filter: blur(20px);
     }
 
     .form-header::before {
         content: '';
         position: absolute; inset: 0;
         background-image:
-            linear-gradient(rgba(201,168,76,0.07) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(201,168,76,0.07) 1px, transparent 1px);
-        background-size: 28px 28px;
+            linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
+        background-size: 40px 40px;
+        pointer-events: none;
+    }
+
+    .form-header::after {
+        content: '';
+        position: absolute;
+        top: -80px; right: -80px;
+        width: 260px; height: 260px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(56,189,248,0.08), transparent 70%);
+        pointer-events: none;
     }
 
     .form-header-left { position: relative; z-index: 1; }
-    .form-eyebrow { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase; color: #e8c97a; margin-bottom: 0.4rem; }
 
-    .form-title {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.875rem; font-weight: 300; color: white; line-height: 1.2;
+    .form-eyebrow {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--ocean-glow);
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-family: 'Syne', sans-serif;
     }
 
-    .form-title em { font-style: italic; color: #e8c97a; }
-    .form-sub { font-size: 0.85rem; color: rgba(255,255,255,0.5); margin-top: 0.3rem; }
-    .form-header-icon { position: relative; z-index: 1; font-size: 3rem; flex-shrink: 0; opacity: 0.8; }
+    .form-eyebrow::before {
+        content: '';
+        width: 24px; height: 1.5px;
+        background: var(--ocean-glow);
+    }
 
+    .form-title {
+        font-family: 'Playfair Display', serif;
+        font-size: 2rem;
+        font-weight: 300;
+        color: var(--white);
+        line-height: 1.15;
+    }
+
+    .form-title em {
+        font-style: italic;
+        font-weight: 700;
+        background: linear-gradient(135deg, var(--ocean-glow), var(--gold-light));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .form-sub {
+        font-size: 0.825rem;
+        color: rgba(255,255,255,0.38);
+        margin-top: 0.4rem;
+        font-family: 'Syne', sans-serif;
+    }
+
+    .form-header-icon {
+        position: relative;
+        z-index: 1;
+        font-size: 3rem;
+        flex-shrink: 0;
+        opacity: 0.7;
+    }
+
+    /* ── CARDS ── */
     .form-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: var(--shadow);
+        background: rgba(10,37,64,0.55);
+        border: 1px solid rgba(56,189,248,0.1);
+        border-radius: 20px;
         overflow: hidden;
         margin-bottom: 1.25rem;
+        backdrop-filter: blur(16px);
     }
 
     .form-card-header {
-        background: var(--cream);
-        padding: 1rem 1.75rem;
-        border-bottom: 1px solid var(--cream-dark);
+        background: rgba(2,12,27,0.3);
+        padding: 0.9rem 1.75rem;
+        border-bottom: 1px solid rgba(56,189,248,0.08);
         font-size: 0.62rem;
         font-weight: 700;
-        letter-spacing: 0.14em;
+        letter-spacing: 0.18em;
         text-transform: uppercase;
-        color: var(--muted);
+        color: var(--ocean-glow);
         display: flex;
         align-items: center;
         justify-content: space-between;
         gap: 0.5rem;
+        font-family: 'Syne', sans-serif;
     }
 
-    .form-card-header-left { display: flex; align-items: center; gap: 0.5rem; }
+    .form-card-header-left {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
 
     .form-card-header-left::before {
         content: '';
         width: 3px; height: 14px;
-        background: var(--gold);
+        background: var(--ocean-glow);
         border-radius: 2px;
         flex-shrink: 0;
     }
 
+    .form-card-header-right {
+        font-size: 0.7rem;
+        color: rgba(255,255,255,0.25);
+        font-weight: 400;
+        text-transform: none;
+        letter-spacing: 0;
+    }
+
     .form-card-body { padding: 1.75rem; }
 
+    /* ── FIELD LAYOUTS ── */
     .field-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; }
     .field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1.25rem; }
 
-    .field-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1.25rem; }
+    .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+        margin-bottom: 1.25rem;
+    }
+
     .field-group:last-child { margin-bottom: 0; }
 
     .field-label {
-        font-size: 0.68rem; font-weight: 700;
-        letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.4);
+        font-family: 'Syne', sans-serif;
     }
 
-    .field-label span { color: #e74c3c; margin-left: 0.2rem; }
+    .field-label span { color: #f87171; margin-left: 0.2rem; }
 
+    /* ── INPUTS ── */
     .field-input,
     .field-select,
     .field-textarea {
         width: 100%;
         padding: 0.8rem 1rem;
-        border: 1.5px solid var(--cream-dark);
-        border-radius: var(--radius);
-        font-family: 'Outfit', sans-serif;
-        font-size: 0.9375rem;
-        color: var(--ink);
-        background: var(--cream);
+        border: 1px solid rgba(56,189,248,0.12);
+        border-radius: 12px;
+        font-family: 'Syne', sans-serif;
+        font-size: 0.9rem;
+        color: rgba(255,255,255,0.85);
+        background: rgba(2,12,27,0.4);
         outline: none;
         transition: all 0.2s;
         box-sizing: border-box;
     }
 
-    .field-input:focus, .field-select:focus, .field-textarea:focus {
-        border-color: var(--sea);
-        background: white;
-        box-shadow: 0 0 0 3px rgba(15,52,96,0.08);
+    .field-input:focus,
+    .field-select:focus,
+    .field-textarea:focus {
+        border-color: rgba(56,189,248,0.4);
+        background: rgba(2,12,27,0.6);
+        box-shadow: 0 0 0 3px rgba(56,189,248,0.08);
     }
 
-    .field-input::placeholder, .field-textarea::placeholder { color: #b0b8c1; }
-    .field-textarea { resize: vertical; min-height: 100px; line-height: 1.6; }
-    .field-hint { font-size: 0.75rem; color: var(--muted); line-height: 1.4; }
-    .field-error { font-size: 0.75rem; color: #e74c3c; font-weight: 500; }
+    .field-input::placeholder,
+    .field-textarea::placeholder {
+        color: rgba(255,255,255,0.2);
+    }
+
+    .field-select {
+        appearance: none;
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='rgba(56,189,248,0.5)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+        padding-right: 2.5rem;
+    }
+
+    .field-select option {
+        background: #0a2540;
+        color: rgba(255,255,255,0.85);
+    }
+
+    .field-textarea {
+        resize: vertical;
+        min-height: 100px;
+        line-height: 1.7;
+    }
+
+    .field-hint {
+        font-size: 0.725rem;
+        color: rgba(255,255,255,0.25);
+        line-height: 1.5;
+        font-family: 'Syne', sans-serif;
+    }
+
+    .field-error {
+        font-size: 0.725rem;
+        color: #f87171;
+        font-weight: 600;
+        font-family: 'Syne', sans-serif;
+    }
 
     /* ── CATEGORY PICKER ── */
     .category-grid {
@@ -134,258 +269,515 @@
     .cat-option input[type="radio"] { position: absolute; opacity: 0; width: 0; height: 0; }
 
     .cat-option label {
-        display: flex; flex-direction: column; align-items: center; gap: 0.35rem;
-        padding: 0.875rem 0.5rem;
-        background: var(--cream); border: 2px solid var(--cream-dark); border-radius: 10px;
-        cursor: pointer; transition: all 0.2s; text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 1rem 0.5rem;
+        background: rgba(2,12,27,0.35);
+        border: 1px solid rgba(56,189,248,0.1);
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-align: center;
     }
 
-    .cat-option label:hover { border-color: rgba(15,52,96,0.3); background: white; }
+    .cat-option label:hover {
+        border-color: rgba(56,189,248,0.3);
+        background: rgba(14,77,146,0.2);
+    }
 
     .cat-option input:checked + label {
-        border-color: var(--sea);
-        background: rgba(15,52,96,0.05);
-        box-shadow: 0 0 0 3px rgba(15,52,96,0.1);
+        border-color: rgba(56,189,248,0.5);
+        background: rgba(14,77,146,0.3);
+        box-shadow: 0 0 0 2px rgba(56,189,248,0.12), 0 8px 24px rgba(0,0,0,0.3);
     }
 
-    .cat-emoji { font-size: 1.375rem; }
-    .cat-name  { font-size: 0.68rem; font-weight: 600; color: var(--ink); line-height: 1.2; }
+    .cat-emoji { font-size: 1.5rem; }
+    .cat-name  { font-size: 0.65rem; font-weight: 700; color: rgba(255,255,255,0.65); line-height: 1.2; letter-spacing: 0.04em; font-family: 'Syne', sans-serif; }
+    .cat-option input:checked + label .cat-name { color: var(--ocean-glow); }
 
     /* ── PRICE PREVIEW ── */
     .price-preview {
-        background: var(--cream); border: 1px solid var(--cream-dark);
-        border-radius: var(--radius); padding: 0.875rem 1rem;
-        display: grid; grid-template-columns: repeat(3, 1fr);
-        gap: 0.5rem; margin-top: 0.5rem;
+        background: rgba(2,12,27,0.4);
+        border: 1px solid rgba(56,189,248,0.08);
+        border-radius: 12px;
+        padding: 1rem 1.25rem;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+        margin-top: 0.5rem;
     }
 
     .price-preview-item { text-align: center; }
 
     .price-preview-num {
-        font-family: 'Cormorant Garamond', serif;
-        font-size: 1.25rem; font-weight: 600; color: var(--sea); line-height: 1;
+        font-family: 'Playfair Display', serif;
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--white);
+        line-height: 1;
     }
 
-    .price-preview-num.gold  { color: var(--gold); }
-    .price-preview-num.green { color: #27ae60; }
-    .price-preview-lbl { font-size: 0.6rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 0.2rem; }
+    .price-preview-num.gold {
+        background: linear-gradient(135deg, var(--gold), var(--gold-light));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
 
-    /* ── IMAGES SECTION ── */
+    .price-preview-num.green { color: #34d399; }
+
+    .price-preview-lbl {
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.28);
+        margin-top: 0.25rem;
+        font-family: 'Syne', sans-serif;
+    }
+
+    /* ── IMAGE TABS ── */
     .image-tabs {
-        display: flex; gap: 0.25rem; background: var(--cream);
-        border-radius: 6px; padding: 0.25rem; margin-bottom: 1.25rem;
-        border: 1px solid var(--cream-dark);
+        display: flex;
+        gap: 0.25rem;
+        background: rgba(2,12,27,0.4);
+        border: 1px solid rgba(56,189,248,0.08);
+        border-radius: 10px;
+        padding: 0.3rem;
+        margin-bottom: 1.25rem;
     }
 
     .img-tab {
-        flex: 1; padding: 0.5rem 1rem; border-radius: 4px; border: none;
-        background: none; font-family: 'Outfit', sans-serif; font-size: 0.8rem;
-        font-weight: 500; color: var(--muted); cursor: pointer; transition: all 0.2s;
+        flex: 1;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+        border: none;
+        background: none;
+        font-family: 'Syne', sans-serif;
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: rgba(255,255,255,0.3);
+        cursor: pointer;
+        transition: all 0.2s;
         text-align: center;
+        letter-spacing: 0.02em;
     }
 
-    .img-tab.active { background: white; color: var(--sea); box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .img-tab.active {
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        color: white;
+        box-shadow: 0 4px 14px rgba(14,77,146,0.4);
+    }
+
+    .img-tab:hover:not(.active) { color: rgba(255,255,255,0.6); background: rgba(56,189,248,0.06); }
 
     .img-tab-panel { display: none; }
     .img-tab-panel.active { display: block; }
 
-    /* Image slots grid */
-    .image-slots { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.875rem; }
-
-    .image-slot {
-        border: 1.5px dashed var(--cream-dark);
-        border-radius: 10px; overflow: hidden;
-        transition: border-color 0.2s;
-        background: var(--cream);
+    /* Image slots */
+    .image-slots {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.875rem;
     }
 
-    .image-slot:hover { border-color: rgba(15,52,96,0.3); }
-    .image-slot.has-image { border-style: solid; border-color: var(--sea); }
+    .image-slot {
+        border: 1px dashed rgba(56,189,248,0.2);
+        border-radius: 14px;
+        overflow: hidden;
+        transition: border-color 0.2s;
+        background: rgba(2,12,27,0.3);
+    }
+
+    .image-slot:hover { border-color: rgba(56,189,248,0.4); }
+    .image-slot.has-image { border-style: solid; border-color: rgba(56,189,248,0.4); }
 
     .image-slot-preview {
-        height: 120px; display: flex; align-items: center; justify-content: center;
-        position: relative; overflow: hidden;
-        background: linear-gradient(135deg, #e8e0d4, #d8cfc4);
+        height: 120px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        background: rgba(2,12,27,0.4);
     }
 
     .image-slot-preview img {
-        width: 100%; height: 100%; object-fit: cover;
+        width: 100%; height: 100%;
+        object-fit: cover;
         position: absolute; inset: 0;
     }
 
     .image-slot-preview-empty {
-        font-size: 2rem; opacity: 0.25;
+        font-size: 2rem;
+        opacity: 0.15;
     }
 
     .image-slot-del {
-        position: absolute; top: 0.4rem; right: 0.4rem; z-index: 2;
-        width: 22px; height: 22px; border-radius: 50%;
-        background: rgba(231,76,60,0.85); color: white;
-        border: none; cursor: pointer; font-size: 0.65rem;
-        display: none; align-items: center; justify-content: center;
+        position: absolute;
+        top: 0.4rem; right: 0.4rem;
+        z-index: 2;
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        background: rgba(248,113,113,0.8);
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 0.65rem;
+        display: none;
+        align-items: center;
+        justify-content: center;
     }
 
     .image-slot.has-image .image-slot-del { display: flex; }
 
-    .image-slot-body { padding: 0.625rem; display: flex; flex-direction: column; gap: 0.4rem; }
+    .image-slot-body {
+        padding: 0.625rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+    }
 
     .slot-type-toggle {
-        display: flex; gap: 0.25rem; background: var(--cream-dark);
-        border-radius: 4px; padding: 0.2rem;
+        display: flex;
+        gap: 0.2rem;
+        background: rgba(2,12,27,0.4);
+        border-radius: 6px;
+        padding: 0.2rem;
     }
 
     .slot-type-btn {
-        flex: 1; padding: 0.25rem; border: none; border-radius: 3px;
-        font-family: 'Outfit', sans-serif; font-size: 0.65rem; font-weight: 600;
-        cursor: pointer; background: none; color: var(--muted); transition: all 0.15s;
+        flex: 1;
+        padding: 0.25rem;
+        border: none;
+        border-radius: 4px;
+        font-family: 'Syne', sans-serif;
+        font-size: 0.62rem;
+        font-weight: 700;
+        cursor: pointer;
+        background: none;
+        color: rgba(255,255,255,0.3);
+        transition: all 0.15s;
+        letter-spacing: 0.04em;
     }
 
-    .slot-type-btn.active { background: white; color: var(--sea); }
+    .slot-type-btn.active {
+        background: rgba(56,189,248,0.15);
+        color: var(--ocean-glow);
+    }
 
-    .slot-url-input, .slot-file-input {
-        width: 100%; padding: 0.4rem 0.6rem;
-        border: 1px solid var(--cream-dark); border-radius: 4px;
-        font-family: 'Outfit', sans-serif; font-size: 0.72rem;
-        color: var(--ink); background: var(--cream); outline: none;
+    .slot-url-input,
+    .slot-file-input {
+        width: 100%;
+        padding: 0.4rem 0.6rem;
+        border: 1px solid rgba(56,189,248,0.1);
+        border-radius: 6px;
+        font-family: 'Syne', sans-serif;
+        font-size: 0.7rem;
+        color: rgba(255,255,255,0.75);
+        background: rgba(2,12,27,0.4);
+        outline: none;
         transition: border-color 0.2s;
+        box-sizing: border-box;
     }
 
-    .slot-url-input:focus, .slot-file-input:focus { border-color: var(--sea); background: white; }
-    .slot-file-input { padding: 0.3rem; }
-
-    .slot-caption { font-size: 0.68rem; color: var(--muted); }
+    .slot-url-input:focus,
+    .slot-file-input:focus { border-color: rgba(56,189,248,0.35); }
+    .slot-file-input { padding: 0.3rem; color: rgba(255,255,255,0.4); }
 
     .slot-delete-check { display: none; }
 
-    /* Unsplash search */
+    /* Unsplash */
     .unsplash-search-wrap {
-        display: flex; gap: 0.5rem; margin-bottom: 1rem;
+        display: flex;
+        gap: 0.75rem;
+        margin-bottom: 1rem;
     }
 
     .unsplash-search-input {
-        flex: 1; padding: 0.7rem 1rem;
-        border: 1.5px solid var(--cream-dark); border-radius: var(--radius);
-        font-family: 'Outfit', sans-serif; font-size: 0.875rem;
-        color: var(--ink); background: var(--cream); outline: none;
+        flex: 1;
+        padding: 0.75rem 1rem;
+        border: 1px solid rgba(56,189,248,0.12);
+        border-radius: 12px;
+        font-family: 'Syne', sans-serif;
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.85);
+        background: rgba(2,12,27,0.4);
+        outline: none;
         transition: all 0.2s;
     }
 
-    .unsplash-search-input:focus { border-color: var(--sea); background: white; box-shadow: 0 0 0 3px rgba(15,52,96,0.08); }
+    .unsplash-search-input::placeholder { color: rgba(255,255,255,0.2); }
 
-    .unsplash-search-btn {
-        padding: 0.7rem 1.25rem; background: var(--sea); color: white;
-        border: none; border-radius: var(--radius); font-family: 'Outfit', sans-serif;
-        font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: all 0.2s;
-        white-space: nowrap;
+    .unsplash-search-input:focus {
+        border-color: rgba(56,189,248,0.4);
+        background: rgba(2,12,27,0.6);
+        box-shadow: 0 0 0 3px rgba(56,189,248,0.08);
     }
 
-    .unsplash-search-btn:hover { background: #0a2240; }
+    .unsplash-search-btn {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-light));
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-family: 'Syne', sans-serif;
+        font-size: 0.825rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+        box-shadow: 0 4px 16px rgba(14,77,146,0.35);
+    }
+
+    .unsplash-search-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(56,189,248,0.35); }
 
     .unsplash-results {
-        display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;
-        max-height: 300px; overflow-y: auto; margin-bottom: 0.5rem;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.5rem;
+        max-height: 300px;
+        overflow-y: auto;
+        margin-bottom: 0.5rem;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(56,189,248,0.2) transparent;
     }
 
     .unsplash-thumb {
-        height: 80px; border-radius: 6px; overflow: hidden;
-        cursor: pointer; border: 2px solid transparent;
-        transition: all 0.2s; position: relative;
+        height: 80px;
+        border-radius: 8px;
+        overflow: hidden;
+        cursor: pointer;
+        border: 2px solid transparent;
+        transition: all 0.2s;
+        position: relative;
     }
 
-    .unsplash-thumb:hover { border-color: var(--sea); transform: scale(1.02); }
-    .unsplash-thumb.selected { border-color: var(--gold); }
-
+    .unsplash-thumb:hover { border-color: rgba(56,189,248,0.5); transform: scale(1.02); }
+    .unsplash-thumb.selected { border-color: #fcd34d; }
     .unsplash-thumb img { width: 100%; height: 100%; object-fit: cover; }
 
-    .unsplash-selected-wrap { margin-top: 0.75rem; }
+    .unsplash-selected-wrap { margin-top: 0.875rem; }
 
     .unsplash-selected-list { display: flex; flex-direction: column; gap: 0.5rem; }
 
     .unsplash-selected-item {
-        display: flex; align-items: center; gap: 0.75rem;
-        background: var(--cream); border: 1px solid var(--cream-dark);
-        border-radius: 8px; padding: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: rgba(2,12,27,0.4);
+        border: 1px solid rgba(56,189,248,0.1);
+        border-radius: 10px;
+        padding: 0.5rem;
     }
 
     .unsplash-selected-item img {
-        width: 48px; height: 40px; object-fit: cover; border-radius: 4px; flex-shrink: 0;
+        width: 48px; height: 40px;
+        object-fit: cover;
+        border-radius: 6px;
+        flex-shrink: 0;
     }
 
     .unsplash-selected-url {
-        flex: 1; font-size: 0.72rem; color: var(--muted);
-        word-break: break-all; line-height: 1.4;
+        flex: 1;
+        font-size: 0.7rem;
+        color: rgba(255,255,255,0.3);
+        word-break: break-all;
+        line-height: 1.4;
+        font-family: 'Syne', sans-serif;
     }
 
     .unsplash-remove-btn {
-        width: 22px; height: 22px; border-radius: 50%;
-        background: rgba(231,76,60,0.1); color: #e74c3c; border: none;
-        cursor: pointer; font-size: 0.75rem; flex-shrink: 0;
-        display: flex; align-items: center; justify-content: center;
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        background: rgba(248,113,113,0.1);
+        color: #f87171;
+        border: 1px solid rgba(248,113,113,0.2);
+        cursor: pointer;
+        font-size: 0.75rem;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
     }
 
-    .unsplash-status { font-size: 0.75rem; color: var(--muted); margin-top: 0.5rem; text-align: center; }
+    .unsplash-remove-btn:hover { background: rgba(248,113,113,0.2); }
+
+    .unsplash-status {
+        font-size: 0.775rem;
+        color: rgba(255,255,255,0.25);
+        margin-top: 0.5rem;
+        text-align: center;
+        font-family: 'Syne', sans-serif;
+        grid-column: 1 / -1;
+        padding: 1.5rem 0;
+    }
+
+    /* URL list tab */
+    .url-slot-row {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+
+    .url-slot-num {
+        font-size: 0.7rem;
+        color: rgba(255,255,255,0.2);
+        width: 20px;
+        text-align: center;
+        flex-shrink: 0;
+        font-family: 'Syne', sans-serif;
+    }
+
+    .url-slot-thumb {
+        width: 40px; height: 36px;
+        object-fit: cover;
+        border-radius: 6px;
+        flex-shrink: 0;
+        background: rgba(56,189,248,0.05);
+        border: 1px solid rgba(56,189,248,0.08);
+    }
 
     /* ── TOGGLE ── */
     .toggle-row {
-        display: flex; align-items: center; justify-content: space-between;
-        padding: 1rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 0;
     }
 
-    .toggle-label-text strong { display: block; font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-bottom: 0.15rem; }
-    .toggle-label-text span   { font-size: 0.8rem; color: var(--muted); }
+    .toggle-label-text strong {
+        display: block;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: rgba(255,255,255,0.85);
+        margin-bottom: 0.2rem;
+        font-family: 'Syne', sans-serif;
+    }
 
-    .toggle-switch { position: relative; width: 48px; height: 26px; flex-shrink: 0; }
+    .toggle-label-text span {
+        font-size: 0.78rem;
+        color: rgba(255,255,255,0.3);
+        font-family: 'Syne', sans-serif;
+    }
+
+    .toggle-switch {
+        position: relative;
+        width: 48px; height: 26px;
+        flex-shrink: 0;
+    }
+
     .toggle-switch input { opacity: 0; width: 0; height: 0; }
 
     .toggle-slider {
-        position: absolute; inset: 0; background: var(--cream-dark);
-        border-radius: 26px; cursor: pointer; transition: 0.3s;
-        border: 1.5px solid #d0c8b8;
+        position: absolute; inset: 0;
+        background: rgba(56,189,248,0.08);
+        border: 1px solid rgba(56,189,248,0.15);
+        border-radius: 26px;
+        cursor: pointer;
+        transition: 0.3s;
     }
 
     .toggle-slider::before {
-        content: ''; position: absolute;
-        width: 18px; height: 18px; left: 3px; top: 50%;
-        transform: translateY(-50%); background: white; border-radius: 50%;
-        transition: 0.3s; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        content: '';
+        position: absolute;
+        width: 18px; height: 18px;
+        left: 3px; top: 50%;
+        transform: translateY(-50%);
+        background: rgba(255,255,255,0.4);
+        border-radius: 50%;
+        transition: 0.3s;
     }
 
-    .toggle-switch input:checked + .toggle-slider { background: var(--sea); border-color: var(--sea); }
-    .toggle-switch input:checked + .toggle-slider::before { transform: translateX(22px) translateY(-50%); }
+    .toggle-switch input:checked + .toggle-slider {
+        background: rgba(56,189,248,0.25);
+        border-color: rgba(56,189,248,0.5);
+    }
+
+    .toggle-switch input:checked + .toggle-slider::before {
+        transform: translateX(22px) translateY(-50%);
+        background: var(--ocean-glow);
+        box-shadow: 0 0 10px rgba(56,189,248,0.5);
+    }
 
     /* ── FORM ACTIONS ── */
     .form-actions {
-        display: flex; gap: 1rem; justify-content: flex-end; align-items: center;
-        padding: 1.5rem 1.75rem; background: var(--cream); border-top: 1px solid var(--cream-dark);
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        align-items: center;
+        padding: 1.25rem 1.75rem;
+        background: rgba(2,12,27,0.3);
+        border-top: 1px solid rgba(56,189,248,0.08);
     }
 
-    .form-actions-left { margin-right: auto; font-size: 0.8125rem; color: var(--muted); }
+    .form-actions-left {
+        margin-right: auto;
+        font-size: 0.775rem;
+        color: rgba(255,255,255,0.25);
+        font-family: 'Syne', sans-serif;
+    }
 
     /* ── DANGER ZONE ── */
     .danger-zone {
-        background: white; border-radius: 12px; box-shadow: var(--shadow);
-        overflow: hidden; border: 1px solid rgba(231,76,60,0.15);
+        background: rgba(248,113,113,0.04);
+        border: 1px solid rgba(248,113,113,0.15);
+        border-radius: 20px;
+        overflow: hidden;
+        margin-top: 0.5rem;
+        backdrop-filter: blur(16px);
     }
 
     .danger-zone-header {
-        background: rgba(231,76,60,0.04); padding: 1rem 1.75rem;
-        border-bottom: 1px solid rgba(231,76,60,0.12);
-        font-size: 0.62rem; font-weight: 700; letter-spacing: 0.14em;
-        text-transform: uppercase; color: #c0392b;
-        display: flex; align-items: center; gap: 0.5rem;
+        background: rgba(248,113,113,0.06);
+        padding: 0.875rem 1.75rem;
+        border-bottom: 1px solid rgba(248,113,113,0.12);
+        font-size: 0.62rem;
+        font-weight: 700;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        color: #f87171;
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-family: 'Syne', sans-serif;
     }
 
-    .danger-zone-header::before { content: ''; width: 3px; height: 14px; background: #e74c3c; border-radius: 2px; }
+    .danger-zone-header::before {
+        content: '';
+        width: 3px; height: 14px;
+        background: #f87171;
+        border-radius: 2px;
+    }
 
     .danger-zone-body {
-        padding: 1.25rem 1.75rem; display: flex;
-        align-items: center; justify-content: space-between; gap: 1.5rem;
+        padding: 1.25rem 1.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1.5rem;
     }
 
-    .danger-zone-text strong { display: block; font-size: 0.9rem; font-weight: 600; color: var(--ink); margin-bottom: 0.2rem; }
-    .danger-zone-text span   { font-size: 0.8rem; color: var(--muted); }
+    .danger-zone-text strong {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: rgba(255,255,255,0.75);
+        margin-bottom: 0.2rem;
+        font-family: 'Syne', sans-serif;
+    }
 
-    /* hidden formset rows */
+    .danger-zone-text span {
+        font-size: 0.775rem;
+        color: rgba(255,255,255,0.3);
+        font-family: 'Syne', sans-serif;
+    }
+
+    /* ── HIDDEN FORMSET ── */
     .formset-hidden { display: none; }
 
     @media (max-width: 640px) {
@@ -395,6 +787,7 @@
         .unsplash-results { grid-template-columns: repeat(3, 1fr); }
         .form-header { flex-direction: column; }
         .form-header-icon { display: none; }
+        .price-preview { grid-template-columns: 1fr; gap: 0.75rem; }
     }
 </style>
 {% endblock %}
@@ -406,7 +799,7 @@
         <!-- HEADER -->
         <div class="form-header">
             <div class="form-header-left">
-                <div class="form-eyebrow">📦 Package Management</div>
+                <div class="form-eyebrow">Package Management</div>
                 <div class="form-title">
                     {% if action == 'Edit' %}
                         Edit <em>{{ form.instance.title|default:"Package" }}</em>
@@ -530,17 +923,14 @@
             <div class="form-card">
                 <div class="form-card-header">
                     <span class="form-card-header-left">Package Images</span>
-                    <span style="font-size:0.72rem; color:var(--muted); font-weight:400; text-transform:none; letter-spacing:0;">
-                        Up to 10 images
-                    </span>
+                    <span class="form-card-header-right">Up to 10 images</span>
                 </div>
                 <div class="form-card-body">
 
-                    <!-- Tab switcher -->
                     <div class="image-tabs">
-                        <button type="button" class="img-tab active" onclick="switchImgTab('upload', this)">📁 Upload from Device</button>
+                        <button type="button" class="img-tab active" onclick="switchImgTab('upload', this)">📁 Upload</button>
                         <button type="button" class="img-tab" onclick="switchImgTab('url', this)">🔗 Paste URL</button>
-                        <button type="button" class="img-tab" onclick="switchImgTab('unsplash', this)">🖼 Search Unsplash</button>
+                        <button type="button" class="img-tab" onclick="switchImgTab('unsplash', this)">🖼 Unsplash</button>
                     </div>
 
                     <!-- UPLOAD TAB -->
@@ -561,7 +951,6 @@
                                             onclick="markDelete(this, {{ forloop.counter0 }})">✕</button>
                                 </div>
                                 <div class="image-slot-body">
-                                    <!-- Toggle: URL or File -->
                                     <div class="slot-type-toggle">
                                         <button type="button" class="slot-type-btn active"
                                                 onclick="slotMode(this, {{ forloop.counter0 }}, 'file')">📁 File</button>
@@ -588,20 +977,20 @@
                             </div>
                             {% endfor %}
                         </div>
-                        <p style="font-size:0.75rem; color:var(--muted); margin-top:0.875rem;">
+                        <p style="font-size:0.72rem; color:rgba(255,255,255,0.22); margin-top:0.875rem; font-family:'Syne',sans-serif;">
                             💡 First image will be used as the cover. Accepted: JPG, PNG, WebP.
                         </p>
                     </div>
 
                     <!-- URL TAB -->
                     <div class="img-tab-panel" id="imgTab-url">
-                        <p style="font-size:0.8rem; color:var(--muted); margin-bottom:1rem;">
+                        <p style="font-size:0.78rem; color:rgba(255,255,255,0.3); margin-bottom:1rem; font-family:'Syne',sans-serif;">
                             Paste direct image URLs below. The first slot URL is also the package cover.
                         </p>
-                        <div style="display:flex; flex-direction:column; gap:0.6rem;" id="urlSlots">
+                        <div id="urlSlots">
                             {% for img_form in formset %}
-                            <div style="display:flex; gap:0.5rem; align-items:center;">
-                                <span style="font-size:0.72rem; color:var(--muted); width:20px; text-align:center; flex-shrink:0;">{{ forloop.counter }}</span>
+                            <div class="url-slot-row">
+                                <span class="url-slot-num">{{ forloop.counter }}</span>
                                 <input type="url"
                                        name="images-{{ forloop.counter0 }}-image_url"
                                        value="{{ img_form.instance.image_url|default:'' }}"
@@ -611,11 +1000,11 @@
                                        oninput="syncUrlSlot(this, {{ forloop.counter0 }})">
                                 {% if img_form.instance.image_url %}
                                 <img src="{{ img_form.instance.image_url }}"
-                                     style="width:40px; height:36px; object-fit:cover; border-radius:4px; flex-shrink:0;"
-                                     onerror="this.style.display='none'" id="urlSlotThumb-{{ forloop.counter0 }}">
+                                     class="url-slot-thumb"
+                                     onerror="this.style.display='none'"
+                                     id="urlSlotThumb-{{ forloop.counter0 }}">
                                 {% else %}
-                                <div style="width:40px; height:36px; background:var(--cream-dark); border-radius:4px; flex-shrink:0;"
-                                     id="urlSlotThumb-{{ forloop.counter0 }}"></div>
+                                <div class="url-slot-thumb" id="urlSlotThumb-{{ forloop.counter0 }}"></div>
                                 {% endif %}
                             </div>
                             {% endfor %}
@@ -631,18 +1020,18 @@
                             <button type="button" class="unsplash-search-btn" onclick="searchUnsplash()">🔍 Search</button>
                         </div>
                         <div class="unsplash-results" id="unsplashResults">
-                            <div class="unsplash-status" id="unsplashStatus" style="grid-column:1/-1;">
+                            <div class="unsplash-status" id="unsplashStatus">
                                 Search for destination photos above to get started.
                             </div>
                         </div>
                         <div class="unsplash-selected-wrap" id="unsplashSelectedWrap" style="display:none;">
-                            <p style="font-size:0.72rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); margin-bottom:0.5rem;">
+                            <p style="font-size:0.65rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.28); margin-bottom:0.5rem; font-family:'Syne',sans-serif;">
                                 Selected Images
                             </p>
                             <div class="unsplash-selected-list" id="unsplashSelectedList"></div>
                         </div>
-                        <p style="font-size:0.72rem; color:var(--muted); margin-top:0.75rem;">
-                            Photos from <a href="https://unsplash.com" target="_blank" style="color:var(--sea);">Unsplash</a> are free to use.
+                        <p style="font-size:0.7rem; color:rgba(255,255,255,0.2); margin-top:0.875rem; font-family:'Syne',sans-serif;">
+                            Photos from <a href="https://unsplash.com" target="_blank" style="color:var(--ocean-glow);">Unsplash</a> are free to use.
                             Selected images will be saved as URL references.
                         </p>
                     </div>
@@ -653,7 +1042,7 @@
             <!-- ── VISIBILITY ── -->
             <div class="form-card">
                 <div class="form-card-header"><span class="form-card-header-left">Visibility</span></div>
-                <div class="form-card-body" style="padding-bottom:0.5rem;">
+                <div class="form-card-body" style="padding-bottom:0.75rem;">
                     <div class="toggle-row">
                         <div class="toggle-label-text">
                             <strong>List this package publicly</strong>
@@ -669,13 +1058,13 @@
             </div>
 
             <!-- ── ACTIONS ── -->
-            <div class="form-card" style="overflow:hidden;">
+            <div class="form-card">
                 <div class="form-actions">
                     <span class="form-actions-left">
                         {% if action == 'Edit' %}Last saved: {{ form.instance.created_at|date:"N j, Y" }}
-                        {% else %}Fields marked <span style="color:#e74c3c;">*</span> are required.{% endif %}
+                        {% else %}Fields marked <span style="color:#f87171;">*</span> are required.{% endif %}
                     </span>
-                    <a href="{% url 'agency_dashboard' %}" class="btn btn-outline">← Cancel</a>
+                    <a href="{% url 'agency_dashboard' %}" class="btn btn-glass">← Cancel</a>
                     <button type="submit" class="btn btn-primary">
                         {% if action == 'Edit' %}✦ Save Changes{% else %}✦ Create Package{% endif %}
                     </button>
@@ -695,7 +1084,7 @@
                 </div>
                 <a href="{% url 'package_delete' form.instance.pk %}"
                    class="btn"
-                   style="background:rgba(231,76,60,0.08); color:#e74c3c; border:1px solid rgba(231,76,60,0.25);"
+                   style="background:rgba(248,113,113,0.08); color:#f87171; border:1px solid rgba(248,113,113,0.2); border-radius:100px;"
                    onclick="return confirm('Are you sure? This cannot be undone.')">
                     🗑️ Delete Package
                 </a>
@@ -709,7 +1098,6 @@
 
 {% block extra_js %}
 <script>
-// ── Image tab switcher ──
 function switchImgTab(name, btn) {
     document.querySelectorAll('.img-tab-panel').forEach(p => p.classList.remove('active'));
     document.querySelectorAll('.img-tab').forEach(b => b.classList.remove('active'));
@@ -717,15 +1105,13 @@ function switchImgTab(name, btn) {
     btn.classList.add('active');
 }
 
-// ── Slot: toggle between file and url input ──
 function slotMode(btn, idx, mode) {
     btn.closest('.slot-type-toggle').querySelectorAll('.slot-type-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('slotFile-' + idx).style.display = mode === 'file' ? '' : 'none';
-    document.getElementById('slotUrl-' + idx).style.display  = mode === 'url'  ? '' : 'none';
+    document.getElementById('slotUrl-'  + idx).style.display = mode === 'url'  ? '' : 'none';
 }
 
-// ── Slot: preview uploaded file ──
 function previewFile(input, idx) {
     const slot = input.closest('.image-slot');
     if (input.files && input.files[0]) {
@@ -733,50 +1119,45 @@ function previewFile(input, idx) {
         reader.onload = e => {
             const preview = slot.querySelector('.image-slot-preview');
             preview.innerHTML = `<img src="${e.target.result}" id="slotPreview-${idx}">
-                <button type="button" class="image-slot-del" onclick="markDelete(this, ${idx})">✕</button>`;
+                <button type="button" class="image-slot-del" onclick="markDelete(this,${idx})">✕</button>`;
             slot.classList.add('has-image');
         };
         reader.readAsDataURL(input.files[0]);
     }
 }
 
-// ── Slot: preview URL ──
 function previewUrl(input, idx) {
     const slot = input.closest('.image-slot');
     const url  = input.value.trim();
-    if (!url) { return; }
-    const preview = slot.querySelector('.image-slot-preview');
+    if (!url) return;
     const img = new Image();
     img.onload = () => {
+        const preview = slot.querySelector('.image-slot-preview');
         preview.innerHTML = `<img src="${url}" id="slotPreview-${idx}">
-            <button type="button" class="image-slot-del" onclick="markDelete(this, ${idx})">✕</button>`;
+            <button type="button" class="image-slot-del" onclick="markDelete(this,${idx})">✕</button>`;
         slot.classList.add('has-image');
     };
-    img.onerror = () => { slot.classList.remove('has-image'); };
+    img.onerror = () => slot.classList.remove('has-image');
     img.src = url;
 }
 
-// ── Sync URL tab → upload tab URL inputs ──
 function syncUrlSlot(input, idx) {
     const url   = input.value.trim();
     const thumb = document.getElementById('urlSlotThumb-' + idx);
     if (url && thumb) {
-        thumb.outerHTML = `<img src="${url}" style="width:40px; height:36px; object-fit:cover; border-radius:4px; flex-shrink:0;" onerror="this.style.display='none'" id="urlSlotThumb-${idx}">`;
+        thumb.outerHTML = `<img src="${url}" class="url-slot-thumb" onerror="this.style.display='none'" id="urlSlotThumb-${idx}">`;
     }
-    // Also update the upload-tab URL input for the same slot
     const uploadTabUrl = document.querySelector(`#slotUrl-${idx} input`);
     if (uploadTabUrl) uploadTabUrl.value = url;
 }
 
-// ── Mark slot for deletion ──
 function markDelete(btn, idx) {
     document.getElementById('slotDel-' + idx).checked = true;
     const slot = btn.closest('.image-slot');
     slot.classList.remove('has-image');
-    slot.querySelector('.image-slot-preview').innerHTML = '<span class="image-slot-preview-empty">🗑️</span>';
+    slot.querySelector('.image-slot-preview').innerHTML = '<span class="image-slot-preview-empty" style="opacity:0.3;">🗑️</span>';
 }
 
-// ── Price preview ──
 function updatePricePreview(val) {
     const base  = parseInt(val) || 0;
     const gst   = Math.round(base * 0.05);
@@ -786,33 +1167,26 @@ function updatePricePreview(val) {
     document.getElementById('previewTotal').textContent = '₹' + total.toLocaleString('en-IN');
 }
 
-// ── Unsplash search (uses public API — no key needed for demo) ──
 let unsplashSelected = [];
 
 async function searchUnsplash() {
-    const q      = document.getElementById('unsplashQuery').value.trim();
+    const q       = document.getElementById('unsplashQuery').value.trim();
     const results = document.getElementById('unsplashResults');
-    const status  = document.getElementById('unsplashStatus');
-
     if (!q) return;
-
-    results.innerHTML = '<div class="unsplash-status" style="grid-column:1/-1;">🔍 Searching...</div>';
-
+    results.innerHTML = '<div class="unsplash-status">🔍 Searching...</div>';
     try {
-        // Uses Unsplash Source API (no key needed, returns random photos)
-        const photos = [];
         const keywords = q.split(' ').join(',');
+        const photos   = [];
         for (let i = 0; i < 8; i++) {
             const seed = Math.random().toString(36).slice(2, 8);
             photos.push({
                 url:   `https://source.unsplash.com/400x300/?${encodeURIComponent(keywords)}&sig=${seed}`,
                 thumb: `https://source.unsplash.com/200x150/?${encodeURIComponent(keywords)}&sig=${seed}`,
-                alt:   q + ' ' + (i+1),
+                alt:   q + ' ' + (i + 1),
             });
         }
-
         results.innerHTML = '';
-        photos.forEach((photo, i) => {
+        photos.forEach(photo => {
             const div = document.createElement('div');
             div.className = 'unsplash-thumb';
             div.dataset.url = photo.url;
@@ -821,7 +1195,7 @@ async function searchUnsplash() {
             results.appendChild(div);
         });
     } catch (e) {
-        results.innerHTML = '<div class="unsplash-status" style="grid-column:1/-1;">❌ Search failed. Try pasting a URL instead.</div>';
+        results.innerHTML = '<div class="unsplash-status">❌ Search failed. Try pasting a URL instead.</div>';
     }
 }
 
@@ -831,10 +1205,7 @@ function toggleUnsplashSelect(div, photo) {
         unsplashSelected.splice(already, 1);
         div.classList.remove('selected');
     } else {
-        if (unsplashSelected.length >= 10) {
-            alert('Maximum 10 images allowed.');
-            return;
-        }
+        if (unsplashSelected.length >= 10) { alert('Maximum 10 images allowed.'); return; }
         unsplashSelected.push(photo);
         div.classList.add('selected');
     }
@@ -845,19 +1216,13 @@ function toggleUnsplashSelect(div, photo) {
 function renderUnsplashSelected() {
     const wrap = document.getElementById('unsplashSelectedWrap');
     const list = document.getElementById('unsplashSelectedList');
-
-    if (unsplashSelected.length === 0) {
-        wrap.style.display = 'none';
-        return;
-    }
-
+    if (unsplashSelected.length === 0) { wrap.style.display = 'none'; return; }
     wrap.style.display = '';
     list.innerHTML = unsplashSelected.map((p, i) => `
         <div class="unsplash-selected-item">
             <img src="${p.thumb}" alt="${p.alt}">
             <span class="unsplash-selected-url">${p.url}</span>
-            <button type="button" class="unsplash-remove-btn"
-                    onclick="removeUnsplash(${i})">✕</button>
+            <button type="button" class="unsplash-remove-btn" onclick="removeUnsplash(${i})">✕</button>
         </div>
     `).join('');
 }
@@ -866,24 +1231,15 @@ function removeUnsplash(i) {
     unsplashSelected.splice(i, 1);
     renderUnsplashSelected();
     injectUnsplashUrls();
-    // Deselect in grid
-    document.querySelectorAll('.unsplash-thumb.selected').forEach((el, idx) => {
-        if (idx === i) el.classList.remove('selected');
-    });
 }
 
 function injectUnsplashUrls() {
-    // Write selected Unsplash URLs into the formset URL inputs
     const urlInputs = document.querySelectorAll('[id^="slotUrl-"] input[type="url"]');
     unsplashSelected.forEach((p, i) => {
-        if (urlInputs[i]) {
-            urlInputs[i].value = p.url;
-            previewUrl(urlInputs[i], i);
-        }
+        if (urlInputs[i]) { urlInputs[i].value = p.url; previewUrl(urlInputs[i], i); }
     });
 }
 
-// ── Init ──
 document.addEventListener('DOMContentLoaded', () => {
     const pi = document.getElementById('priceInput');
     if (pi && pi.value) updatePricePreview(pi.value);

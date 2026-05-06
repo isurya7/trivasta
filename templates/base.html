@@ -1,9 +1,12 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ page_title|default:"Trivasta" }}{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'images/logo.PNG' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/logo.PNG' %}">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -88,28 +91,27 @@
             box-shadow: 0 4px 40px rgba(0,0,0,0.4);
         }
 
+        /* ─── LOGO IMAGE ──────────────────────────────── */
         .nav-logo {
-            font-family: var(--font-display);
-            font-size: 1.8rem;
-            font-weight: 900;
-            color: var(--white);
             text-decoration: none;
-            letter-spacing: 0.02em;
             position: relative;
             z-index: 1;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
         }
 
-        .nav-logo .logo-mark {
-            width: 32px; height: 32px;
-            background: linear-gradient(135deg, var(--ocean-light), var(--ocean-glow));
-            border-radius: 8px;
-            display: grid;
-            place-items: center;
-            font-size: 0.9rem;
-            box-shadow: 0 0 20px rgba(56,189,248,0.4);
+        .nav-logo img {
+            height: 64px;
+            width: auto;
+            /* The logo has a black background; mix-blend-mode makes black transparent */
+            mix-blend-mode: screen;
+            filter: brightness(1.05);
+            transition: filter var(--transition), transform var(--transition);
+        }
+
+        .nav-logo:hover img {
+            filter: brightness(1.2) drop-shadow(0 0 10px rgba(56,189,248,0.5));
+            transform: scale(1.03);
         }
 
         .nav-links {
@@ -246,15 +248,17 @@
             border-bottom: 1px solid rgba(255,255,255,0.06);
         }
 
-        .footer-brand-name {
-            font-family: var(--font-display);
-            font-size: 2.2rem;
-            font-weight: 900;
-            background: linear-gradient(135deg, var(--white), var(--ocean-glow));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        /* ─── FOOTER LOGO ─────────────────────────────── */
+        .footer-logo {
+            display: inline-block;
             margin-bottom: 0.75rem;
+        }
+
+        .footer-logo img {
+            height: 72px;
+            width: auto;
+            mix-blend-mode: screen;
+            filter: brightness(1.05);
         }
 
         .footer-tagline {
@@ -423,6 +427,8 @@
             .nav-links a { padding: 0.875rem 1rem; width: 100%; }
             .footer-inner { grid-template-columns: 1fr; gap: 2rem; }
             .footer-bottom { flex-direction: column; gap: 0.5rem; text-align: center; }
+
+            .nav-logo img { height: 52px; }
         }
     </style>
     {% block extra_css %}{% endblock %}
@@ -432,8 +438,7 @@
 <!-- NAVBAR -->
 <nav class="nav" id="mainNav">
     <a href="{% url 'home' %}" class="nav-logo">
-        <div class="logo-mark">✦</div>
-        Trivasta
+        <img src="{% static 'images/logo.PNG' %}" alt="Trivasta" />
     </a>
 
     <button class="hamburger" id="hamburger" onclick="toggleMenu()" aria-label="Menu">
@@ -483,7 +488,9 @@
 <footer>
     <div class="footer-inner">
         <div>
-            <div class="footer-brand-name">Trivasta</div>
+            <a href="{% url 'home' %}" class="footer-logo">
+                <img src="{% static 'images/logo.PNG' %}" alt="Trivasta" />
+            </a>
             <p class="footer-tagline">
                 AI-powered travel planning that matches you with verified travel agencies —
                 crafting journeys as unique as you are.

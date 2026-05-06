@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Create Account — Trivasta{% endblock %}
 
 {% block extra_css %}
@@ -22,9 +23,10 @@
 
     .auth-visual-bg {
         position: absolute; inset: 0;
-        background-image: url('https://images.unsplash.com/photo-1524492412937-b28074a5d7da?w=1200&q=85');
+        /* Pure night sky — Milky Way over mountains, no city */
+        background-image: url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?w=1200&q=85');
         background-size: cover;
-        background-position: center 30%;
+        background-position: center 20%;
         transform: scale(1.05);
         transition: transform 8s ease;
         z-index: 0;
@@ -36,52 +38,67 @@
         position: absolute; inset: 0;
         background: linear-gradient(
             160deg,
-            rgba(11,18,32,0.55) 0%,
-            rgba(11,18,32,0.25) 40%,
-            rgba(11,18,32,0.9) 100%
+            rgba(2,8,20,0.65) 0%,
+            rgba(2,8,20,0.2) 40%,
+            rgba(2,8,20,0.93) 100%
         );
         z-index: 1;
+    }
+
+    /* Extra twinkling star dots layered over photo */
+    .auth-visual-stars {
+        position: absolute; inset: 0; z-index: 2;
+        background-image:
+            radial-gradient(1px 1px at 12% 18%, rgba(255,255,255,0.8) 0%, transparent 100%),
+            radial-gradient(1px 1px at 75% 7%,  rgba(255,255,255,0.6) 0%, transparent 100%),
+            radial-gradient(1px 1px at 42% 30%, rgba(255,255,255,0.5) 0%, transparent 100%),
+            radial-gradient(1px 1px at 90% 50%, rgba(255,255,255,0.5) 0%, transparent 100%),
+            radial-gradient(1px 1px at 6%  65%, rgba(255,255,255,0.4) 0%, transparent 100%),
+            radial-gradient(1px 1px at 58% 13%, rgba(255,255,255,0.6) 0%, transparent 100%),
+            radial-gradient(1px 1px at 28% 8%,  rgba(255,255,255,0.5) 0%, transparent 100%),
+            radial-gradient(1px 1px at 93% 25%, rgba(255,255,255,0.7) 0%, transparent 100%);
+        animation: starTwinkle 5s ease-in-out infinite alternate;
+        pointer-events: none;
+    }
+
+    @keyframes starTwinkle {
+        0%   { opacity: 0.5; }
+        100% { opacity: 1; }
     }
 
     .auth-visual-grid {
         position: absolute; inset: 0; z-index: 2;
         background-image:
-            linear-gradient(rgba(59,130,246,0.05) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(59,130,246,0.05) 1px, transparent 1px);
+            linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
         background-size: 52px 52px;
+        pointer-events: none;
     }
 
+    /* ── LOGO IMAGE top-left ── */
     .auth-logo-top {
         position: absolute;
-        top: 2.5rem; left: 3.5rem;
+        top: 1.8rem; left: 2.8rem;
         z-index: 10;
+        text-decoration: none;
         display: flex;
         align-items: center;
-        gap: 10px;
-        text-decoration: none;
     }
 
-    .auth-logo-icon {
-        width: 32px; height: 32px;
-        background: var(--blue-mid);
-        border-radius: 50%;
-        display: grid; place-items: center;
-        font-size: 0.85rem;
-        box-shadow: 0 0 20px rgba(37,99,235,0.5);
+    .auth-logo-top img {
+        height: 58px;
+        width: auto;
+        mix-blend-mode: screen;
+        filter: brightness(1.1);
+        transition: filter 0.3s, transform 0.3s;
     }
 
-    .auth-logo-text {
-        font-family: var(--font-display);
-        font-size: 1.25rem;
-        font-weight: 700;
-        color: var(--white);
-        letter-spacing: 0.06em;
+    .auth-logo-top:hover img {
+        filter: brightness(1.35) drop-shadow(0 0 14px rgba(56,189,248,0.65));
+        transform: scale(1.04);
     }
 
-    .auth-visual-content {
-        position: relative;
-        z-index: 10;
-    }
+    .auth-visual-content { position: relative; z-index: 10; }
 
     .auth-visual-tag {
         display: inline-flex;
@@ -103,7 +120,7 @@
     .auth-visual-tag-dot {
         width: 6px; height: 6px;
         border-radius: 50%;
-        background: var(--blue-bright);
+        background: var(--ocean-glow);
         animation: tagPulse 2s ease-in-out infinite;
     }
 
@@ -125,7 +142,7 @@
     .auth-visual-quote em {
         font-style: italic;
         font-weight: 300;
-        color: var(--blue-bright);
+        color: var(--ocean-glow);
     }
 
     .auth-visual-sub {
@@ -136,12 +153,7 @@
         margin-bottom: 2.5rem;
     }
 
-    /* Stats row */
-    .auth-stats {
-        display: flex;
-        gap: 0;
-        margin-bottom: 2.5rem;
-    }
+    .auth-stats { display: flex; gap: 0; margin-bottom: 2.5rem; }
 
     .auth-stat {
         padding-right: 2rem;
@@ -168,12 +180,7 @@
         color: rgba(255,255,255,0.35);
     }
 
-    /* Destination pill cards */
-    .auth-dest-pills {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-    }
+    .auth-dest-pills { display: flex; flex-wrap: wrap; gap: 8px; }
 
     .auth-dest-pill {
         display: flex;
@@ -198,7 +205,7 @@
 
     /* ── RIGHT FORM PANEL ──────────────────────── */
     .auth-form-panel {
-        background: var(--navy-mid);
+        background: var(--ocean-deep);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -212,8 +219,8 @@
         content: '';
         position: absolute; inset: 0;
         background:
-            radial-gradient(ellipse 60% 50% at 80% 10%, rgba(37,99,235,0.08) 0%, transparent 60%),
-            radial-gradient(ellipse 40% 40% at 20% 90%, rgba(6,182,212,0.05) 0%, transparent 60%);
+            radial-gradient(ellipse 60% 50% at 80% 10%, rgba(14,77,146,0.1) 0%, transparent 60%),
+            radial-gradient(ellipse 40% 40% at 20% 90%, rgba(56,189,248,0.05) 0%, transparent 60%);
         pointer-events: none;
     }
 
@@ -243,7 +250,7 @@
         font-weight: 700;
         letter-spacing: 0.2em;
         text-transform: uppercase;
-        color: var(--blue-bright);
+        color: var(--ocean-glow);
         margin-bottom: 0.6rem;
         display: flex;
         align-items: center;
@@ -253,7 +260,7 @@
     .form-eyebrow::before {
         content: '';
         width: 28px; height: 2px;
-        background: var(--blue-bright);
+        background: var(--ocean-glow);
         flex-shrink: 0;
     }
 
@@ -275,7 +282,7 @@
     }
 
     .form-sub a {
-        color: var(--blue-bright);
+        color: var(--ocean-glow);
         font-weight: 600;
         text-decoration: none;
         transition: color var(--transition);
@@ -283,7 +290,6 @@
 
     .form-sub a:hover { color: var(--white); }
 
-    /* Google button */
     .google-btn {
         display: flex;
         align-items: center;
@@ -329,7 +335,6 @@
         background: rgba(255,255,255,0.08);
     }
 
-    /* Fields */
     .field-group {
         display: flex;
         flex-direction: column;
@@ -385,11 +390,11 @@
 
     .field input:focus {
         background: rgba(255,255,255,0.07);
-        border-color: var(--blue-bright);
-        box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+        border-color: var(--ocean-glow);
+        box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
     }
 
-    .field-wrap:focus-within .field-icon { color: var(--blue-bright); }
+    .field-wrap:focus-within .field-icon { color: var(--ocean-glow); }
 
     .submit-btn {
         width: 100%;
@@ -422,19 +427,14 @@
     }
 
     .terms-note a {
-        color: var(--blue-bright);
+        color: var(--ocean-glow);
         text-decoration: none;
         transition: color var(--transition);
     }
 
     .terms-note a:hover { color: var(--white); }
 
-    /* password strength */
-    .pwd-strength {
-        display: flex;
-        gap: 4px;
-        margin-top: 6px;
-    }
+    .pwd-strength { display: flex; gap: 4px; margin-top: 6px; }
 
     .pwd-bar {
         flex: 1; height: 3px;
@@ -443,11 +443,78 @@
         transition: background 0.3s;
     }
 
+    /* ── AGENCY CTA ──────────────────────────────── */
+    .agency-cta {
+        margin-top: 2rem;
+        padding: 1.2rem 1.4rem;
+        background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(252,211,77,0.04));
+        border: 1px solid rgba(245,158,11,0.28);
+        border-radius: var(--radius);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        transition: border-color var(--transition), background var(--transition);
+    }
+
+    .agency-cta:hover {
+        border-color: rgba(245,158,11,0.55);
+        background: linear-gradient(135deg, rgba(245,158,11,0.13), rgba(252,211,77,0.07));
+    }
+
+    .agency-cta-text { display: flex; flex-direction: column; gap: 2px; }
+
+    .agency-cta-eyebrow {
+        font-size: 0.62rem;
+        font-weight: 800;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--gold);
+    }
+
+    .agency-cta-heading {
+        font-family: var(--font-display);
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--white);
+        line-height: 1.2;
+    }
+
+    .agency-cta-sub {
+        font-size: 0.77rem;
+        color: rgba(255,255,255,0.38);
+        margin-top: 2px;
+    }
+
+    .agency-cta-btn {
+        flex-shrink: 0;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 0.6rem 1.2rem;
+        background: linear-gradient(135deg, #d97706, var(--gold-light));
+        color: var(--ocean-deep);
+        font-size: 0.8rem;
+        font-weight: 800;
+        letter-spacing: 0.04em;
+        border-radius: 100px;
+        text-decoration: none;
+        white-space: nowrap;
+        transition: all var(--transition);
+        box-shadow: 0 4px 16px rgba(245,158,11,0.3);
+    }
+
+    .agency-cta-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 28px rgba(245,158,11,0.5);
+    }
+
     @media (max-width: 800px) {
         .auth-page { grid-template-columns: 1fr; }
         .auth-visual { display: none; }
         .auth-form-panel { padding: 2rem 1.5rem; }
         .field-row { grid-template-columns: 1fr; }
+        .agency-cta { flex-direction: column; align-items: flex-start; }
     }
 </style>
 {% endblock %}
@@ -455,16 +522,14 @@
 {% block content %}
 <div class="auth-page">
 
-    <!-- LEFT — visual -->
+    <!-- LEFT — night sky visual panel -->
     <div class="auth-visual">
         <div class="auth-visual-bg"></div>
         <div class="auth-visual-scrim"></div>
+        <div class="auth-visual-stars"></div>
         <div class="auth-visual-grid"></div>
 
-        <a href="{% url 'home' %}" class="auth-logo-top">
-            <div class="auth-logo-icon">✦</div>
-            <span class="auth-logo-text">TRIVASTA</span>
-        </a>
+        <!-- Logo image — replaces all "TRIVASTA" text -->
 
         <div class="auth-visual-content">
             <div class="auth-visual-tag">
@@ -505,7 +570,7 @@
         </div>
     </div>
 
-    <!-- RIGHT — form -->
+    <!-- RIGHT — form panel -->
     <div class="auth-form-panel">
         <div class="auth-form-box">
 
@@ -554,7 +619,7 @@
                                 <span class="field-icon">🔒</span>
                                 <input type="password" name="password" id="pwdInput" placeholder="Min. 8 chars" required autocomplete="new-password">
                             </div>
-                            <div class="pwd-strength" id="pwdStrength">
+                            <div class="pwd-strength">
                                 <div class="pwd-bar" id="b1"></div>
                                 <div class="pwd-bar" id="b2"></div>
                                 <div class="pwd-bar" id="b3"></div>
@@ -572,9 +637,8 @@
 
                 </div>
 
-                <button type="submit" class="btn btn-blue submit-btn">
-                    Create Account
-                    <span class="btn-arrow">→</span>
+                <button type="submit" class="btn btn-primary submit-btn">
+                    Create Account →
                 </button>
             </form>
 
@@ -584,6 +648,18 @@
                 <a href="{% url 'privacy' %}">Privacy Policy</a>.
             </p>
 
+            <!-- AGENCY CTA -->
+            <div class="agency-cta">
+                <div class="agency-cta-text">
+                    <span class="agency-cta-eyebrow">✈ For Businesses</span>
+                    <span class="agency-cta-heading">Are you an Agency?</span>
+                    <span class="agency-cta-sub">List your packages & reach thousands of travellers</span>
+                </div>
+                <a href="{% url 'agency_register' %}" class="agency-cta-btn">
+                    Register Agency ✦
+                </a>
+            </div>
+
         </div>
     </div>
 
@@ -592,25 +668,18 @@
 
 {% block extra_js %}
 <script>
-    // Password strength indicator
     const pwd = document.getElementById('pwdInput');
-    const bars = [
-        document.getElementById('b1'),
-        document.getElementById('b2'),
-        document.getElementById('b3'),
-        document.getElementById('b4'),
-    ];
+    const bars = ['b1','b2','b3','b4'].map(id => document.getElementById(id));
     const colors = ['#ef4444','#f97316','#eab308','#22c55e'];
 
     if (pwd) {
         pwd.addEventListener('input', () => {
             const v = pwd.value;
             let score = 0;
-            if (v.length >= 8)  score++;
-            if (/[A-Z]/.test(v)) score++;
-            if (/[0-9]/.test(v)) score++;
+            if (v.length >= 8)        score++;
+            if (/[A-Z]/.test(v))      score++;
+            if (/[0-9]/.test(v))      score++;
             if (/[^A-Za-z0-9]/.test(v)) score++;
-
             bars.forEach((bar, i) => {
                 bar.style.background = i < score ? colors[score - 1] : 'rgba(255,255,255,0.1)';
             });

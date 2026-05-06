@@ -1,13 +1,156 @@
 {% extends "base.html" %}
-{% block title %}Application Pending{% endblock %}
+{% block title %}Application Pending — Trivasta{% endblock %}
+
+{% block extra_css %}
+<style>
+.pending-page {
+    min-height: calc(100vh - 68px);
+    background: var(--ocean-deep, #020c1b);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 1.5rem;
+}
+
+.pending-card {
+    max-width: 480px;
+    width: 100%;
+    background: rgba(10,37,64,0.6);
+    border: 1px solid rgba(56,189,248,0.12);
+    border-radius: 24px;
+    padding: 3rem 2.5rem;
+    text-align: center;
+    backdrop-filter: blur(16px);
+    position: relative;
+    overflow: hidden;
+}
+
+.pending-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background-image:
+        linear-gradient(rgba(56,189,248,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(56,189,248,0.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+    pointer-events: none;
+}
+
+.pending-card::after {
+    content: '';
+    position: absolute;
+    bottom: -80px; left: 50%;
+    transform: translateX(-50%);
+    width: 300px; height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(56,189,248,0.07), transparent 70%);
+    pointer-events: none;
+}
+
+.pending-icon {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.2);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.75rem;
+    position: relative; z-index: 1;
+    animation: pendingPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes pendingPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(251,191,36,0.2); }
+    50%       { box-shadow: 0 0 0 12px rgba(251,191,36,0); }
+}
+
+.pending-icon svg { width: 32px; height: 32px; }
+
+.pending-eyebrow {
+    font-size: 0.68rem; font-weight: 700;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    color: #38bdf8; margin-bottom: 0.75rem;
+    position: relative; z-index: 1;
+}
+
+.pending-title {
+    font-family: var(--font-display);
+    font-size: 2rem; font-weight: 300;
+    color: var(--white); margin-bottom: 1rem;
+    position: relative; z-index: 1;
+}
+
+.pending-title em {
+    font-style: italic;
+    background: linear-gradient(135deg, #fbbf24, #fde68a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.pending-desc {
+    font-size: 0.875rem;
+    color: rgba(255,255,255,0.4);
+    line-height: 1.75; margin-bottom: 2rem;
+    position: relative; z-index: 1;
+}
+
+.pending-desc strong { color: rgba(255,255,255,0.75); font-weight: 600; }
+
+.pending-status {
+    background: rgba(251,191,36,0.06);
+    border: 1px solid rgba(251,191,36,0.15);
+    border-radius: 12px; padding: 1rem 1.25rem;
+    margin-bottom: 2rem;
+    display: flex; align-items: center; gap: 0.75rem;
+    position: relative; z-index: 1;
+}
+
+.pending-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%; background: #fbbf24;
+    flex-shrink: 0;
+    animation: pendingBlink 1.5s ease-in-out infinite;
+}
+
+@keyframes pendingBlink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.3; }
+}
+
+.pending-status-text { font-size: 0.8rem; color: rgba(255,255,255,0.45); text-align: left; }
+.pending-status-text strong { display: block; font-size: 0.8125rem; color: #fbbf24; font-weight: 600; margin-bottom: 0.1rem; }
+</style>
+{% endblock %}
+
 {% block content %}
-<div style="max-width:500px; margin:5rem auto; padding:0 1.5rem; text-align:center;">
-    <div style="font-size:3.5rem; margin-bottom:1rem;">⏳</div>
-    <h2 style="font-family:var(--font-display); color:var(--sea); font-size:2rem; margin-bottom:0.75rem;">Application Under Review</h2>
-    <p style="color:var(--muted); font-size:0.9375rem; line-height:1.7; margin-bottom:2rem;">
-        Hi <strong>{{ agency.name }}</strong>, your application is being reviewed by our team.
-        We'll notify you at <strong>{{ agency.email }}</strong> once approved. This usually takes 24–48 hours.
-    </p>
-    <a href="{% url 'home' %}" class="btn btn-outline">Back to Home</a>
+<div class="pending-page">
+    <div class="pending-card">
+
+        <div class="pending-icon">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="16" cy="16" r="13" stroke="#fbbf24" stroke-width="1.5"/>
+                <path d="M16 9v7l4 3" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+
+        <p class="pending-eyebrow">Application Status</p>
+
+        <h2 class="pending-title">Under <em>Review</em></h2>
+
+        <p class="pending-desc">
+            Hi <strong>{{ agency.name }}</strong>, your application is being reviewed by our team.
+            We'll notify you at <strong>{{ agency.email }}</strong> once approved.
+        </p>
+
+        <div class="pending-status">
+            <div class="pending-dot"></div>
+            <div class="pending-status-text">
+                <strong>Review in progress</strong>
+                This usually takes 24–48 hours. No action needed from your side.
+            </div>
+        </div>
+
+        <a href="{% url 'home' %}" class="btn btn-primary" style="border-radius:100px; padding:.75rem 2rem; box-shadow:0 4px 20px rgba(56,189,248,.25);">← Back to Home</a>
+
+    </div>
 </div>
 {% endblock %}
