@@ -119,15 +119,17 @@
 
 .hero-headline {
     font-family: var(--font-bold);
-    font-size: clamp(3rem, 11vw, 12rem);
-    line-height: 0.9;
-    letter-spacing: 0.04em;
+    font-size: clamp(2.8rem, 10vw, 12rem);
+    line-height: 0.95;
+    letter-spacing: 0.02em;
     color: var(--ink);
     margin-bottom: 0.5rem;
     opacity: 0;
     animation: fadeUp 0.9s 0.55s forwards;
     position: relative;
-    word-wrap: break-word;
+    word-wrap: normal;
+    white-space: nowrap;
+    overflow: visible;
 }
 
 .hero-headline .line-2 {
@@ -142,6 +144,7 @@
     background-clip: text;
     letter-spacing: 0.01em;
     line-height: 1.1;
+    white-space: normal;
 }
 
 .hero-bottom {
@@ -377,7 +380,7 @@
 
 .how-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
     margin-top: 4rem;
 }
@@ -1010,8 +1013,10 @@
     }
     
     .hero-headline {
-        font-size: clamp(2.5rem, 10vw, 4rem);
+        font-size: clamp(2.2rem, 9vw, 4rem);
         margin-bottom: 1rem;
+        letter-spacing: 0.01em;
+        white-space: normal;
     }
     
     .hero-bottom {
@@ -1185,7 +1190,8 @@
 /* Very small mobile devices */
 @media (max-width: 480px) {
     .hero-headline {
-        font-size: 2.5rem;
+        font-size: 2.2rem;
+        letter-spacing: 0;
     }
     
     .hero-headline .line-2 {
@@ -1453,7 +1459,10 @@
                             <img src="{{ pkg.image_url }}" alt="{{ pkg.title }}" loading="lazy">
                             <div class="pkg-card-img-overlay"></div>
                         {% else %}
-                            {% if pkg.category == 'adventure' %}🏔️{% elif pkg.category == 'cultural' %}🏛️{% elif pkg.category == 'leisure' %}🌴{% elif pkg.category == 'romantic' %}💑{% elif pkg.category == 'family' %}👨‍👩‍👧{% elif pkg.category == 'luxury' %}✨{% elif pkg.category == 'solo' %}🎒{% else %}✈️{% endif %}
+                            {% if pkg.category == 'romantic' %}
+                                <img src="https://images.unsplash.com/photo-1559847844-5315695dadae?w=800&q=85" alt="{{ pkg.title }}" loading="lazy">
+                                <div class="pkg-card-img-overlay"></div>
+                            {% elif pkg.category == 'adventure' %}🏔️{% elif pkg.category == 'cultural' %}🏛️{% elif pkg.category == 'leisure' %}🌴{% elif pkg.category == 'family' %}👨‍👩‍👧{% elif pkg.category == 'luxury' %}✨{% elif pkg.category == 'solo' %}🎒{% else %}✈️{% endif %}
                         {% endif %}
                         <div class="pkg-category-badge">{{ pkg.get_category_display }}</div>
                         <div class="pkg-agency-badge">🏢 {{ pkg.agency.name }}</div>
