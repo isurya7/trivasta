@@ -23,7 +23,7 @@ INSTALLED_APPS = [
     'trips',
     'marketplace',
     'channels',
-    'social_django',                        # ← ADDED
+    'social_django',
 ]
 
 MIDDLEWARE = [
@@ -35,7 +35,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'social_django.middleware.SocialAuthExceptionMiddleware',  # ← ADDED
+    'social_django.middleware.SocialAuthExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'trivasta.urls'
@@ -52,14 +52,16 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'users.context_processors.user_agency',
-                'social_django.context_processors.backends',        # ← ADDED
-                'social_django.context_processors.login_redirect',  # ← ADDED
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
 ]
 
 ASGI_APPLICATION = 'trivasta.asgi.application'
+
+# ── Database ──────────────────────────────────────────────────────────────────
 
 _db_url = os.environ.get('DATABASE_URL', '')
 if _db_url and 'postgres' in _db_url:
@@ -73,6 +75,8 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
+# ── Redis / Channels ──────────────────────────────────────────────────────────
 
 _redis_url = os.environ.get('REDIS_URL', '')
 if _redis_url:
@@ -90,6 +94,8 @@ else:
         },
     }
 
+# ── Password Validation ───────────────────────────────────────────────────────
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -97,10 +103,14 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# ── Localisation ──────────────────────────────────────────────────────────────
+
 LANGUAGE_CODE = 'en-in'
 TIME_ZONE     = 'Asia/Kolkata'
 USE_I18N      = True
 USE_TZ        = True
+
+# ── Static & Media ────────────────────────────────────────────────────────────
 
 STATIC_URL       = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
@@ -112,27 +122,36 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# ── Auth ──────────────────────────────────────────────────────────────────────
+
 AUTH_USER_MODEL     = 'auth.User'
 LOGIN_REDIRECT_URL  = "dashboard"
 LOGOUT_REDIRECT_URL = "home"
 LOGIN_URL           = "login"
+
+# ── Third-party API Keys ──────────────────────────────────────────────────────
 
 GROQ_API_KEY        = os.environ.get("GROQ_API_KEY")
 GEMINI_API_KEY      = os.environ.get("GEMINI_API_KEY")
 RAZORPAY_KEY_ID     = os.environ.get("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET")
 
+# ── Production Security ───────────────────────────────────────────────────────
+
 if not DEBUG:
-    SECURE_SSL_REDIRECT         = False
-    SECURE_PROXY_SSL_HEADER     = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SESSION_COOKIE_SECURE       = True
-    CSRF_COOKIE_SECURE          = True
-    SECURE_BROWSER_XSS_FILTER   = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS             = 'DENY'
+    SOCIAL_AUTH_REDIRECT_IS_HTTPS = True        # ← CRITICAL for OAuth on Render
+    SECURE_SSL_REDIRECT           = False        # Render handles SSL
+    SECURE_PROXY_SSL_HEADER       = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE         = True
+    CSRF_COOKIE_SECURE            = True
+    SECURE_BROWSER_XSS_FILTER     = True
+    SECURE_CONTENT_TYPE_NOSNIFF   = True
+    X_FRAME_OPTIONS               = 'DENY'
+    CSRF_TRUSTED_ORIGINS          = [
+        'https://trivasta.onrender.com',         # ← your Render domain
+    ]
 
-
-# ── Google OAuth ──────────────────────────────────────────────────────────────
+# ── Google OAuth 2.0 ──────────────────────────────────────────────────────────
 
 AUTHENTICATION_BACKENDS = [
     'social_core.backends.google.GoogleOAuth2',
@@ -147,6 +166,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE  = [
     'https://www.googleapis.com/auth/userinfo.profile',
 ]
 
+# Pipeline — order matters!
 SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.social_auth.social_details',
     'social_core.pipeline.social_auth.social_uid',
@@ -155,19 +175,19 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.user.get_username',
     'social_core.pipeline.social_auth.associate_by_email',
     'social_core.pipeline.user.create_user',
-    'users.pipeline.save_profile',
-    'users.pipeline.send_welcome_email',
-    'social_core.pipeline.social_auth.associate_user',
-    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.social_auth.associate_user',   # ← fixed order
+    'social_core.pipeline.social_auth.load_extra_data',  # ← fixed order
     'social_core.pipeline.user.user_details',
+    'users.pipeline.save_profile',                       # ← custom last
+    'users.pipeline.send_welcome_email',                 # ← custom last
 )
 
 SOCIAL_AUTH_LOGIN_REDIRECT_URL    = 'dashboard'
 SOCIAL_AUTH_LOGIN_ERROR_URL       = 'login'
 SOCIAL_AUTH_NEW_USER_REDIRECT_URL = 'dashboard'
+SOCIAL_AUTH_RAISE_EXCEPTIONS      = False
 
-
-# ── SendGrid Email ────────────────────────────────────────────────────────────
+# ── Email (Resend SMTP) ───────────────────────────────────────────────────────
 
 EMAIL_BACKEND       = os.environ.get('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
 EMAIL_HOST          = os.environ.get('EMAIL_HOST', 'smtp.resend.com')
