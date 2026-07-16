@@ -140,7 +140,7 @@ RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET")
 
 if not DEBUG:
     SOCIAL_AUTH_REDIRECT_IS_HTTPS = True        # ← CRITICAL for OAuth on Render
-    SECURE_SSL_REDIRECT           = False        # Render handles SSL
+    SECURE_SSL_REDIRECT           = False        # Render handles SSL termination
     SECURE_PROXY_SSL_HEADER       = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE         = True
     CSRF_COOKIE_SECURE            = True
@@ -148,7 +148,9 @@ if not DEBUG:
     SECURE_CONTENT_TYPE_NOSNIFF   = True
     X_FRAME_OPTIONS               = 'DENY'
     CSRF_TRUSTED_ORIGINS          = [
-        'https://trivasta.onrender.com',         # ← your Render domain
+        'https://trivasta.onrender.com',
+        'https://trivasta.in',
+        'https://www.trivasta.in',
     ]
 
 # ── Google OAuth 2.0 ──────────────────────────────────────────────────────────
@@ -160,11 +162,28 @@ AUTHENTICATION_BACKENDS = [
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY    = os.environ.get('GOOGLE_CLIENT_ID')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
-SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE  = [
+
+# ── FIX: Explicit redirect URI — must match Google Cloud Console exactly ──────
+# NOTE: now pointing at the custom domain. Make sure this exact URL is added
+# under "Authorized redirect URIs" in Google Cloud Console, alongside (or
+# instead of) the old onrender.com one.
+SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = (
+    'https://trivasta.in/oauth/complete/google-oauth2/'
+    if not DEBUG else
+    'http://127.0.0.1:8000/oauth/complete/google-oauth2/'
+)
+
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'openid',
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
 ]
+
+# ── FIX: Extra settings to ensure correct redirect handling ───────────────────
+SOCIAL_AUTH_GOOGLE_OAUTH2_AUTH_EXTRA_ARGUMENTS = {
+    'access_type': 'online',
+    'prompt':      'select_account',   # always show account picker
+}
 
 # Pipeline — order matters!
 SOCIAL_AUTH_PIPELINE = (
@@ -175,11 +194,11 @@ SOCIAL_AUTH_PIPELINE = (
     'social_core.pipeline.user.get_username',
     'social_core.pipeline.social_auth.associate_by_email',
     'social_core.pipeline.user.create_user',
-    'social_core.pipeline.social_auth.associate_user',   # ← fixed order
-    'social_core.pipeline.social_auth.load_extra_data',  # ← fixed order
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
     'social_core.pipeline.user.user_details',
-    'users.pipeline.save_profile',                       # ← custom last
-    'users.pipeline.send_welcome_email',                 # ← custom last
+    'users.pipeline.save_profile',
+    'users.pipeline.send_welcome_email',
 )
 
 SOCIAL_AUTH_LOGIN_REDIRECT_URL    = 'dashboard'
