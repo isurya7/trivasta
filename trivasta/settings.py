@@ -167,12 +167,6 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_CLIENT_SECRET')
 # NOTE: now pointing at the custom domain. Make sure this exact URL is added
 # under "Authorized redirect URIs" in Google Cloud Console, alongside (or
 # instead of) the old onrender.com one.
-SOCIAL_AUTH_GOOGLE_OAUTH2_REDIRECT_URI = (
-    'https://trivasta.in/oauth/complete/google-oauth2/'
-    if not DEBUG else
-    'http://127.0.0.1:8000/oauth/complete/google-oauth2/'
-)
-
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'openid',
     'https://www.googleapis.com/auth/userinfo.email',
