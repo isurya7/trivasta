@@ -102,8 +102,6 @@ DEFAULT_FROM_EMAIL=
 SUPPORT_EMAIL=
 ```
 
-> The repo's `.env` also defines `TWILLO_RECOVERY_CODE` and `SENDGRID_API_KEY`, but neither is referenced anywhere in `settings.py` or the app code — they appear to be unused leftovers.
-
 ## Known issues
 
 - **`marketplace/ai_support.py` references `settings.GEMINI_API_KEY`**, but `settings.py` never defines it (only `GROQ_API_KEY` and `OPENROUTER_API_KEY` are set from the environment there). The Gemini branch is wrapped in a `try/except`, so it fails silently and falls through to Groq or the keyword-based fallback rather than crashing — but the Gemini fallback for the support chat is effectively dead code until `GEMINI_API_KEY` is added to `settings.py`.
