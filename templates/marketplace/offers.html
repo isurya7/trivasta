@@ -3,13 +3,11 @@
 
 {% block extra_css %}
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Outfit:wght@300;400;500;600;700&display=swap');
-
     .offers-page {
-        min-height: calc(100vh - 68px);
-        background: var(--cream);
-        font-family: 'Outfit', sans-serif;
+        min-height: calc(100vh - 72px);
         padding: 3rem 2rem;
+        position: relative;
+        z-index: 1;
     }
 
     .offers-inner {
@@ -37,15 +35,15 @@
     }
 
     .offers-title {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: clamp(2rem, 4vw, 2.75rem);
         font-weight: 300;
-        color: var(--ink);
+        color: var(--white);
         line-height: 1.1;
         margin-bottom: 0.5rem;
     }
 
-    .offers-title em { font-style: italic; color: var(--sea); }
+    .offers-title em { font-style: italic; color: var(--ocean-glow); }
 
     .offers-subtitle {
         font-size: 0.9375rem;
@@ -58,11 +56,13 @@
         display: inline-flex;
         align-items: center;
         gap: 1.25rem;
-        background: white;
-        border: 1px solid var(--cream-dark);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border-radius: 100px;
         padding: 0.75rem 1.5rem;
-        box-shadow: var(--shadow);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.35);
         margin-bottom: 2rem;
         flex-wrap: wrap;
     }
@@ -75,11 +75,11 @@
         color: var(--muted);
     }
 
-    .pill-item strong { color: var(--ink); }
+    .pill-item strong { color: var(--white); }
 
     /* ── COMPARE BANNER ── */
     .compare-banner {
-        background: linear-gradient(135deg, var(--sea), #0a2240);
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-mid));
         border-radius: 12px;
         padding: 1.25rem 1.75rem;
         display: flex;
@@ -107,7 +107,7 @@
         display: block;
         font-size: 0.9375rem;
         font-weight: 600;
-        color: white;
+        color: var(--white);
         margin-bottom: 0.2rem;
     }
 
@@ -124,7 +124,7 @@
         gap: 0.5rem;
         padding: 0.75rem 1.5rem;
         background: var(--gold);
-        color: var(--ink);
+        color: var(--ocean-deep);
         border-radius: var(--radius);
         font-weight: 700;
         font-size: 0.875rem;
@@ -135,7 +135,7 @@
     }
 
     .compare-banner-btn:hover {
-        background: #e8c97a;
+        background: var(--gold-light);
         transform: translateY(-1px);
     }
 
@@ -147,11 +147,14 @@
     }
 
     .offer-card {
-        background: white;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border-radius: 16px;
-        box-shadow: var(--shadow);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.35);
         overflow: hidden;
-        border: 2px solid transparent;
+        border: 2px solid var(--glass-border);
         transition: all 0.3s;
         animation: fadeUp 0.5s ease both;
     }
@@ -162,9 +165,9 @@
     .offer-card:nth-child(4) { animation-delay: 0.20s; }
 
     .offer-card:hover {
-        border-color: rgba(15,52,96,0.15);
+        border-color: rgba(56,189,248,0.3);
         transform: translateY(-3px);
-        box-shadow: var(--shadow-deep);
+        box-shadow: 0 16px 48px rgba(0,0,0,0.45);
     }
 
     .offer-card.best-offer {
@@ -173,7 +176,7 @@
 
     /* Card header */
     .offer-card-header {
-        background: linear-gradient(135deg, var(--sea), #0a2240);
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-mid));
         padding: 1.5rem 2rem;
         display: flex;
         align-items: center;
@@ -198,7 +201,7 @@
     .best-badge {
         display: inline-block;
         background: var(--gold);
-        color: var(--ink);
+        color: var(--ocean-deep);
         font-size: 0.62rem;
         font-weight: 800;
         letter-spacing: 0.12em;
@@ -209,10 +212,10 @@
     }
 
     .offer-agency-name {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 1.625rem;
         font-weight: 600;
-        color: white;
+        color: var(--white);
         margin-bottom: 0.2rem;
     }
 
@@ -232,7 +235,7 @@
     }
 
     .offer-agency-meta .rating {
-        color: #e8c97a;
+        color: var(--gold-light);
         font-weight: 600;
     }
 
@@ -245,7 +248,7 @@
         border-radius: 2px;
     }
 
-    .plan-enterprise   { background: rgba(201,168,76,0.2); color: #e8c97a; }
+    .plan-enterprise   { background: rgba(201,168,76,0.2); color: var(--gold-light); }
     .plan-professional { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
     .plan-starter      { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.45); }
 
@@ -267,10 +270,10 @@
     }
 
     .offer-price {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 2.5rem;
         font-weight: 600;
-        color: white;
+        color: var(--white);
         line-height: 1;
     }
 
@@ -282,7 +285,7 @@
 
     .offer-total {
         font-size: 0.8rem;
-        color: #e8c97a;
+        color: var(--gold-light);
         margin-top: 0.2rem;
         font-weight: 600;
     }
@@ -298,10 +301,10 @@
         align-items: center;
         gap: 1.5rem;
         padding: 1rem 1.25rem;
-        background: var(--cream);
+        background: rgba(255,255,255,0.03);
         border-radius: 10px;
         margin-bottom: 1.25rem;
-        border: 1px solid var(--cream-dark);
+        border: 1px solid var(--glass-border);
         flex-wrap: wrap;
     }
 
@@ -313,7 +316,7 @@
         color: var(--muted);
     }
 
-    .safe-info-item strong { color: var(--ink); }
+    .safe-info-item strong { color: var(--white); }
 
     .privacy-note {
         display: flex;
@@ -321,8 +324,8 @@
         gap: 0.4rem;
         font-size: 0.72rem;
         color: var(--muted);
-        background: rgba(15,52,96,0.04);
-        border: 1px solid rgba(15,52,96,0.1);
+        background: rgba(56,189,248,0.06);
+        border: 1px solid rgba(56,189,248,0.15);
         border-radius: 6px;
         padding: 0.4rem 0.75rem;
         margin-left: auto;
@@ -330,7 +333,7 @@
 
     /* Message */
     .offer-message {
-        background: var(--cream);
+        background: rgba(255,255,255,0.03);
         border-left: 3px solid var(--gold);
         border-radius: 0 8px 8px 0;
         padding: 1rem 1.25rem;
@@ -344,7 +347,7 @@
 
     .offer-message::before {
         content: '"';
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 2rem;
         color: var(--gold);
         line-height: 0;
@@ -377,22 +380,22 @@
         font-size: 0.775rem;
         padding: 0.35rem 0.875rem;
         border-radius: 100px;
-        border: 1px solid var(--cream-dark);
-        background: white;
+        border: 1px solid var(--glass-border);
+        background: rgba(255,255,255,0.04);
         color: var(--muted);
     }
 
     .price-chip.highlight {
-        background: rgba(15,52,96,0.06);
-        border-color: rgba(15,52,96,0.15);
-        color: var(--sea);
+        background: rgba(56,189,248,0.08);
+        border-color: rgba(56,189,248,0.2);
+        color: var(--ocean-glow);
         font-weight: 600;
     }
 
     .price-chip.free-chip {
-        background: rgba(39,174,96,0.08);
-        border-color: rgba(39,174,96,0.2);
-        color: #27ae60;
+        background: rgba(52,211,153,0.1);
+        border-color: rgba(52,211,153,0.25);
+        color: #34d399;
         font-weight: 600;
     }
 
@@ -406,7 +409,7 @@
     .action-btn {
         padding: 0.875rem 1rem;
         border-radius: var(--radius);
-        font-family: 'Outfit', sans-serif;
+        font-family: var(--font-body);
         font-size: 0.9rem;
         font-weight: 600;
         text-align: center;
@@ -421,30 +424,30 @@
     }
 
     .btn-chat {
-        background: rgba(39,174,96,0.08);
-        color: #27ae60;
-        border: 1.5px solid rgba(39,174,96,0.25);
+        background: rgba(52,211,153,0.1);
+        color: #34d399;
+        border: 1.5px solid rgba(52,211,153,0.3);
     }
 
     .btn-chat:hover {
-        background: rgba(39,174,96,0.15);
-        border-color: rgba(39,174,96,0.4);
+        background: rgba(52,211,153,0.18);
+        border-color: rgba(52,211,153,0.45);
         transform: translateY(-1px);
     }
 
     .btn-book {
-        background: linear-gradient(135deg, var(--sea), #0a2240);
-        color: white;
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-mid));
+        color: var(--white);
     }
 
     .btn-book:hover {
         transform: translateY(-1px);
-        box-shadow: 0 8px 24px rgba(15,52,96,0.3);
+        box-shadow: 0 8px 24px rgba(14,77,146,0.4);
     }
 
     .btn-book.best-btn {
         background: linear-gradient(135deg, var(--gold), #b8860b);
-        color: var(--ink);
+        color: var(--ocean-deep);
     }
 
     .btn-book.best-btn:hover {
@@ -468,18 +471,21 @@
     .empty-offers {
         text-align: center;
         padding: 4rem 2rem;
-        background: white;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border-radius: 16px;
-        box-shadow: var(--shadow);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.35);
     }
 
     .empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
 
     .empty-title {
-        font-family: 'Cormorant Garamond', serif;
+        font-family: var(--font-display);
         font-size: 2rem;
         font-weight: 300;
-        color: var(--ink);
+        color: var(--white);
         margin-bottom: 0.5rem;
     }
 
@@ -509,13 +515,13 @@
 
     .waiting-step-num {
         width: 36px; height: 36px;
-        background: linear-gradient(135deg, var(--sea), #0a2240);
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-mid));
         border-radius: 50%;
         display: grid;
         place-items: center;
         font-size: 0.875rem;
         font-weight: 700;
-        color: white;
+        color: var(--white);
     }
 
     .waiting-step-text {

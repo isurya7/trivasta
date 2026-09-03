@@ -5,9 +5,10 @@
 {% block extra_css %}
 <style>
     .trip-detail-page {
-        background: var(--cream);
-        min-height: calc(100vh - 68px);
+        min-height: calc(100vh - 72px);
         padding: 3rem 0 5rem;
+        position: relative;
+        z-index: 1;
     }
 
     .td-container {
@@ -25,7 +26,7 @@
         font-size: 0.8125rem;
         color: var(--muted);
     }
-    .breadcrumb a { color: var(--sea); text-decoration: none; }
+    .breadcrumb a { color: var(--ocean-glow); text-decoration: none; }
     .breadcrumb a:hover { text-decoration: underline; }
     .breadcrumb-sep { opacity: 0.4; }
 
@@ -59,18 +60,21 @@
         font-family: var(--font-display);
         font-size: clamp(2.25rem, 4vw, 3.5rem);
         font-weight: 300;
-        color: var(--ink);
+        color: var(--white);
         line-height: 1.1;
     }
 
-    .trip-headline em { font-style: italic; color: var(--sea); }
+    .trip-headline em { font-style: italic; color: var(--ocean-glow); }
 
     /* Summary Card */
     .summary-card {
-        background: var(--white);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border-radius: 12px;
         padding: 1.75rem;
-        box-shadow: var(--shadow);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.35);
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 1.25rem;
@@ -93,10 +97,10 @@
         font-family: var(--font-display);
         font-size: 1.25rem;
         font-weight: 600;
-        color: var(--ink);
+        color: var(--white);
     }
 
-    .summary-value.highlight { color: var(--sea); }
+    .summary-value.highlight { color: var(--ocean-glow); }
 
     /* ─── MAIN LAYOUT ────────────────────────────────────────────── */
     .td-layout {
@@ -108,14 +112,17 @@
 
     /* ─── ITINERARY CARD ─────────────────────────────────────────── */
     .itinerary-card {
-        background: var(--white);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border-radius: 12px;
-        box-shadow: var(--shadow);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.35);
         overflow: hidden;
     }
 
     .itinerary-card-header {
-        background: var(--sea);
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-mid));
         padding: 1.5rem 2rem;
         display: flex;
         align-items: center;
@@ -164,7 +171,7 @@
     .itinerary-content {
         padding: 2rem;
         font-size: 0.9375rem;
-        color: var(--ink);
+        color: rgba(255,255,255,0.78);
         line-height: 1.75;
     }
 
@@ -175,10 +182,13 @@
     .sidebar { display: flex; flex-direction: column; gap: 1.5rem; }
 
     .sidebar-card {
-        background: var(--white);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
         border-radius: 12px;
         padding: 1.5rem;
-        box-shadow: var(--shadow);
+        box-shadow: 0 8px 32px rgba(0,0,0,0.35);
     }
 
     .sidebar-card-title {
@@ -189,7 +199,7 @@
         color: var(--muted);
         margin-bottom: 1.25rem;
         padding-bottom: 0.75rem;
-        border-bottom: 1px solid var(--cream-dark);
+        border-bottom: 1px solid var(--glass-border);
     }
 
     /* Quick Stats */
@@ -204,12 +214,12 @@
 
     .qs-label { color: var(--muted); display: flex; align-items: center; gap: 0.5rem; }
     .qs-label .qs-icon { font-size: 1rem; }
-    .qs-value { font-weight: 600; color: var(--ink); }
-    .qs-value.money { color: var(--sea); font-family: var(--font-display); font-size: 1rem; }
+    .qs-value { font-weight: 600; color: var(--white); }
+    .qs-value.money { color: var(--ocean-glow); font-family: var(--font-display); font-size: 1rem; }
 
     /* CTA Card */
     .cta-card {
-        background: linear-gradient(135deg, var(--sea), #0a2240);
+        background: linear-gradient(135deg, var(--ocean-bright), var(--ocean-mid));
         border-radius: 12px;
         padding: 2rem 1.5rem;
         text-align: center;
@@ -249,7 +259,7 @@
         width: 100%;
         padding: 0.875rem;
         background: var(--gold);
-        color: var(--ink);
+        color: var(--ocean-deep);
         border-radius: var(--radius);
         font-weight: 700;
         font-size: 0.9rem;
@@ -268,20 +278,20 @@
         gap: 0.75rem;
         width: 100%;
         padding: 0.75rem 1rem;
-        background: var(--cream);
-        border: 1.5px solid var(--cream-dark);
+        background: var(--glass-bg);
+        border: 1.5px solid var(--glass-border);
         border-radius: var(--radius);
         font-family: var(--font-body);
         font-size: 0.875rem;
         font-weight: 500;
-        color: var(--ink-light);
+        color: rgba(255,255,255,0.7);
         cursor: pointer;
         transition: all var(--transition);
         margin-bottom: 0.5rem;
     }
 
     .action-btn:last-child { margin-bottom: 0; }
-    .action-btn:hover { border-color: var(--sea); color: var(--sea); background: rgba(15,52,96,0.03); }
+    .action-btn:hover { border-color: var(--ocean-glow); color: var(--ocean-glow); background: rgba(56,189,248,0.06); }
 
     /* ─── RESPONSIVE ─────────────────────────────────────────────── */
     @media (max-width: 900px) {

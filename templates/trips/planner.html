@@ -3,26 +3,11 @@
 
 {% block extra_css %}
 <style>
-*,*::before,*::after{box-sizing:border-box}
-
 .planner-page{
   min-height:calc(100vh - 72px);
-  background:var(--ocean-deep);
   display:grid;
   grid-template-columns:1fr 360px;
   position:relative;
-  overflow:hidden;
-}
-
-.planner-page::before{
-  content:'';
-  position:fixed;
-  inset:0;
-  background:
-    radial-gradient(ellipse 70% 50% at 15% 20%,rgba(14,77,146,0.35) 0%,transparent 60%),
-    radial-gradient(ellipse 50% 60% at 85% 80%,rgba(56,189,248,0.1) 0%,transparent 55%);
-  pointer-events:none;
-  z-index:0;
 }
 
 /* LEFT */
@@ -638,4 +623,3 @@ updatePreview();
 goToStep(1);
 </script>
 {% endblock %}
-

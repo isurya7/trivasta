@@ -133,6 +133,9 @@
             letter-spacing: 0.04em;
             transition: all var(--transition);
             white-space: nowrap;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
         }
 
         .nav-links a:hover {
@@ -160,6 +163,24 @@
         .nav-links .support-link { color: #34d399 !important; font-weight: 600; font-size: 0.8rem; }
         .nav-links .refund-link  { color: #fb923c !important; font-weight: 600; font-size: 0.8rem; }
         .nav-links .help-link    { color: var(--ocean-glow) !important; }
+
+        .nav-links .agency-dash:hover,
+        .nav-links .admin-link:hover,
+        .nav-links .support-link:hover,
+        .nav-links .refund-link:hover,
+        .nav-links .help-link:hover { background: var(--glass-bg); }
+
+        .role-badge {
+            font-size: 0.55rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.6);
+            padding: 1px 6px;
+            border-radius: 4px;
+            line-height: 1.6;
+        }
 
         /* ─── MAIN ────────────────────────────────────── */
         main { flex: 1; padding-top: 72px; position: relative; z-index: 1; }
@@ -451,17 +472,17 @@
 
         {% if user.is_authenticated %}
             {% if user_agency %}
-                <li><a href="{% url 'agency_dashboard' %}" class="agency-dash">⚡ Dashboard</a></li>
+                <li><a href="{% url 'agency_dashboard' %}" class="agency-dash">Agency Dashboard<span class="role-badge">Agency</span></a></li>
             {% else %}
-                <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li><a href="{% url 'dashboard' %}">My Dashboard</a></li>
                 <li><a href="{% url 'package_search' %}">Packages</a></li>
                 <li><a href="{% url 'support_chat' %}" class="help-link">Help</a></li>
             {% endif %}
 
             {% if user.is_staff %}
-                <li><a href="{% url 'trivasta_admin' %}" class="admin-link">⚡ Admin</a></li>
-                <li><a href="{% url 'support_dashboard' %}" class="support-link">🎧 Support</a></li>
-                <li><a href="{% url 'refund_dashboard' %}" class="refund-link">💰 Refunds</a></li>
+                <li><a href="{% url 'trivasta_admin' %}" class="admin-link">Admin<span class="role-badge">Staff</span></a></li>
+                <li><a href="{% url 'support_dashboard' %}" class="support-link">Support<span class="role-badge">Staff</span></a></li>
+                <li><a href="{% url 'refund_dashboard' %}" class="refund-link">Refunds<span class="role-badge">Staff</span></a></li>
             {% endif %}
 
             <li><a href="{% url 'logout' %}" class="btn-nav">Logout</a></li>

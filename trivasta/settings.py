@@ -132,7 +132,7 @@ LOGIN_URL           = "login"
 # ── Third-party API Keys ──────────────────────────────────────────────────────
 
 GROQ_API_KEY        = os.environ.get("GROQ_API_KEY")
-GEMINI_API_KEY      = os.environ.get("GEMINI_API_KEY")
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY")
 RAZORPAY_KEY_ID     = os.environ.get("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = os.environ.get("RAZORPAY_KEY_SECRET")
 

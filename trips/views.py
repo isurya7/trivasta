@@ -6,7 +6,7 @@ from django.views.decorators.http import require_POST
 from django.db import IntegrityError
 
 from .forms import TripForm
-from .services.ai import generate_itinerary, AIQuotaExceeded
+from .services.ai import generate_itinerary, generate_fallback_itinerary, AIQuotaExceeded, AIGenerationFailed
 from .models import Trip, Itinerary, Review, ReviewReply, ReviewHelpfulVote
 from marketplace.models import Offer, Booking, Package   # ← Booking from marketplace
 
@@ -66,6 +66,13 @@ def planner(request):
  
             trip.save()
  
+            fallback_kwargs = dict(
+                destination=trip.destination, days=trip.days, budget=trip.budget,
+                num_people=trip.num_people, travel_type=trip.travel_type,
+                travel_mode=trip.travel_mode, origin=trip.origin,
+                budget_type=trip.budget_type,
+            )
+ 
             try:
                 itinerary_content = generate_itinerary(
                     destination=trip.destination, days=trip.days,
@@ -75,17 +82,11 @@ def planner(request):
                     start_date=str(trip.start_date) if trip.start_date else ""
                 )
             except AIQuotaExceeded:
-                messages.warning(request, "AI quota reached. Using basic itinerary.")
-                itinerary_content = "\n".join([
-                    f"📅 Day {i}: Explore {trip.destination} — local sights, food & culture 🌍"
-                    for i in range(1, trip.days + 1)
-                ])
-            except Exception:
-                messages.warning(request, "Could not generate AI itinerary. Using fallback.")
-                itinerary_content = "\n".join([
-                    f"📅 Day {i}: Explore {trip.destination} — local sights, food & culture 🌍"
-                    for i in range(1, trip.days + 1)
-                ])
+                messages.warning(request, "Our AI planner hit its usage limit — showing a starter itinerary instead.")
+                itinerary_content = generate_fallback_itinerary(**fallback_kwargs)
+            except AIGenerationFailed:
+                messages.warning(request, "Couldn't generate a full AI itinerary — showing a starter plan instead.")
+                itinerary_content = generate_fallback_itinerary(**fallback_kwargs)
  
             Itinerary.objects.create(
                 trip=trip, content=itinerary_content,
