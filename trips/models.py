@@ -25,6 +25,11 @@ class Trip(models.Model):
     travel_type = models.CharField(max_length=100)
     travel_mode = models.CharField(max_length=20, choices=TRAVEL_MODES, default='any')
     num_people  = models.IntegerField(default=1)
+    additional_preferences = models.TextField(
+        blank=True,
+        default='',
+        help_text="Additional preferences or requirements for this trip.",
+    )
     created_at  = models.DateTimeField(auto_now_add=True)
 
     def total_budget(self):

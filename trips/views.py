@@ -1,3 +1,5 @@
+import logging
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -7,99 +9,107 @@ from django.db import IntegrityError
 
 from .forms import TripForm
 from .services.ai import generate_itinerary, generate_fallback_itinerary, AIQuotaExceeded, AIGenerationFailed
+from .services.itinerary_key import build_cache_key
+from .validation import MIN_PER_PERSON, MIN_GROUP_TOTAL
 from .models import Trip, Itinerary, Review, ReviewReply, ReviewHelpfulVote
 from marketplace.models import Offer, Booking, Package   # ← Booking from marketplace
+
+logger = logging.getLogger(__name__)
 
 
 def home(request):
     packages = Package.objects.filter(
         is_active=True, agency__status='approved'
     ).select_related('agency').order_by('-created_at')[:12]
- 
+
     return render(request, "home.html", {
         "page_title": "Trivasta — AI-Powered Travel Planning",
         "packages":   packages,
     })
- 
- 
+
+
+# ── Planner ───────────────────────────────────────────────────────────────────
+
+# Which wizard step (1-4) each form field lives on, so a server-side error
+# reopens the step the user needs to fix.
+FIELD_STEP = {
+    "origin": 1, "destination": 1, "travel_type": 1,
+    "start_date": 2, "end_date": 2, "days": 2, "num_people": 2,
+    "travel_mode": 3, "additional_preferences": 3,
+    "budget": 4, "budget_type": 4,
+}
+
+
+def _first_error_step(form):
+    steps = [FIELD_STEP.get(field, 4) for field in form.errors]
+    return min(steps) if steps else 1
+
+
+def _render_planner(request, form):
+    data = form.data if form.is_bound else {}
+    return render(request, "trips/planner.html", {
+        "form": form,
+        "page_title": "Plan Your Trip",
+        # Selects/radios are re-applied by JS from this after a failed POST.
+        "form_state": {k: data.get(k, "") for k in ("travel_type", "travel_mode", "budget_type")},
+        "error_step": _first_error_step(form),
+        "min_per_person": MIN_PER_PERSON,
+        "min_group_total": MIN_GROUP_TOTAL,
+    })
+
+
+def _log_cache_key(trip):
+    """Logging only (no cache yet): lets us measure how often trips repeat."""
+    try:
+        logger.info("itinerary_cache_key=%s", build_cache_key(trip))
+    except Exception:
+        logger.exception("Could not build itinerary cache key")
+
+
 @login_required
 def planner(request):
-    if request.method == "POST":
-        form = TripForm(request.POST)
-        if form.is_valid():
-            trip      = form.save(commit=False)
-            trip.user = request.user
- 
-            # ── Minimum budget validation ──────────────────────────────────
-            num_people  = trip.num_people or 1
-            budget      = trip.budget or 0
-            budget_type = trip.budget_type  # 'total' or 'per_person'
- 
-            if budget_type == 'per_person':
-                total_budget = budget * num_people
-                per_person   = budget
-            else:
-                total_budget = budget
-                per_person   = budget // num_people if num_people > 1 else budget
- 
-            is_group = num_people > 1
- 
-            MIN_PER_PERSON = 8000
-            MIN_GROUP_TOTAL = 20000
- 
-            if is_group and total_budget < MIN_GROUP_TOTAL:
-                messages.error(
-                    request,
-                    f"Minimum budget for a group trip is ₹{MIN_GROUP_TOTAL:,}. "
-                    f"Your current total is ₹{total_budget:,}."
-                )
-                return render(request, "trips/planner.html", {"form": form, "page_title": "Plan Your Trip"})
- 
-            if per_person < MIN_PER_PERSON:
-                messages.error(
-                    request,
-                    f"Minimum budget per person is ₹{MIN_PER_PERSON:,}. "
-                    f"Your current per-person budget is ₹{per_person:,}."
-                )
-                return render(request, "trips/planner.html", {"form": form, "page_title": "Plan Your Trip"})
-            # ──────────────────────────────────────────────────────────────
- 
-            trip.save()
- 
-            fallback_kwargs = dict(
-                destination=trip.destination, days=trip.days, budget=trip.budget,
-                num_people=trip.num_people, travel_type=trip.travel_type,
-                travel_mode=trip.travel_mode, origin=trip.origin,
-                budget_type=trip.budget_type,
-            )
- 
-            try:
-                itinerary_content = generate_itinerary(
-                    destination=trip.destination, days=trip.days,
-                    budget=trip.budget, travel_type=trip.travel_type,
-                    travel_mode=trip.travel_mode, origin=trip.origin,
-                    num_people=trip.num_people, budget_type=trip.budget_type,
-                    start_date=str(trip.start_date) if trip.start_date else ""
-                )
-            except AIQuotaExceeded:
-                messages.warning(request, "Our AI planner hit its usage limit — showing a starter itinerary instead.")
-                itinerary_content = generate_fallback_itinerary(**fallback_kwargs)
-            except AIGenerationFailed:
-                messages.warning(request, "Couldn't generate a full AI itinerary — showing a starter plan instead.")
-                itinerary_content = generate_fallback_itinerary(**fallback_kwargs)
- 
-            Itinerary.objects.create(
-                trip=trip, content=itinerary_content,
-                estimated_cost=trip.total_budget()
-            )
-            messages.success(request, "✅ Your trip has been planned!")
-            return redirect("trip_detail", pk=trip.id)
-        else:
-            messages.error(request, "Please correct the errors below.")
-    else:
-        form = TripForm()
- 
-    return render(request, "trips/planner.html", {"form": form, "page_title": "Plan Your Trip"})
+    if request.method != "POST":
+        return _render_planner(request, TripForm())
+
+    form = TripForm(request.POST)
+    if not form.is_valid():
+        messages.error(request, "Please correct the errors below.")
+        return _render_planner(request, form)
+
+    trip = form.save(commit=False)
+    trip.user = request.user
+    trip.save()
+    _log_cache_key(trip)
+
+    fallback_kwargs = dict(
+        destination=trip.destination, days=trip.days, budget=trip.budget,
+        num_people=trip.num_people, travel_type=trip.travel_type,
+        travel_mode=trip.travel_mode, origin=trip.origin,
+        budget_type=trip.budget_type,
+    )
+
+    try:
+        itinerary_content = generate_itinerary(
+            destination=trip.destination, days=trip.days,
+            budget=trip.budget, travel_type=trip.travel_type,
+            travel_mode=trip.travel_mode, origin=trip.origin,
+            num_people=trip.num_people, budget_type=trip.budget_type,
+            start_date=str(trip.start_date) if trip.start_date else "",
+            additional_preferences=trip.additional_preferences,
+        )
+    except AIQuotaExceeded:
+        messages.warning(request, "Our AI planner hit its usage limit — showing a starter itinerary instead.")
+        itinerary_content = generate_fallback_itinerary(**fallback_kwargs)
+    except AIGenerationFailed:
+        messages.warning(request, "Couldn't generate a full AI itinerary — showing a starter plan instead.")
+        itinerary_content = generate_fallback_itinerary(**fallback_kwargs)
+
+    Itinerary.objects.create(
+        trip=trip, content=itinerary_content,
+        estimated_cost=trip.total_budget(),
+    )
+    messages.success(request, "✅ Your trip has been planned!")
+    return redirect("trip_detail", pk=trip.id)
 
 
 @login_required

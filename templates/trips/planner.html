@@ -134,6 +134,8 @@
 .field-input:focus{border-color:var(--ocean-glow);background:rgba(56,189,248,0.07);box-shadow:0 0 0 4px rgba(56,189,248,0.1);}
 .field-input.error{border-color:#f87171;animation:shake 0.35s ease;}
 
+textarea.field-input{resize:vertical;min-height:84px;line-height:1.5;font-family:var(--font-body);}
+
 select.field-input{
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='rgba(255,255,255,0.3)' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:right 1rem center;padding-right:2.5rem;
@@ -338,6 +340,13 @@ select.field-input option{background:var(--ocean-mid);color:var(--white);}
         </div>
         <div class="form-steps">
 
+          {% if form.errors %}
+          <div class="form-error-box" style="margin:0 0 1.5rem">
+            ⚠️ Please check your inputs and try again.
+            {% for field, errors in form.errors.items %}{% for error in errors %}<br>• {{ error }}{% endfor %}{% endfor %}
+          </div>
+          {% endif %}
+
           <!-- STEP 1 -->
           <div class="form-step active" id="step1">
             <div class="step-heading">Where are you going? 📍</div>
@@ -386,7 +395,7 @@ select.field-input option{background:var(--ocean-mid);color:var(--white);}
             <div class="field">
               <label>Number of Days <span class="req">*</span></label>
               <input type="number" name="days" id="daysInput" class="field-input" placeholder="How many days? e.g. 7" min="1" max="30" value="{{ form.days.value|default:'' }}" required>
-              <span class="field-hint">Auto-fills when you enter start and end dates above.</span>
+              <span class="field-hint">Auto-fills from your dates (start and end day both count).</span>
             </div>
             <div class="field">
               <label>Number of Travellers</label>
@@ -409,6 +418,11 @@ select.field-input option{background:var(--ocean-mid);color:var(--white);}
               <div><input type="radio" name="travel_mode" id="mode_bus" value="bus" class="mode-option"><label for="mode_bus" class="mode-label"><span class="mode-icon">🚌</span><span class="mode-name">Bus</span><span class="mode-note">Budget-friendly</span></label></div>
               <div><input type="radio" name="travel_mode" id="mode_car" value="car" class="mode-option"><label for="mode_car" class="mode-label"><span class="mode-icon">🚗</span><span class="mode-name">Self Drive</span><span class="mode-note">Your own pace</span></label></div>
               <div><input type="radio" name="travel_mode" id="mode_cruise" value="cruise" class="mode-option"><label for="mode_cruise" class="mode-label"><span class="mode-icon">🚢</span><span class="mode-name">Cruise</span><span class="mode-note">Sea journey</span></label></div>
+            </div>
+            <div class="field">
+              <label for="prefsInput">Anything else we should know? <span style="text-transform:none;letter-spacing:0;font-weight:400">(optional)</span></label>
+              <textarea name="additional_preferences" id="prefsInput" class="field-input" rows="3" maxlength="500" placeholder="e.g. peaceful places over crowded spots, vegetarian food, boutique stays, relaxed pace, avoid overnight journeys">{{ form.additional_preferences.value|default:'' }}</textarea>
+              <span class="field-hint"><span id="prefsCount">0</span>/500 · Used as guidance. Your destination, dates and budget always take priority.</span>
             </div>
             <div class="step-nav">
               <button type="button" class="btn-prev" onclick="prevStep(3)">← Back</button>
@@ -451,12 +465,6 @@ select.field-input option{background:var(--ocean-mid);color:var(--white);}
               <div class="budget-summary-row total"><span class="bs-label" id="bsTotalLabel">Total trip budget</span><span class="bs-value" id="bsTotal">—</span></div>
             </div>
             <div class="budget-warning" id="budgetWarning"></div>
-            {% if form.errors %}
-            <div class="form-error-box">
-              ⚠️ Please check your inputs and try again.
-              {% for field, errors in form.errors.items %}{% for error in errors %}<br>• {{ error }}{% endfor %}{% endfor %}
-            </div>
-            {% endif %}
             <div class="step-nav">
               <button type="button" class="btn-prev" onclick="prevStep(4)">← Back</button>
             </div>
@@ -503,8 +511,10 @@ select.field-input option{background:var(--ocean-mid);color:var(--white);}
 {% endblock %}
 
 {% block extra_js %}
+{{ form_state|json_script:"form-state" }}
 <script>
-const MIN_PER_PERSON=8000,MIN_GROUP_TOTAL=20000;
+const MIN_PER_PERSON={{ min_per_person|stringformat:"d" }},MIN_GROUP_TOTAL={{ min_group_total|stringformat:"d" }};
+const ERROR_STEP={{ error_step|default:1 }};
 let currentStep=1;
 
 function goToStep(n){
@@ -538,7 +548,10 @@ document.getElementById('endDateInput').addEventListener('change',calcDays);
 function calcDays(){
   const s=document.getElementById('startDateInput').value;
   const e=document.getElementById('endDateInput').value;
-  if(s&&e){const diff=Math.round((new Date(e)-new Date(s))/86400000);if(diff>0){document.getElementById('daysInput').value=diff;updatePreview();}}
+  if(s&&e){
+    const diff=Math.round((new Date(e)-new Date(s))/86400000)+1; // start and end day both count
+    if(diff>=1){document.getElementById('daysInput').value=diff;updatePreview();}
+  }
 }
 
 function updatePreview(){
@@ -619,7 +632,37 @@ document.getElementById('plannerForm').addEventListener('submit',function(e){
   btn.disabled=true;
 });
 
+// Don't allow past dates in the pickers (the server re-checks anyway)
+(function(){
+  const d=new Date();
+  const iso=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  document.getElementById('startDateInput').min=iso;
+  document.getElementById('endDateInput').min=iso;
+})();
+
+// Preferences character counter
+const prefsEl=document.getElementById('prefsInput'),prefsCount=document.getElementById('prefsCount');
+function updatePrefsCount(){prefsCount.textContent=prefsEl.value.length;}
+prefsEl.addEventListener('input',updatePrefsCount);
+
+// Re-apply selects/radios after a failed POST
+function restoreFormState(){
+  const el=document.getElementById('form-state');
+  if(!el)return;
+  let st={};
+  try{st=JSON.parse(el.textContent)||{};}catch(e){return;}
+  if(st.travel_type){document.getElementById('travelTypeInput').value=st.travel_type;}
+  ['travel_mode','budget_type'].forEach(name=>{
+    if(!st[name])return;
+    const radios=Array.from(document.querySelectorAll('input[name="'+name+'"]'));
+    if(!radios.some(r=>r.value===st[name]))return;
+    radios.forEach(r=>{r.checked=(r.value===st[name]);});
+  });
+}
+
+restoreFormState();
+updatePrefsCount();
 updatePreview();
-goToStep(1);
+goToStep(ERROR_STEP);
 </script>
 {% endblock %}
