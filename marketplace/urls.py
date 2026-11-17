@@ -1,13 +1,13 @@
 from django.urls import path
-from . import views
+from . import views, payment_views
 
 urlpatterns = [
     # ── Packages ──────────────────────────────────────────────────
     path('packages/',                                  views.package_search,               name='package_search'),
     path('packages/<int:pk>/',                         views.package_detail,               name='package_detail'),
     path('packages/<int:pk>/chat/',                    views.package_chat,                 name='package_chat'),
-    path('packages/<int:pk>/book/',                    views.package_book,                 name='package_book'),
-    path('packages/<int:pk>/book/success/',            views.package_book_success,         name='package_book_success'),
+    path('packages/<int:pk>/book/',                    payment_views.package_book,         name='package_book'),
+    path('packages/<int:pk>/book/success/',            payment_views.package_book_success, name='package_book_success'),
     path('packages/booking/<int:booking_id>/',         views.package_booking_confirmation, name='package_booking_confirmation'),
     path('packages/<int:pk>/toggle/',                  views.package_toggle,               name='package_toggle'),
 
@@ -17,12 +17,12 @@ urlpatterns = [
     path('offer/<int:offer_id>/approve/',              views.approve_offer,                name='approve_offer'),
 
     # ── Checkout / payments ───────────────────────────────────────
-    path('checkout/<int:offer_id>/',                   views.checkout,                     name='checkout'),
-    # Offer checkout payment (renamed from payment_success to avoid clash)
-    path('payment/success/',                           views.offer_payment_success,        name='payment_success'),
+    path('checkout/<int:offer_id>/',                   payment_views.checkout,             name='checkout'),
+    # Offer checkout payment
+    path('payment/success/',                           payment_views.offer_payment_success, name='payment_success'),
     path('payment/failed/',                            views.payment_failed,               name='payment_failed'),
-    # Package booking payment (has booking_id — no name conflict)
-    path('payment/success/<int:booking_id>/',          views.payment_success,              name='package_payment_success'),
+    # Package booking payment (new coupon flow)
+    path('payment/success/<int:booking_id>/',          payment_views.package_payment_success, name='package_payment_success'),
 
     # ── Bookings ──────────────────────────────────────────────────
     path('booking/<int:booking_id>/',                  views.booking_confirmation,         name='booking_confirmation'),
@@ -53,9 +53,9 @@ urlpatterns = [
     path('chat/<int:room_id>/',                        views.chat_room,                    name='chat_room'),
     path('chat/<int:room_id>/send/',                   views.send_message,                 name='send_message'),
     path('chat/<int:room_id>/raise-payment/',          views.raise_payment_request,        name='raise_payment_request'),
-    path('chat/payment/<int:pr_id>/accept/',           views.accept_payment_request,       name='accept_payment_request'),
+    path('chat/payment/<int:pr_id>/accept/',           payment_views.accept_payment_request, name='accept_payment_request'),
     path('chat/payment/<int:pr_id>/reject/',           views.reject_payment_request,       name='reject_payment_request'),
-    path('chat/payment/success/',                      views.chat_payment_success,         name='chat_payment_success'),
+    path('chat/payment/success/',                      payment_views.chat_payment_success, name='chat_payment_success'),
 
     # ── Support ───────────────────────────────────────────────────
     path('support/',                                   views.support_chat,                 name='support_chat'),
@@ -66,7 +66,4 @@ urlpatterns = [
 
     # ── Coupon ────────────────────────────────────────────────────
     path('coupon/validate/',                           views.validate_coupon_ajax,         name='validate_coupon_ajax'),
-
-    # ── Book package (new flow with coupon support) ───────────────
-    path('book/<int:package_id>/',                     views.book_package,                 name='book_package'),
 ]

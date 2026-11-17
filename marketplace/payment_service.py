@@ -15,8 +15,17 @@ razorpay_client = razorpay.Client(
 TRIVASTA_COMMISSION_PCT = 10
 GST_PCT                 = 5
 
+AUTO_PAYOUTS_OFF_MESSAGE = (
+    "Automatic payouts are turned off. Pay this agency manually "
+    "from the Razorpay dashboard."
+)
+
 
 def calculate_booking_amounts(base_price, coupon=None):
+    """
+    All amounts are whole rupees and use integer maths (no floats).
+    GST and commission are rounded DOWN, as before.
+    """
     original_base   = int(base_price)
     discount_amount = 0
     coupon_code     = None
@@ -31,9 +40,9 @@ def calculate_booking_amounts(base_price, coupon=None):
     else:
         discounted_base = original_base
 
-    gst_amount          = int(discounted_base * GST_PCT / 100)
+    gst_amount          = discounted_base * GST_PCT // 100
     total_amount        = discounted_base + gst_amount
-    trivasta_commission = int(original_base * TRIVASTA_COMMISSION_PCT / 100)
+    trivasta_commission = original_base * TRIVASTA_COMMISSION_PCT // 100
     agency_payout       = max(discounted_base - trivasta_commission, 0)
 
     return {
@@ -50,17 +59,23 @@ def calculate_booking_amounts(base_price, coupon=None):
 
 
 def create_razorpay_order(amounts, booking_id, description="Trivasta Booking"):
+    """
+    The booking id is stored in the order notes. That is how a payment is
+    matched to its booking later, even if the page was opened twice.
+    """
     try:
         order = razorpay_client.order.create({
-            "amount":   amounts['total_amount'] * 100,
-            "currency": "INR",
-            "receipt":  f"booking_{booking_id}",
+            "amount":          amounts['total_amount'] * 100,
+            "currency":        "INR",
+            "receipt":         f"booking_{booking_id}",
+            "payment_capture": 1,
             "notes": {
                 "booking_id":          str(booking_id),
                 "base_amount":         str(amounts['base_amount']),
                 "gst_amount":          str(amounts['gst_amount']),
                 "trivasta_commission": str(amounts['trivasta_commission']),
                 "agency_payout":       str(amounts['agency_payout']),
+                "discount_amount":     str(amounts.get('discount_amount', 0)),
                 "coupon":              amounts.get('coupon_code') or '',
             }
         })
@@ -70,7 +85,20 @@ def create_razorpay_order(amounts, booking_id, description="Trivasta Booking"):
         return None, str(e)
 
 
-# ── FIX 1: Corrected HMAC — was hmac.new() which doesn't exist ───────────────
+# ── Thin wrappers around Razorpay (easy to mock in tests) ─────────────────────
+
+def fetch_razorpay_order(order_id):
+    return razorpay_client.order.fetch(order_id)
+
+
+def fetch_razorpay_payment(payment_id):
+    return razorpay_client.payment.fetch(payment_id)
+
+
+def capture_razorpay_payment(payment_id, amount_paise):
+    return razorpay_client.payment.capture(payment_id, amount_paise, {"currency": "INR"})
+
+
 def verify_payment_signature(order_id, payment_id, signature):
     """
     Returns True if Razorpay HMAC-SHA256 signature is valid.
@@ -89,12 +117,16 @@ def verify_payment_signature(order_id, payment_id, signature):
         return False
 
 
-# ── FIX 2: Race condition eliminated with get_or_create + IntegrityError ─────
 def transfer_to_agency(booking, amounts):
     """
     Fires a Razorpay Route transfer to the agency's linked account.
-    Safe against duplicate webhook delivery — uses get_or_create on PayoutRecord
-    so a second concurrent call is a no-op rather than a double payout.
+
+    Automatic payouts are OFF unless settings.AUTO_PAYOUTS_ENABLED is True.
+    While off, nothing is sent: the PayoutRecord stays 'pending' and the
+    agency is paid manually.
+
+    When on, the record is claimed with one atomic UPDATE (pending/failed ->
+    processing), so two simultaneous calls cannot both send money.
     """
     from marketplace.models import PayoutRecord
 
@@ -103,7 +135,6 @@ def transfer_to_agency(booking, amounts):
         logger.error(f"Booking {booking.id} has no agency — cannot transfer")
         return None, "No agency found for this booking."
 
-    # ── Atomic get-or-create prevents race condition ──────────────────────────
     try:
         payout, created = PayoutRecord.objects.get_or_create(
             booking=booking,
@@ -119,17 +150,16 @@ def transfer_to_agency(booking, amounts):
             }
         )
     except IntegrityError:
-        # Another request created the record a millisecond before us — fetch it
         payout  = PayoutRecord.objects.get(booking=booking)
         created = False
 
-    if not created:
-        if payout.status == 'paid':
-            logger.info(f"Payout already completed for booking {booking.id} — skipping")
-            return payout, None
-        logger.info(f"Retrying existing payout #{payout.id} for booking {booking.id}")
+    if payout.status == 'paid':
+        logger.info(f"Payout already completed for booking {booking.id} — skipping")
+        return payout, None
 
-    # ── Check agency payout readiness ─────────────────────────────────────────
+    if not getattr(settings, 'AUTO_PAYOUTS_ENABLED', False):
+        return payout, AUTO_PAYOUTS_OFF_MESSAGE
+
     try:
         bank = agency.bank_details
     except Exception:
@@ -144,11 +174,16 @@ def transfer_to_agency(booking, amounts):
         logger.warning(f"Booking {booking.id}: agency {agency.name} not payout-ready — queued")
         return payout, None
 
-    # ── Fire Razorpay Route transfer ──────────────────────────────────────────
-    try:
-        payout.status = 'processing'
-        payout.save(update_fields=['status'])
+    claimed = PayoutRecord.objects.filter(
+        pk=payout.pk, status__in=['pending', 'failed']
+    ).update(status='processing', failure_reason='')
+    if not claimed:
+        payout.refresh_from_db()
+        logger.info(f"Payout #{payout.id} already being handled — skipping")
+        return payout, None
+    payout.refresh_from_db()
 
+    try:
         transfer = razorpay_client.transfer.create({
             "account":  bank.razorpay_account_id,
             "amount":   amounts['agency_payout'] * 100,
