@@ -11,12 +11,12 @@ from django.utils import timezone
 
 from trips.models import Trip
 
-from .models import (
+from marketplace.models import (
     Agency, AgencyBankDetails, Booking, ChatRoom, Coupon, CouponUsage,
     Message, Offer, Package, PaymentRequest, PayoutRecord,
 )
-from .payment_confirmation import confirm_booking_payment
-from .payment_service import (
+from payments.confirmation import confirm_booking_payment
+from payments.services import (
     calculate_booking_amounts, transfer_to_agency, verify_payment_signature,
 )
 
@@ -93,10 +93,10 @@ class PaymentTestBase(TestCase):
     def setUp(self):
         self.gw = FakeGateway()
         for target, effect in [
-            ("marketplace.payment_views.create_razorpay_order", self.gw.create_order),
-            ("marketplace.payment_confirmation.fetch_razorpay_order", self.gw.fetch_order),
-            ("marketplace.payment_confirmation.fetch_razorpay_payment", self.gw.fetch_payment),
-            ("marketplace.payment_confirmation.capture_razorpay_payment", self.gw.capture),
+            ("payments.views.create_razorpay_order", self.gw.create_order),
+            ("payments.confirmation.fetch_razorpay_order", self.gw.fetch_order),
+            ("payments.confirmation.fetch_razorpay_payment", self.gw.fetch_payment),
+            ("payments.confirmation.capture_razorpay_payment", self.gw.capture),
         ]:
             patcher = mock.patch(target, side_effect=effect)
             patcher.start()
@@ -588,7 +588,7 @@ class PayoutSafetyTests(PaymentTestBase):
     def test_nothing_is_sent_while_automatic_payouts_are_off(self):
         booking = self.make_booking(is_paid=True, status="confirmed")
         self.verified_bank()
-        with mock.patch("marketplace.payment_service.razorpay_client") as client:
+        with mock.patch("payments.services.razorpay_client") as client:
             payout, error = transfer_to_agency(booking, self.amounts_for(booking))
         client.transfer.create.assert_not_called()
         self.assertIn("turned off", error)
@@ -599,7 +599,7 @@ class PayoutSafetyTests(PaymentTestBase):
         booking = self.make_booking(is_paid=True, status="confirmed")
         self.verified_bank()
         amounts = self.amounts_for(booking)
-        with mock.patch("marketplace.payment_service.razorpay_client") as client:
+        with mock.patch("payments.services.razorpay_client") as client:
             client.transfer.create.return_value = {"id": "trf_1"}
             _, first_error = transfer_to_agency(booking, amounts)
             _, second_error = transfer_to_agency(booking, amounts)
@@ -621,6 +621,6 @@ class PayoutSafetyTests(PaymentTestBase):
             trivasta_commission=amounts["trivasta_commission"],
             agency_payout_amount=amounts["agency_payout"], status="processing",
         )
-        with mock.patch("marketplace.payment_service.razorpay_client") as client:
+        with mock.patch("payments.services.razorpay_client") as client:
             transfer_to_agency(booking, amounts)
         client.transfer.create.assert_not_called()
