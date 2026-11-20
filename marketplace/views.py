@@ -15,7 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Q, Avg
 
 from .ai_support import get_ai_support_response
-from .payment_service import (
+from payments.services import (
     calculate_booking_amounts,
     create_razorpay_order,
     verify_payment_signature,   
@@ -403,7 +403,7 @@ def package_book(request, pk):
     pricing = compute_pricing(package.price)
 
     # FIX: use payment_service client, not a module-level duplicate
-    from .payment_service import razorpay_client
+    from payments.services import razorpay_client
     razorpay_order = razorpay_client.order.create({
         "amount":          pricing['total_amount'] * 100,
         "currency":        "INR",
@@ -805,7 +805,7 @@ def accept_payment_request(request, pr_id):
     room    = pr.room
     pricing = compute_pricing(pr.amount)
 
-    from .payment_service import razorpay_client
+    from payments.services import razorpay_client
     razorpay_order = razorpay_client.order.create({
         "amount":          pricing['total_amount'] * 100,
         "currency":        "INR",
@@ -928,7 +928,7 @@ def checkout(request, offer_id):
 
     pricing = compute_pricing(offer.price)
 
-    from .payment_service import razorpay_client
+    from payments.services import razorpay_client
     razorpay_order = razorpay_client.order.create({
         "amount":          pricing['total_amount'] * 100,
         "currency":        "INR",

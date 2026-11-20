@@ -21,7 +21,7 @@ from marketplace.models import (
     TripStatus, Package, SupportTicket, SupportMessage, RefundRequest,
     AgencyBankDetails, PayoutRecord,
 )
-from marketplace.payment_service import create_agency_linked_account, transfer_to_agency
+from payments.services import create_agency_linked_account, transfer_to_agency
 
 razorpay_client = razorpay.Client(
     auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET)

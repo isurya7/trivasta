@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'users',
     'trips',
     'marketplace',
+    'payments',
     'channels',
     'social_django',
 ]

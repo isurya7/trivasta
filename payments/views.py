@@ -6,13 +6,13 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import Booking, ChatRoom, Message, Offer, Package, PaymentRequest
-from .payment_confirmation import (
+from marketplace.models import Booking, ChatRoom, Message, Offer, Package, PaymentRequest
+from .confirmation import (
     InvalidSignatureError,
     PaymentVerificationError,
     confirm_booking_payment,
 )
-from .payment_service import GST_PCT, calculate_booking_amounts, create_razorpay_order
+from .services import GST_PCT, calculate_booking_amounts, create_razorpay_order
 
 logger = logging.getLogger(__name__)
 

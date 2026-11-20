@@ -3,9 +3,9 @@ from unittest import mock
 from django.contrib.messages import get_messages
 from django.urls import reverse
 
-from .models import Booking, PayoutRecord
-from .payment_confirmation import PaymentVerificationError, confirm_verified_payment
-from .test_payments import PaymentTestBase
+from marketplace.models import Booking, PayoutRecord
+from payments.confirmation import PaymentVerificationError, confirm_verified_payment
+from payments.tests.test_payments import PaymentTestBase
 
 
 class CaptureRaceTests(PaymentTestBase):
@@ -23,7 +23,7 @@ class CaptureRaceTests(PaymentTestBase):
             self.gw.payments[pid]["status"] = "captured"
             raise RuntimeError("This payment has already been captured")
 
-        with mock.patch("marketplace.payment_confirmation.capture_razorpay_payment",
+        with mock.patch("payments.confirmation.capture_razorpay_payment",
                         side_effect=auto_capture_won):
             self.callback(url, order_id, payment_id)
 
@@ -33,7 +33,7 @@ class CaptureRaceTests(PaymentTestBase):
     def test_capture_error_while_still_authorized_is_retryable(self):
         booking, order_id, payment_id, url = self.start_authorized_payment()
 
-        with mock.patch("marketplace.payment_confirmation.capture_razorpay_payment",
+        with mock.patch("payments.confirmation.capture_razorpay_payment",
                         side_effect=RuntimeError("temporary failure")):
             response = self.callback(url, order_id, payment_id)
 
